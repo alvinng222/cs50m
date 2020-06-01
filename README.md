@@ -1,20 +1,9 @@
 Overview, Javascript
-===
-[top]: topOfThePage
-
-Lecture: http://video.cs50.net/mobile/2018/spring/lectures/0
-
-Slides: http://cdn.cs50.net/mobile/2018/spring/lectures/0/lecture0.pdf
-- JavaScript is Interpreted
-- Syntax
-- Types
-- Typecasting? Coercion
 - Objects, Arrays, Functions, Objects
 - Primitive vs Objects
 - Prototypal Inheritance
 - Scope
 - The JavaScript Engine
-- The Global Object
 - Closures
 
 
@@ -23,12 +12,12 @@ Slides: http://cdn.cs50.net/mobile/2018/spring/lectures/0/lecture0.pdf
 files: src0.zip
 
 `Ts-MacBook-Pro:cs50m twng$ ls -1`
-0-syntax.js
-1-types.js
-2-objects.js
-3-objectMutation.js
-4-scopeVariables.js
-5-scopeFunctions.js
+[0-syntax.js](0-syntax.js)
+[1-types.js](1-types.js)
+[2-objects.js](2-objects.js)
+[3-objectMutation.js](3-objectMutation.js)
+[4-scopeVariables.js](4-scopeVariables.js)
+[5-scopeFunctions.js](5-scopeFunctions.js)
 
 
 [**myNote**](#mynote)
@@ -209,7 +198,7 @@ At the browser env, console:
 ```
 console: brand new tag will be a lot fewer variables 
 ```
-  > const x = ‘this is a new variable’
+  > const x = 'this is a new variable'
   > x // “this is a new variable”
   > window.x
   > undefined 
@@ -536,7 +525,6 @@ var butNotThis = function() {
 myNote
 ---
 #### Git
-Video: https://youtu.be/SWYqp7iY_Tc
 
 Basic commands
 * $ git init // Initialise local Git depository
@@ -572,12 +560,23 @@ Git branch 01_Javascript_src
     Ts-MacBook-Pro:cs50m twng$ git status
     On branch 01_Javascript_src
     nothing to commit, working tree clean
-```
 
-https://nodejs.org/en/
+    Ts-MacBook-Pro:cs50m twng$ git branch
+    * 01_Javascript_src
+      master
+    Ts-MacBook-Pro:cs50m twng$ git add .    
+    Ts-MacBook-Pro:cs50m twng$ git status
+    Ts-MacBook-Pro:cs50m twng$ git commit
+    Ts-MacBook-Pro:cs50m twng$ git push origin 01_Javascript_src
+```
+checked on github, https://github.com/alvinng222/cs50m/tree/01_Javascript_src
+
+installed `node`, https://nodejs.org/en/
 
 
 --
+
+vim, see https://github.com/alvinng222/cs50-mobile/blob/master/vimtutor.md
 
 :joy: markdownGuide https://www.markdownguide.org/basic-syntax/     
 :sunny: https://www.markdownguide.org/extended-syntax/
@@ -593,7 +592,9 @@ go to top of the page
 ---
 [:top: Top](#top)
 
----
-back to previous: [13_Deploying_Testing](13_Deploying_Testing.md).   
-continue to next: [02_JS_ES6.md](02_JS_ES6.md).
+--- 
+to master branch: [CS50M](https://github.com/alvinng222/cs50m/tree/master)   
+back to last branch: [13_Deploying_Testing](https://github.com/alvinng222/cs50m/tree/13_Deploying_Testing)   
+continue to next branch: [02_JS_ES6](https://github.com/alvinng222/cs50m/tree/02_JS_ES6)   
 
+---
