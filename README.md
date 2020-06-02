@@ -1,11 +1,21 @@
 Overview, Javascript
+===
+[top]: topOfThePage
+
+Lecture: http://video.cs50.net/mobile/2018/spring/lectures/0
+
+Slides: http://cdn.cs50.net/mobile/2018/spring/lectures/0/lecture0.pdf
+- JavaScript is Interpreted
+- Syntax
+- Types
+- Typecasting? Coercion
 - Objects, Arrays, Functions, Objects
 - Primitive vs Objects
 - Prototypal Inheritance
 - Scope
 - The JavaScript Engine
+- The Global Object
 - Closures
-
 
 
 [Source Code](#source-code)  
