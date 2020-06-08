@@ -1063,7 +1063,7 @@ Ts-MacBook-Pro:igw twng$ expo --version
     Ts-MacBook-Pro:cs50m twng$ git add .    
     Ts-MacBook-Pro:cs50m twng$ git status
     Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push origin 04_ReactNative
+    Ts-MacBook-Pro:cs50m twng$ git push -u origin 04_ReactNative
 ```
 checked on github, 
 
