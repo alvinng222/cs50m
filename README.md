@@ -1050,8 +1050,9 @@ Ts-MacBook-Pro:igw twng$ expo --version
     On branch master
     Ts-MacBook-Pro:cs50m twng$ vim .gitignore
     Ts-MacBook-Pro:cs50m twng$ cat .gitignore
-      .DS_Store
-      expo-app/
+    .DS_Store
+    /expo-app
+    .gitignore
 ```
 ```
     Ts-MacBook-Pro:cs50m twng$ git branch 04_ReactNative
