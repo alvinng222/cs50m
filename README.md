@@ -1353,7 +1353,7 @@ Git commit & push
     Ts-MacBook-Pro:cs50m twng$ git add .    
     Ts-MacBook-Pro:cs50m twng$ git status
     Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push origin 05_ListsUserInput
+    Ts-MacBook-Pro:cs50m twng$ git push origin -u 05_ListsUserInput
 checked on github,
 ```
 
