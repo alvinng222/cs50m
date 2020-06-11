@@ -1,49 +1,3 @@
-## Project 1: Pomodoro Timer
-### Objectives
-* Become more comfortable with JS and React Native.
-* Develop workflow for developing mobile apps.
-* Gain experience reading and adding to source code.
-* Create your first app!
-
-[App.js](#appjs)
-[README.md](#readmemd)
-utils/
-  [index.js](#indexjs)
-utils/
-  [vibrate.js](#vibratejs)
-
-[top]: topOfThePage
-
----
-### App.js
-``` js
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-
-export default class App extends React.Component {
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text>Open up App.js to start working on your app!</Text>
-      </View>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
-```
-[:top: Top](#top)
-
----
-### README.md
-``` markdown
 # Project 1 - Pomodoro Timer
 For this project, you'll be implementing a Pomodoro timer. This timer will help
 people trying to use the [Pomodoro Technique](https://en.wikipedia.org/wiki/Pomodoro_Technique).
@@ -109,65 +63,15 @@ and changing a line. You should see it update on your phone!
 You can now begin to work on your app. You may find the vibrate function in
 [`/utils`](/utils) helpful. Feel free to import and use it in your app like this:
 
-      javascript
-      import {vibrate} from './utils'
+```javascript
+import {vibrate} from './utils'
 
-      // causes phone to vibrate
-      vibrate()
-      
+// causes phone to vibrate
+vibrate()
+```
 
 Good luck!
 
 ## Staff Solution
 If you want to play with the staff implementation, you can view it using
 Snack at [@jhhayashi/project1-solution](https://snack.expo.io/@jhhayashi/project1-solution).
-```
-[:top: Top](#top)
-
----
-### app.json
-``` js
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-
-export default class App extends React.Component {
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text>Open up App.js to start working on your app!</Text>
-      </View>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
-```
-[:top: Top](#top)
-
----
-### index.js
-``` js
-export vibrate from './vibrate'
-```
-
----
-### vibrate.js
-``` js
-import {Vibration} from 'react-native'
-
-export default () => Vibration.vibrate([500, 500, 500])
-```
-[:top: Top](#top)
-
----
-## myNote
-ref: [04_ReactNative](https://github.com/alvinng222/cs50m/tree/04_ReactNative)
-
----
