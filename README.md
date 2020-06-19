@@ -1,1870 +1,974 @@
-
-Lecture 6: Navigation
+Lecture 7: Data
 ===
+lecture: http://video.cs50.net/mobile/2018/spring/lectures/7
 
-lecture: http://video.cs50.net/mobile/2018/spring/lectures/6
-
-slides: http://cdn.cs50.net/mobile/2018/spring/lectures/6/lecture6.pdf
-
-. Introduction  
-. What is Navigation?  
-. React Navigation and Alternatives  
-. Install React Navigation  
-. Navigators, Routes, and Screen Components  
-. [Switch Navigation](#switch-navigator)  
-. Creating a Navigation   
-. Rendering a Navigation  
-. Higher Order Components  
-. Navigating to Another Route  
-. The Navigation Prop  
-. [Switch Navigator Example](#switch-navigator-example)  
-. screenProps  
-. [Stack Navigator](#stack-navigator)  
-. Creating a StackNavigator  
-. Returning to the Previously Active Route  
-. [StackNavigator Example](#stacknavigator-example)  
-. Configuring navigationOptions  
-. Passing Around State  
-. Using the StackNavigator  
-. Adding a Button  
-. push  
-. Stack-specific Navigation Options  
-. Composing Navigators  
-. [Tab Navigators](#tab-navigators)  
+slides: http://cdn.cs50.net/mobile/2018/spring/lectures/7/lecture7.pdf
+- [APIs](#api),
+- [randomuser.me/ documentation](#randomuserme-documentation)
+- [Making Network Requests](#making-network-requests),
+- [Promises](#promises), [Async/Await](#asyncawait),
+- [Data Transformations](#transforming-data),
+- [Authentication](#authentication),
+- [HTTP Methods](#http-methods),
+- [HTTP Response Codes](#http-response-codes),
+- [Expo Components](09_ExpoComponents.md)
 
 [top]: topOfThePage
 [Source Code](#source-code)
-file: src6.zip
-
+files: src07.zip   
 [**before/...**](#before)
-  package.json
-  AddContactForm.js
-  App.js
-  Row.js
-  SectionListContacts.js
   contacts.js
-
-[**after/...**](#after)
-  package.json
   AddContactForm.js
-  App.js
+  [App.js](#beforeappjs)
   Row.js
   SectionListContacts.js
-  contacts.js   
-  after/examples/...
-    0-Switch.js
-    1-Stack.js   
-  after/screens/...
+  package.json     
+before/screens/...
     AddContactScreen.js
     ContactDetailsScreen.js
     ContactListScreen.js
-    LoginScreen.js
+    [LoginScreen.js](#beforeloginscreenjs)
     SettingsScreen.js
 
-Exercise 6 https://github.com/alvinng222/cs50m/tree/exercises-6
+[**after/...**](#after)
+  [contacts.js](#aftercontactsjs)
+  AddContactForm.js
+  [App.js](#afterappjs)
+  Row.js
+  SectionListContacts.js
+  [api.js](#afterapijs)
+  [package.json](#afterpackagejson) 
+after/...
+    [authServer](#afterauthserverreadmemd)/README.md
+    authServer/index.js
+    authServer/package-lock.json
+    authServer/package.json   
+after/screens/...
+    AddContactScreen.js
+    ContactDetailsScreen.js
+    ContactListScreen.js
+    [LoginScreen.js](#afterloginscreenjs)
+    SettingsScreen.js
 
 [**myNote**](#mynote)
 
-[Snack/07_Navigation app.js is workable](#snack07_navigation-appjs-is-workable)
+---
+[:top: Top](#top)
+### Previous Lecture [07_Navigation](https://github.com/alvinng222/cs50m/tree/07_Navigation).  
+- react-navigation
+- SwitchNavigator
+- navigation prop
+- StackNavigator
+- Configuring navigators
+- TabNavigator
+- Composing navigators
 
 ---
+### Data
+- Not all apps are self-contained
+- Any app that wants to rely on information not computed
+within the app needs to get it from somewhere
+  - Communicate with other resources using an API
 
-### Previous Lecture [06_UserInputDebugging](https://github.com/alvinng222/cs50m/tree/06_UserInputDebugging). 
-- User input with TextInput
-- Simple input validation
-- `KeyboardAvoidingView`
-- Debugging
-  - Errors and warnings
-  - Chrome Developer Tools
-  - React Native Inspector with react-devtools
-- Installing external libraries with npm
+---
+### API
+- “Application Programming Interface”
+- A defined set of ways with which a resource can be
+interacted
+  - React components have APIs; you interact by passing props
+  - A class has an API; you interact by invoking methods
+  - A web service has an API; you interact by making network requests
+- Providers often get to decide on the API, but sometimes
+it’s decided for them
+- Consumers have to read docs to know how to use an API
 
-[:top: Top](#top)
-### What is navigation?
-- Navigation is a broad term that covers topics related to how you move
-between screens in your app
-- Web navigation is oriented around URLs
-- Mobile apps do not use URLs for navigating *within* the app
-- Navigation APIs completely different on iOS and Android
-  - Several React Native libraries provide a platform agnostic alternative
-  - We will talk about one of them today, React Navigation 
+---
+### randomuser.me/ documentation
+- https://randomuser.me/documentation
 
-* Linking into a mobile app with a URL is known as deep linking:
-https://v2.reactnavigation.org/docs/deep-linking.html
+---
+an API that is free in the cloud
 
-myNote: https://reactnavigation.org/docs/getting-started
+lets say copy their `https://randomuser.me/api/?results=5000`
+and copy and pass on new tab, will get a bunch of this stuff called JSON.
+Or in other words, JavaScript Object Notation.
 
-
-### React Navigation and alternatives
-- Two distinct approaches
-  1. Implement mainly in JavaScript with React
-  2. Implement mostly in native, expose an interface to JavaScript for existing
-native navigation APIs
-- React Navigation takes approach #1
-* Read more at https://v2.reactnavigation.org/docs/pitch.html and
-https://v2.reactnavigation.org/docs/alternatives.html
-
-### Install React Navigation
-- `npm install react-navigation@2.0.0-beta.5 --save`
-- This will install the latest *pre-release* version at the time of writing. Typically
-you would just write npm install react-navigation --save to use the
-latest *stable* version.
-- If you refer back to this in the future, keep in mind that this material is all
-specific to the 2.x series of releases.
-
-### Navigators, routes, and screen components
-- A navigator is a component that implements a navigation pattern (eg: tabs)
-- Each navigator must have one or more routes.
-  - A navigator is a parent of a route.
-  - A route is a child of a navigator.
-- Each route must have a name and a screen component.
-  - The name is usually unique across the app
-  - The screen component is a React component that is rendered when the route
-is active.
-  - The screen component can also be another navigator.
-
-[:top: Top](#top)
-### Switch Navigator
-- Display one screen at a time
-- Inactive screens are unmounted
-- The only action a user can take to switch from one route to another
-
-:exclamation: :point_right: : myNote: `createSwitchNavigator` not available on latest version.
-
-### Creating a navigator
-~~~
-import { createSwitchNavigator } from 'react-navigation';
-const AppNavigator = createSwitchNavigator({
-  "RouteNameOne": ScreenComponentOne,
-  "RouteNameTwo": ScreenComponentTwo,
-});
-~~~
-
-### Rendering a navigator
-~~~
-//const AppNavigator = createSwitchNavigator({
-//  "RouteNameOne": ScreenComponentOne,
-//  "RouteNameTwo": ScreenComponentTwo,
-//});
+{"results":[{"gender":"female","name":{"title":"Mrs","first":"Isabella","last":"Thomsen"},"location":{"street":{"number":5813,"name":"Søndergårds Haver"},"city":"Assens", ...
  
-export default class App extends React.Component {
-  render() {
-    return <AppNavigator />
-  }
-}
-~~~
-- `createSwitchNavigator` is a function that returns a React component
-- We render the component in our root App component. Usually we only explicitly
-render one navigator per app because navigators are composable.
+And if we scroll down, we'll see 5,000 other randomlygenerated users.
 
-### Higher order components
-- `createSwitchNavigator` is a Higher Order Component: it is a function that
-returns a React component.
-- “A higher-order component (HOC) is an advanced technique in React ***for reusing component logic***.”
-- This is similar to higher order functions, which are functions that either take
-functions as arguments or return a function as a result.
-* Read more at https://reactjs.org/docs/higher-order-components.html
+If we only wanted females, we can do gender=female.
+`https://randomuser.me/api/?gender=female`
 
-### Navigating to another route
-~~~
-class ScreenComponentOne extends React.Component {
-  render() {
-    return (
-      <Button
-        title="Go to two"
-        onPress={() => this.props.navigation.navigate('RouteNameTwo')}
-      />
-    );
-  }
-}
-~~~
+So if we want to get the same results back every time, we can pass in a seed,
+`https://randomuser.me/api/?seed=foobar`
 
-### The navigation prop
-  - **`navigate(..)`**
-  - `goBack(..)`
-  - `setParams(..)`
-  - `getParam(..)`
-  - `dispatch(..)`
-  - `isFocused(..)`
-  - `addListener(..)`
-  - `state`
-* The navigation prop is passed in to the screen component for each route.
-- Full reference: https://v2.reactnavigation.org/docs/navigation-prop.html
+We can determine the format, so we can get JSON or CSV, YAML, XML.
+
+And lastly, we can determine nationalities.
+`https://randomuser.me/api/?nat=gb`
 
 [:top: Top](#top)
-### Switch Navigator Example
-[01:26] to  [02:16]
-
-lecture:
-```
-~/s50/react-native-course/lexture/6-navigation exp start --ios
-(open up Visual Studio Code)
-~/s50/react-native-course/lexture/6-navigation code.
-~/s50/react-native-course/lexture/6-navigation mkdir examples
-~/s50/react-native-course/lexture/6-navigation touch examples/0-Switch.js
-```
-
-.new file **0-Switch.js**
-``` jsx
-import React from 'React';
-import { createSwitchNavigator } from 'React-navigation';
-
-export default class App extends React.Component{
-  render() {
-    // return ..
-  }
-}
-```
-0-Switch.js
----
-``` jsx
-import React from 'react';
-import { Button, View } from 'react-native'; // .02
-import { createSwitchNavigator } from 'react-navigation';
-
-class ScreenComponentOne extends React.Component {
-  render () {
-    return (
-      <View style={{flex: 1, alignItems: 'center', justifyContent: 'center', borderWidth: 25, borderColor: 'teal'} }>
-        <Button title="Go to screen two" /> 
-      </View>
-    );
-  }
-} // .03
-
-const AppNavigator = createSwitchNavigator({
-  "RouteNameOne": ScreenComponentOne // .03
-}) // .02
-
-export default class App extends React.Component {
-  render() {
-    return ({})
-  }
-}
-```
-use yarn instead of npm (But, im using Snack.. )
-```
-~/s50/react-native-course/lexture/6-navigation yarn add react-navigator@2.0.0-beta.3
-```
-.04 update 0-Switch.js
-``` jsx
-export default class App extends React.Component {
-  render() {
-    return <AppNavigator />
-  } // .04
-}
-```
-#### myNote: on installing `react-navigation@2.0.0-beta.5`   
-after I init and install Expo, with template: expo-template-tabs  
-https://github.com/alvinng222/cs50m/tree/master  > init and run Jun16.
-
-and tested with `import { createSwitchNavigator } from 'React-navigation';` on App.js first, if error than
-```
-    Ts-MacBook-Pro:Jun16 twng$ vim App.js
-    Ts-MacBook-Pro:Jun16 twng$ npm install react-navigation@2.0.0-beta.5 --save
-```
-
-
-.04 App.js
-``` jsx
-import Example from './examples/0-Switch';
-export default Example;
-```
-Expo ok, Snack error: 
-The navigation prop is missing for this navigator. In react-navigation v3 and v4 you must set up your app container directly. More info: https://reactnavigation.org/docs/en/app-containers.html
-[02:00]
-
-.05 package.json (for Snack, i revised to)
-``` json
-{
-  "dependencies": {
-    "react-navigation": "2.0.0-beta.5",
-    "react-native-paper": "3.6.0"
-  }
-}
-```
-
-.note: `this.props.navigation.navigate('')` with console.log( `this.props` )
-``` jsx
-        <Button
-          title="Go to screen one"
-          onPress={() => {
-            //console.log('Compo-1', this.props)
-            this.props.navigation.navigate('RouteNameOne');
-          }}
-        />
-```
-console
-```
-Compo-1 
-v {screenProps: undefined, navigation: {…}}
-  > navigation: {state: {…}, dispatch: ƒ, dangerouslyGetParent: ƒ, addListener: ƒ, isFocused: ƒ, …}
-    screenProps: undefined
-  > __proto__: Object
-```
-
-[:top: Top](#top)   
-**my basic screens switch!**   
-.06 ScreenComponentTwo added
-``` jsx
-import React from 'react';
-import { Button, View } from 'react-native'; // .02
-import { createSwitchNavigator } from 'react-navigation';
-
-class ScreenComponentOne extends React.Component {
-  render() {
-    return (
-      <View
-        style={{
-          flex: 1, alignItems: 'center', justifyContent: 'center',borderWidth: 25,
-          borderColor: 'teal',
-        }}>
-        <Button
-          title="Go to screen two" onPress={() => {
-            this.props.navigation.navigate('RouteNameTwo');
-          }} // .06
-        />
-      </View>
-    );
-  }
-} // .03
-
-class ScreenComponentTwo extends React.Component {
-  render() {
-    return (
-      <View
-        style={{
-          flex: 1, alignItems: 'center', justifyContent: 'center',borderWidth: 25,
-          borderColor: 'orange',
-        }}>
-        <Button 
-          title="Go to screen one" onPress={() => {
-            this.props.navigation.navigate('RouteNameOne');
-          }} // .06
-        />
-      </View>
-    );
-  }
-} // .06
-
-const AppNavigator = createSwitchNavigator({
-  RouteNameOne: ScreenComponentOne, // .03
-  RouteNameTwo: ScreenComponentTwo, // .06
-}); // .02
-
-export default class App extends React.Component {
-  render() {
-    return <AppNavigator />
-  } // .04
-}
-```
-[22:02]
-
-### contacts list
-
-from [before/App.js](#beforeappjs)
-
-create new screens/AddContactScreen.js, screens/ContactListScreens
+### Making Network Requests
+- fetch() is polyfilled
+  - It’s not natively part of JavaScript, but it is implemented to match the
+usage of the browser fetch()
+- fetch() expects an URL and optionally some config
+- fetch() returns a Promise, which is fulfilled with a
+Response object
+* https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+* https://developer.mozilla.org/en-US/docs/Web/API/Response
 
 ---
-.07 App.js revisted from before/...
+And so fetch is a function that comes in all browsers,
+
+Google Chorme console,
+Going to do fetch that URL, enter, and I see this thing promise pending.
+```
+fetch('https://randomuser.me/api/?nat=gb')
+  > Promise {<pending>}
+```
+
+### Promises
+- Allows writing asynchronous, non-blocking code
+- Allows chaining callbacks and/or error handlers
+  - .then() - executed after the previous Promise block returns
+  - .catch() - executed if the previous Promise block errors
+* https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+
+---
+*.then(response => console.log(response))*
+```
+fetch('https://randomuser.me/api/?nat=gb').then(response => console.log(response))
+  > Promise {<pending>}
+  v Response {type: "cors", url: "https://randomuser.me/api/?nat=gb", redirected: false, status: 200, ok: true, …}
+    body: (...)
+    bodyUsed: false
+    > headers: Headers {} 
+```
+And if we inspect it, we see a bunch of stuff.
+We see body, bodyUsed false, headers, and in it
+are any headers, ok true, redirected false, status 200, type basic, URL.
+
+#### response.json()
+```
+fetch('https://randomuser.me/api/?nat=gb').then(response => response.json()).then(result => console.log(result))
+  > Promise {<pending>} 
+  > {results: Array(1), info: {…}}
+      > info: {seed: "c32bb1b866df3b53", results: 1, page: 1, version: "1.3"}
+      v results: Array(1)
+        > 0: {gender: "male", name: {…}, location: {…}, email: "tom.ellis@example.com", login: {…}, …} length: 1
+        > __proto__: Array(0)
+      > __proto__: Object
+```
+#### fetch more results
+checked with documentation, we can have results = 50. will be use at .01
+```
+fetch('https://randomuser.me/api/?results=50&nat=gb').then(response => response.json()).then(result => console.log(result))
+  > Promise {<pending>}
+  v {results: Array(50), info: {…}}
+    > info: {seed: "efd7bae302f932e2", results: 50, page: 1, version: "1.3"}
+    > results: (50) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+    > __proto__: Object
+```
+[:top: Top](#top)
+
+### Async/Await
+- Allows writing async code as if it were synchronous
+  - Still non-blocking
+- A function can be marked as async, and it will return a
+Promise
+- Within an async function, you can await the value of
+another async function or Promise
+- Use try/catch to handle errors
+* https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+* https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await
+
+---
+at chrome console, which is same as previous fetch(...). shift-Enter for new line during edting.
 ``` jsx
-import React from 'react';
-import {
-  Button, FlatList, ScrollView, StyleSheet, Text, View,
-} from 'react-native';
-//import { Constants } from 'expo';
-import Constants from 'expo-constants';
-
-import contacts, { compareNames } from './contacts';
-//import ScrollViewContacts from './ScrollViewContacts';
-//import FlatListContacts from './FlatListContacts';
-import SectionListContacts from './SectionListContacts';
-//import AddContactForm from './AddContactForm'; // .07
-
-export default class App extends React.Component {
-  state = {
-    showContacts: true,
-    //showForm: false,  // .07
-    contacts: contacts,
-  };
-
-  addContact = newContact => {
-    this.setState(prevState => ({
-      showForm: false,
-      contacts: [...prevState.contacts, newContact],
-    }));
-  };
-
-  toggleContacts = () => {
-    this.setState(prevState => ({ showContacts: !prevState.showContacts }));
-  };
-
-  sort = () => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.sort(compareNames),
-    }));
-  };
-
-  showForm = () => {
-    this.setState({ showForm: true });
-  };
-
-  render() {
-    if (this.state.showForm)
-      return 
-    return (
-      <View style={styles.container}>
-        <Button title="toggle contacts" onPress={this.toggleContacts} />
-        <Button title="add contact" onPress={this.showForm} />
-        {this.state.showContacts && (
-          <SectionListContacts contacts={this.state.contacts} />
-        )}
-      </View>
-    );
+> async function fetchUsers() {
+    const response = await fetch('https://randomuser.me/api/?results=50&nat=gb')
+    const result = await response.json()
+    console.log(result)
   }
+
+> fetchUsers()
+  > Promise {<pending>}
+  v {results: Array(50), info: {…}}
+    > info: {seed: "8964dd0830addddc", results: 50, page: 1, version: "1.3"}
+    v results: Array(50)
+      > 0: {gender: "male", name: {…}, location: {…}, email: "roberto.mccoy@example.com", login: {…}, …}
+      > 1: {gender: "female", name: {…}, location: {…}, email: "debra.jones@example.com", login: {…}, …}
+      > 2: {gender: "male", name: {…}, location: {…}, email: "wesley.herrera@example.com", login: {…}, …}
+```
+
+So if we wanted to add error handling to this fetchUsers, what we would do
+``` jsx
+async function fetchUsersWithErrorHandling() {
+    try {
+        const response = await fetch('https://randomuser.me/api/?results=50&nat=gb')
+        const result = await response.json()
+        console.log(result)
+    } catch (err) {
+        console.error(err)
+    }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: Constants.statusBarHeight,
-  },
-});
+fetchUsersWithErrorHandling()
 ```
-.new file /screen/**AddContactScreen.js**   
-.07 from [after/screen/AddContactScreen.js](#afterscreensaddcontactscreenjs)
-``` jsx
-import React from 'react';
-import AddContactForm from '../AddContactForm';
+[:top: Top](#top)
 
-export default class AddContactScreen extends React.Component {
-  static navigationOptions = {
-    headerTitle: 'New Contact',
-  };
+installed source code [/before](/before)
 
-  handleSubmit = formState => {
-    // this.props.screenProps.addContact(formState);  // .07
-    this.props.navigation.navigate('ContactList');
-  };
-
-  render() {
-    return <AddContactForm onSubmit={this.handleSubmit} />;
-  }
-} // .07
+##### for Expo Cli
+react-navigation@2.0.0
 ```
-.myNote AddContactForm from /after/AddContactForm.js
-
-.new file /screen/**ContactListScreen.js**   
-.07 from [after/screens/ContactDetailsScreen.js](#afterscreenscontactdetailsscreenjs)
-``` jsx
-import React from 'react';
-import { Button, View, StyleSheet } from 'react-native';
-import Constants from 'expo-constants'; //
-
-import SectionListContacts from '../SectionListContacts';
-
-export default class ContactListScreen extends React.Component {
-  state = {
-    showContacts: true,
-  };
-
-  toggleContacts = () => {
-    this.setState(prevState => ({ showContacts: !prevState.showContacts }));
-  };
-
-  // handleSelectContact = contact => {
-  //  this.props.navigation.push('ContactDetails', contact);
-  //};
-
-  showForm = () => {
-    this.props.navigation.navigate('AddContact')
-  };
-
-  render() {
-    return <View />; {/**.10 */}
-    return (
-      <View style={styles.container}>
-        <Button title="toggle contacts" onPress={this.toggleContacts} />
-        <Button title='add contact' onPress={this.showForm} />
-        {this.state.showContacts && (
-          <SectionListContacts contacts={this.props.screenProps.contacts} />
-        )}
-      </View>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-}); // .07 [24.09]
+$ npm install react-navigation@2.0.0 --save
 ```
-:+1: to temporary blank view
-`**render() { return <View />; ... **`
-
-
-on App.js removed those imports, state/showContacts, toggleContacts, sort, showForm, render(){... to return/**/,   
-added createSwitchNavigator, const AppNavigator, render(){return <AppNavigator />}
- 
-.09 App.js revised with  AppNavigator
-``` jsx
-import React from 'react'; //
-import {Button, FlatList, ScrollView, StyleSheet, Text, View} from 'react-native';
-import Constants from 'expo-constants'; //import { Constants } from 'expo';
-import contacts, { compareNames } from './contacts';
-import { createSwitchNavigator } from 'react-navigation';
-import AddContactScreen from './screens/AddContactScreen'
-import ContactListScreen from './screens/ContactListScreen'
-
-const AppNavigator = createSwitchNavigator({
-  AddContact: AddContactScreen,
-  ContactList: ContactListScreen,
-}, {
-  initialRouteName: 'ContactList', 
-})
-
-export default class App extends React.Component {
-  state = {
-    contacts: contacts,
-  };
-
-  addContact = newContact => {
-    this.setState(prevState => ({
-      showForm: false,
-      contacts: [...prevState.contacts, newContact],
-    }));
-  };
-
-  render() {
-    return <AppNavigator />;
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: Constants.statusBarHeight,
-  },
-});
-```
-using react-navigation 2.0.0, for Snack to work
+##### for Snack   
+.01 package.json, changed json, 
 ``` json
 {
   "dependencies": {
     "react-native-paper": "3.6.0",
-    "react-navigation": "2.0.0-beta.5",
+    "react-native-vector-icons": "^4.5.0",
+    "react-navigation": "2.0.0",
+    "react-native-vector-icons/Ionicons": "latest"
   }
 }
 ```
-now the mobile shown something, a *blank Screen!*
 
-[:top: Top](#top)
-[25:50]
-### screenProps
-~~~
+from [before/App.js](#beforeappjs)  [03:30]
+
+.01 App.js, to fetch data. not working, but shown Array(50) on console.log
+``` jsx
 export default class App extends React.Component {
-  render() {
-    return <AppNavigator screenProps={/* object here */} /> 
+  state = {
+    contacts: null, // .01
   }
-}
-~~~
-- Made available to every screen component in the navigator.
-- Perfectly fine for very small applications and prototyping but inefficient for most
-meaningful applications - **every route in your app will re-render when
-screenProps changes**. Use a state management library or the React Context API
-instead.
 
-.10 screenProps at App.js
-``` jsx
-  render() {
-    return <AppNavigator screenProps={{ contacts: this.state.contacts }}/>;
-  } // .10
+  componentDidMount() {
+    fetch('https://randomuser.me/api/?results=50&nat=gb')
+      .then(response => response.json())
+      .then(({results}) => {
+        console.log(results)
+        this.setState({contacts: results})
+        })
+  } // .01
 ```
-.10b ContactListScreen.js delete the *blank* View. Now the mobile screens shown contacts.
+Error due to, checked from console, the `name`  is an object. Need to Transforming Data, later...
+
+.03 app.js, using Async/Await. atleast it shown data from console.log
 ``` jsx
+export default class App extends React.Component {
+  state = {
+    contacts: null, // .01
+  }
+
+  componentDidMount() {
+    this.fetchUsers()
+  } // .03
+
+  fetchUsers = async () => {
+    const response = await fetch('https://randomuser.me/api/?results=50&nat=gb')
+    const {results} = await response.json()
+    console.log(results)
+    this.setState({contacts: results})
+  } // .02 .03
+  ...
+```
+[:top: Top](#top)
+### Transforming Data
+- Sometimes the shape of the data returned by an API isn’t
+ideal
+  - Where should we do this “transformation?”
+- Doing it early gives us an abstraction barrier and is more
+efficient
+
+---
+.new file
+.04 **api.js**
+``` jsx
+export const fetchUsers = async () => {
+  const response = await fetch('https://randomuser.me/api/?results=50&nat=gb');
+  const { results } = await response.json();
+  return results
+}; // .02 .03 .04
+```
+.4b for app.js
+``` jsx
+ //import contacts from './contacts'
+ import { fetchUsers } from './api'
+ ...
+  componentDidMount() {
+    fetchUsers().then(results => this.setState({contacts: results}))
+  } // .03 .04b
+  /* or */
+  async getUsers = () => {
+    const results = await fetchUsers()
+    this.setState({contacts: results})
+  } // .04b
+```
+.4c app.js we use the async. > it shown TypeError: Cannot read property 'toUpperCase' of undefined.
+``` jsx
+ //import contacts from './contacts'
+ import { fetchUsers } from './api'
+ ...
+  componentDidMount() {
+    this.getUsers()
+  } // .03 .04b .04c
+
+  getUsers = async () => {
+    const results = await fetchUsers()
+    this.setState({contacts: results})
+  } // .04b .04c
+```
+.4d api.js, we can do backticks, which allows us to create a string literal and within it. 
+Now, it fixed the problem. :+1:
+``` jsx
+const processContact = contact => ({
+  name: `${contact.name.first} ${contact.name.last}`,
+  phone: contact.phone,
+}) //.04d
+
+export const fetchUsers = async () => {
+  const response = await fetch('https://randomuser.me/api/?results=50&nat=gb');
+  const { results } = await response.json();
+  return results.map(processContact) // .04d
+}; // .02 .03 .04 
+```
+[:top: Top](#top)
+
+[46:50] Break!
+### Authentication
+- A process to determine if a user is who they say they are
+- Generally done using a name and password
+_ But how do we send the name and password in the
+request?
+
+---
+### HTTP Methods
+- GET
+  - The default in browsers and in fetch()
+  - Add parameters in the url by appending a **?** and chaining key=value
+pairs separated by **&**
+- POST
+  - Submit data (e.g. a form) to an endpoint
+  - Parameters are included in the request body
+  - If POSTing JSON, must have content-type: application/json
+header and body must be JSON string
+
+---
+check on the ./authServer/README.md for this server that provide username: `username` and password: `password`.  
+Use this server as api.
+
+.05 to install this server `authServer`. if we visit this `http://localhost:8000`, we can see it run. [47:53]
+```
+$ authServer $  ls
+README.md	index.js	package.json
+$ authServer $  cat README.md
+$ authServer $ npm install
+$ authServer $ npm start
+$ authServer $ exit (if error due to background is running other)
+$ authServer $ npm start
+Listening at http://localhost:8000
+```
+
+- GET
+  - The default in browsers and in fetch()
+  - Add parameters in the url by appending a **?** and chaining key=value
+pairs separated by **&**
+
+eaxmples of passing parameters using ? & & :
+`https://randomuser.me/api/?nat=gb&results=10&gender=female`
+
+- POST
+  - Submit data (e.g. a form) to an endpoint
+  - Parameters are included in the request body
+  - If POSTing JSON, must have content-type: application/json header and body must be JSON string
+
+to send a post request to our API, in Chrome's console [56:43]
+```
+console.clear()
+fetch('http://localhost:8000')
+  > VM202:1 GET http://localhost:8000/ 404 (Not Found)
+...
+fetch('http://localhost:8000', {method: 'POST'})
+  > VM368:1 POST http://localhost:8000/ 400 (Bad Request)
+```
+click on the Network > `localhost` > 
+```
+v General
+    Request URL: http://localhost:8000/
+    Request Method: POST
+    Status Code: 400 Bad Request
+    Remote Address: [::1]:8000
+    ...
+```
+
+
+.06 LoginScreen.js [59:43],   
+just able to key in with/without the correct username and password.
+``` jsx
+import React from 'react'
+import {Button, View, StyleSheet, TextInput} from 'react-native' //.06
+
+export default class LoginScreen extends React.Component {
+  state = {
+    username: '',
+    password: '',
+  } // .06
+
+  _login = () => {
+    this.props.navigation.navigate('Main')
+  }
+
+  handleUsernameUpdate = username => {
+    // this.setState({username: username}) // use shorthoad below
+    this.setState({username})
+  } // .06
+
+  handlePasswordUpdate = password => {
+    // this.setState({username: username}) // use shorthoad below
+    this.setState({password})
+  } // .06
+
   render() {
-    // return <View />; {/**.10b  delete**/}
     return (
       <View style={styles.container}>
+        <TextInput 
+          placeholder="Username" 
+          value={this.state.username}
+          onChangeText={this.handleUsernameUpdate} // .06
+        />
+        <TextInput 
+          placeholder="password"
+          value={this.state.password}
+          onChangeText={this.handlePasswordUpdate} // .06
+        />
+        <Button title="Press to Log In" onPress={this._login} />
+      </View>
+    )
+  } // .06
+}
+
+const styles = StyleSheet.create({
+  container: {justifyContent: 'center',flex: 1,},
+  //text: {textAlign: 'center',},
+})
+```
+.07 LoginScreen.js add in localhost, but didnt work!! [1:05:00]
+``` jsx
+  _login = () => {
+    fetch('http://localhost:8000', {
+      method: 'POST',
+      header: {'content-type': 'application/JSON'},
+      body: JSON.stringify({
+        username: this.state.username, 
+        password: this.state.password,
+      }),
+    }).then(res => console.log(res))
+    this.props.navigation.navigate('Main')
+  } // .06 .07
 ```
 
-.11 updating of contacts, App.js
+#### Error shown from my console: 
+Access to fetch at 'http://localhost:8000/' from origin 'http://localhost:19006' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
+
+
+
+[:top: Top](#top)
+### HTTP Response Codes
+- Every network response has a “code” associated with it
+  - 200: OK
+  - 400: Bad Request
+  - 403: Forbidden
+  - 404: Not Found
+  - 500: Internal Server Error
+  - 418: I’m a teapot
+* https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+
+---
+my check on the Dev Tools, Network > All, the Local shown 404.  
+Click on the LocalHost > Header show status Code: 404.
+
+`if (response.ok)` is similar to    
+`if (response.status === 400 || response.status === 401 || response.status === 402 || response.status === 403)`  
+
+.08 loginscreen.js [1:22:40] > it dont work! Failed to load resource: net::ERR_FAILED
 ``` jsx
+import React from 'react'
+import {Button, View, StyleSheet, Text, TextInput} from 'react-native' //.06 .08b
+
+export default class LoginScreen extends React.Component {
+  state = {
+    username: '',
+    password: '',
+  } // .06
+
+  _login = async () => { // .08
+    const response = await fetch('http://localhost:8000', { // .08
+      method: 'POST',
+      header: {'content-type': 'application/JSON'},
+      body: JSON.stringify({
+        username: this.state.username, 
+        password: this.state.password,
+      }),
+    })
+
+    if (response.ok) {
+      this.props.navigation.navigate('Main')
+      return
+    } // .08
+
+    const errMessage = await response.text()
+    this.setState({err: errMessage})
+  } // .06 .07 .08
+
+  handleUsernameUpdate = username => {
+    // this.setState({username: username}) // use shorthoad below
+    this.setState({username})
+  } // .06
+
+  handlePasswordUpdate = password => {
+    this.setState({password})
+  } // .06
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <TextInput 
+          placeholder="Username" 
+          value={this.state.username}
+          onChangeText={this.handleUsernameUpdate} // .06
+        />
+        <TextInput 
+          placeholder="password"
+          value={this.state.password}
+          onChangeText={this.handlePasswordUpdate} // .06
+        />
+        <Button title="Press to Log In" onPress={this._login} />
+      </View>
+    )
+  } // .06
+}
+
+const styles = StyleSheet.create({
+  container: {justifyContent: 'center',flex: 1,},
+  //text: {textAlign: 'center',},
+})
+```
+``` jsx
+import {Button, View, StyleSheet, Text, TextInput} from 'react-native' //.06 .08b
+...
+    return (
+      <View style={styles.container}>
+        <Text style={styles.error}>{this.state.err}</Text> {/*.08b*/}
+...
+const styles = StyleSheet.create({
+  container: {justifyContent: 'center',flex: 1,},
+  //text: {textAlign: 'center',},
+  error: {
+    textAlign: 'center',
+    color: 'red',
+  }, // .08b
+})
+```
+.09 LoginScreen.js none capitalise, and invinsible password
+``` jsx
+        <TextInput 
+          placeholder="Username" 
+          value={this.state.username}
+          onChangeText={this.handleUsernameUpdate} // .06
+          autoCapitalize="none"  //.09
+        />
+        <TextInput 
+          placeholder="password"
+          value={this.state.password}
+          onChangeText={this.handlePasswordUpdate} // .06
+          secureTextEntry // short-hand .09
+          //secureTextEntry="true" //.09
+        />
+```
+[:top: Top](#top)
+
+[1:30:05]
+
+.10 api.js transfer from loginScreen.js, and edit
+``` jsx
+...
+}; // .02 .03 .04 
+
+export const login = async (username, password) => { 
+      const response = await fetch('http://localhost:8000', { 
+      method: 'POST',
+      header: {'content-type': 'application/JSON'},
+      body: JSON.stringify({username, password}),
+    })
+
+    if (response.ok) {
+      return true
+    } 
+
+    const errMessage = await response.text()
+    throw new Error(errMessage)
+  } // .10
+```
+.10 cont loginScreen.js
+``` jsx
+import {login} from '../api'
+...
+
+  _login = async () => {
+    try {
+      const success = await login(this.state.username, this.state.password)
+      this.props.navigation.navigate('Main')
+    } catch (err) {
+      const errMessage = err.message
+      this.setState({err: errMessage})
+    }
+  } // .10
+
+/*
+  _login = async () => { // .08
+  ...
+*/ // .10
+
+  handleUsernameUpdate = username => {
+  ...
+```
+Still unable to login on Web, and device !!
+
+
+---
+Source Code
+---
+[:top: Top](#top)
+
+### before/...
+#### before/App.js
+Files ./after/App.js and ./before/App.js differ
+see my note, using workable app.js, due to createBottomTabNavigator error
+``` jsx
+import React from 'react'
+import {StatusBar, View} from 'react-native'
+import {
+  createStackNavigator,
+  createSwitchNavigator,
+  createBottomTabNavigator,
+} from 'react-navigation'
+import Ionicons from 'react-native-vector-icons/Ionicons'
+
+import AddContactScreen from './screens/AddContactScreen'
+import SettingsScreen from './screens/SettingsScreen'
+import ContactListScreen from './screens/ContactListScreen'
+import ContactDetailsScreen from './screens/ContactDetailsScreen'
+import LoginScreen from './screens/LoginScreen'
+import contacts from './contacts'
+
+const MainStack = createStackNavigator(
+  {
+    ContactList: ContactListScreen,
+    ContactDetails: ContactDetailsScreen,
+    AddContact: AddContactScreen,
+  },
+  {
+    initialRouteName: 'ContactList',
+    navigationOptions: {
+      headerTintColor: '#a41034',
+      headerStyle: {
+        backgroundColor: '#fff',
+      },
+    },
+  }
+)
+
+MainStack.navigationOptions = {
+  tabBarIcon: ({focused, tintColor}) => (
+    <Ionicons name={`ios-contacts${focused ? '' : '-outline'}`} size={25} color={tintColor} />
+  ),
+}
+
+const MainTabs = createBottomTabNavigator(
+  {
+    Contacts: MainStack,
+    Settings: SettingsScreen,
+  },
+  {
+    tabBarOptions: {
+      activeTintColor: '#a41034',
+    },
+  }
+)
+
+const AppNavigator = createSwitchNavigator({
+  Login: LoginScreen,
+  Main: MainTabs,
+})
+
+export default class App extends React.Component {
+  state = {
+    contacts,
+  }
+
+  addContact = newContact => {
+    this.setState(prevState => ({
+      contacts: [...prevState.contacts, newContact],
+    }))
+  }
+
   render() {
     return (
       <AppNavigator
         screenProps={{
           contacts: this.state.contacts,
           addContact: this.addContact,
-        }} // .11
-      />
-    )
-  } // .10 
-```
-AddContactScreen.js, now the mobile screen work with contacts!
-```jsx
-  handleSubmit = formState => {
-    this.props.screenProps.addContact(formState);  // .07 .11
-    this.props.navigation.navigate('ContactList');
-  };
-```
-[:top: Top](#top) 
-[30:40]
-
----
-### Stack Navigator
-- Display one screen at a time
-- The state of inactive screens is **maintained** and they remain mounted
-- **Platform-specific layout, animations, and gestures**
-  - Screens are stacked on top of each other
-  - iOS: screens slide in from right to left, can be dismissed with left to right
-gesture. Modal screens slide in from bottom to top, can be dismissed with top
-to bottom gesture.
-  - Android: screens fade in on top of each other, no dismiss gesture. Hardware
-back button dismisses the active screen.
-- Users can push and pop items from the stack, replace the current item, and
-various other
-
-### Creating a StackNavigator
-~~~
-import { createStackNavigator } from 'react-navigation';
-
-const AppNavigator = createStackNavigator({
-  "RouteNameOne": ScreenComponentOne,
-  "RouteNameTwo": ScreenComponentTwo,
-});
-~~~
-Creating a Stack Navigator is very similar to Switch.
-simply swap out the word Switch for Stack.
-
-### Navigating to another route
-~~~
-class ScreenComponentOne extends React.Component {
-  render() {
-    return (
-      <Button
-        title="Go to two"
-        onPress={() => this.props.navigation.navigate('RouteNameTwo')}
-      />
-    );
-  }
-}
-~~~
-
-### Returning to the previously active route
-~~~
-class ScreenComponentThree extends React.Component {
-  render() {
-    return (
-      <Button
-        title="Go back"
-        onPress={() => this.props.navigation.goBack()}
-      />
-    );
-  }
-}
-~~~
-There is a small difference here in that Stack actually
-supports a tracking history.
-So when you call goBack, it will pop the topmost screen
-from the stack and transition back to the screen before it.
-
-[:top: Top](#top)
-### StackNavigator Example
-
-.12 example on App.js
-``` jsx
-// import Example from './examples/0-Switch'; // .12
-import Example from './examples/1-Stack'; // .12
-export default Example;
-/*  ... */
-```
-new 1-Stack.js copied from 0-Switch.js, just changed to createStackNavigator
-``` jsx
-import { createStackNavigator } from 'react-navigation'; // .12
-...
-const AppNavigator = createStackNavigator({ // .12
-...
-```
-should be easily *swipe* back from next screen. (but not mine).
-And is the ability to customize the UI that surrounds the Stack Navigator.
-
-### Configuring navigationOptions
-- headerTitle
-- headerStyle
-- headerTintColor
-- headerLeft
-- headerRight
-* Full list: https://v2.reactnavigation.org/docs/stack-navigator.html#navigationoptions...
-
-.13 1-Stack.js added the headerTitle
-``` jsx
-class ScreenComponentOne extends React.Component {
-  static navigationOptions = {
-    headerTitle: 'First screen',
-    headerTintColor: 'teal',
-    headerStyle: {
-      backgroundColor: '#ccc'
-    }
-  }; // .12
-  ...
-class ScreenComponentTwo extends React.Component {
-  static navigationOptions = {
-    headerTitle: 'Screen the second',
-  }; // .12
-  ...
-```
-[:top: Top](#top)
-### Using params to pass state between routes
-- navigate with params
-~~~
-  this.props.navigation.navigate('RouteName', {
-    paramName: 'value-of-param'
-  });
-~~~
-- setParams to update params for the route
-~~~
-  this.props.navigation.setParams({
-    paramName: 'new-value-of-param',
-  });
-~~~
-- getParam to read a param
-~~~
-  this.props.navigation.getParam('paramName', 'default-value');
-~~~
-
-.13 third screen with random numbers, 1-Stack.js
-``` jsx
-import React from 'react';
-import { Button, Text, View } from 'react-native'; //.13
-import { createStackNavigator } from 'react-navigation'; // .12
-
-function randomNumber() {
-  return Math.floor(Math.random() * 10);
-} // .13
-
-class ScreenComponentOne extends React.Component {
-  static navigationOptions = {
-    headerTitle: 'First screen', headerTintColor: 'teal',
-  }; // .12
-
-  render() {
-    return (
-      <View
-        style={{
-          flex: 1, alignItems: 'center', justifyContent: 'center',borderWidth: 25, borderColor: 'teal',
-        }}>
-        <Button
-          title="Go to screen two" 
-          onPress={() => { this.props.navigation.navigate('RouteNameTwo');}}
-        />
-      </View>
-    );
-  }
-}
-
-class ScreenComponentTwo extends React.Component {
-  static navigationOptions = { headerTitle: 'Screen the second',}; // .12
-  render() {
-    return (
-      <View
-        style={{
-          flex: 1, alignItems: 'center', justifyContent: 'center',borderWidth: 25, borderColor: 'orange',
-        }}>
-        <Button 
-          title="Go to screen three" 
-          onPress={() => {
-            this.props.navigation.navigate('RouteNameThree', {
-              number: randomNumber(), 
-              }); // .13
-          }}
-        />
-      </View>
-    );
-  }
-}
-
-class ScreenComponentThree extends React.Component {
-  static navigationOptions = { headerTitle: 'TODO', } // .13
-  render() {
-    return (
-      <View
-        style={{
-          flex: 1, alignItems: 'center', justifyContent: 'center',borderWidth: 25, borderColor: 'purple',
-        }}>
-        <Text style={{ fontSize: 25 }}>
-          {this.props.navigation.getParam('number')} {/*.13 */}
-        </Text>
-        <Button
-          title="Go back" 
-          onPress={() => {
-            this.props.navigation.goBack(); // .13
-          }}
-        />
-      </View>
-    );
-  }
-} // .13
-
-const AppNavigator = createStackNavigator({ // .12
-  RouteNameOne: ScreenComponentOne, 
-  RouteNameTwo: ScreenComponentTwo, 
-  RouteNameThree: ScreenComponentThree, 
-});
-
-export default class App extends React.Component {
-  render() {
-    return <AppNavigator />
-  }
-}
-```
-> shown that the screen with title, and able to slide,  not on my andriod phone.
-
-.14 setParams. And so we're passing in random numbers every time we go to that screen.
-``` jsx
-  static navigationOptions = { headerTitle: 'TODO', } // .13
-  ...
-        <Button
-          title="New number" 
-          onPress={() => {
-            this.props.navigation.setParams({ number: randomNumber() }); //.13.14 
-          }}
-        />
-        <Button
-          title="Go back" 
-        ...
-```
-
-.15 can pass data between the header of your component and the actual screen component itself.
-And so we know that, since we have that, we can say navigation getParam,
-and get the parameter that's passed in, and use it inside of our title.   
- note using *back-tick*  `` ` ``.
-``` jsx
-class ScreenComponentThree extends React.Component {
-  static navigationOptions = ({ navigation }) => { // .15
-    return {
-      headerTitle: `Number: ${navigation.getParam('number')}`, 
-    } // .15
-  } // .13
-  render() {
-    // this.props.navigation //.15
-    return (
-      <View
-      ...
-```
-
-.16 `HeaderLeft`, `HeaderRigth` add button to the header
-add on ScreenComponentTwo
-``` jsx
-class ScreenComponentTwo extends React.Component {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerTitle: 'Screen the second',
-      headerRight: <Button title="Press me" onPress={() => alert('pressed')} />
-    } // .16
-  }; // .12
-```
-
-.17 we could make this say navigation.navigate RouteNameThree.
-``` jsx
-class ScreenComponentTwo extends React.Component {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerTitle: 'Screen the second',
-      headerRight: (
-        <Button
-          title="Press me"
-          onPress={() => navigation.navigate('RouteNameThree', { number: 11 })
-          } // .17
-        />
-      ),
-    }; // .16
-  }; // .12
-```
-
-.18 change `headerTitle` with Button
-``` jsx
-class ScreenComponentTwo extends React.Component {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerTitle: (
-        <Button title="My title button" onPress={() => alert('title')} />
-      ), // .18
-      headerRight: (
-      ...
-```
-[:top: Top](#top)
-### break time
-~~~
-    // It's time for us to take a short break
-    this.props.navigation.navigate('BreakTime');
-    // Break time is over
-    this.props.navigation.goBack();
-~~~
----
-[5:00]
-
-.19 App.js contacts, using Stack Navigator,
-add contact, it pushes a screen
-``` jsx
-...
-import { createStackNavigator } from 'react-navigation'; // .19
-import AddContactScreen from './screens/AddContactScreen';
-import ContactListScreen from './screens/ContactListScreen';
-
-const AppNavigator = createStackNavigator( // .19
-  {
-    AddContact: AddContactScreen,
-    ContactList: ContactListScreen,
-```
-.20 ContactListScreen.js.  
- just show the 'Contacts' in the header,
-``` jsx
-export default class ContactListScreen extends React.Component {
-  static navigationOptions = {
-    headerTitle: 'Contacts',
-  } // .20
-
-  state = {
-  ...
-```
- and AddContactScreen.js.
- ``` jsx
- export default class AddContactScreen extends React.Component {
-  static navigationOptions = {
-    headerTitle: 'Add Contact',
-  }; // .20
-
-  handleSubmit
-  ...
- ```
- 
-### Add button to header with navigationOptions
-- headerLeft
-- headerRight
-* Full list: https://v2.reactnavigation.org/docs/stack-navigator.html#navigationoptions...
-
- .21 ContactListScreen, Add Button.  
-``` jsx
-    headerRight: <Button title="Add"  onPress={() => {} }/>
-``` 
-it donest do any thing. ..
-
-So we can upgrade that by turning 'navigation' into a dynamic navigation options,
-... And what we can do is, we can put parentheses around here
-to signify that this is a function that's returning
-this object of navigation options.
-
-ContactListScreen, added navigation (things)
-``` jsx
-  static navigationOptions = ({ navigation }) => ({ // .21
-    headerTitle: 'Contacts',
-    headerRight: (
-      <Button
-        title="Add"
-        onPress={() => {
-          navigation.navigate('AddContact');
         }}
       />
-    ),
-  }); // .20 .21
-```
-.22 Buttons deleted which dont need
-``` jsx
-  render() {
-    return (
-      <View style={styles.container}>
-        {//.22 <Button title="toggle contacts" onPress={this.toggleContacts} />
-        //.22 <Button title="add contact" onPress={this.showForm} />
-        }
-        {this.state.showContacts && (
-          <SectionListContacts contacts={this.props.screenProps.contacts} />
-        )}
-      </View>
-    );
-  }
-```
-[:top: Top](#top)
-### (jumps to new screen)
-~~~
-// Jump to a screen, identified by route name
-navigate('MyRouteName', { paramName: 'param-value' });
-// “Push” a new screen, even if it already is in the stack
-push('MyRouteName');
-~~~
-
-create new ./screens/ContactDetailsScreen.js    
-So now let's make it so that when you click on a contact,
-you can actually go into a new Contact Details screen.
-
-.23 App.js revised for ContactDetailsScreen
-``` jsx
-import ContactDetailsScreen from './screens/ContactDetailsScreen'; // .23
-
-const AppNavigator = createStackNavigator( // .19
-  {
-    AddContact: AddContactScreen,
-    ContactList: ContactListScreen,
-    ContactDetails: ContactDetailsScreen, // .23
-  }, 
-```
-.new file **ContactDetailsScreen.js** , not doing anything yet till .24
-``` jsx
-import React from 'react';
-import {Button, Text, View } from 'react-native'
-
-export default class ContactDetailsScreen extends React.Component {
-  render() {
-    return (
-      <View>
-        <Text>Phone # coming soon</Text>
-        <Button title="Go to random contact" onPress={this._goToRandom} />
-      </View>
     )
   }
-
-  _goToRandom= () => {
-    //todo_
-  }
-} // .23
-```
-
-ContactListsScreens.js   revised for ContactDetailsScreen.  [[54.40]   
-``` jsx
-  render() {
-    return (
-      <View style={styles.container}>
-        {this.state.showContacts && (
-          <SectionListContacts 
-            contacts={this.props.screenProps.contacts}
-            onSelectContact={() => {}}
-            />
-        )} 
-      </View>
-    );
-  }
-```
-
-SectionListContacts.js [[55:12]
-``` jsx
-import Row from './Row';
-//.24 const renderItem = ({ item }) => <Row {...item} />;
-const renderSectionHeader = ({ section }) => <Text>{section.title}</Text>;
-
-const SectionListContacts = props => {
-  const renderItem = ({ item }) => (
-    <Row 
-      {...item} 
-      onSelectContact={contact => {
-        //debugger; // .24f
-        props.onSelectContact(contact);
-      }} // .24 .24e
-    />
-  );
-
-```
-
-Row.js TouchableOpacity  [56:12]
-``` jsx
-import { TouchableOpacity, StyleSheet, Text, View } from 'react-native'; // .24
-...
-const Row = props => (
-  <TouchableOpacity
-    style={styles.row}
-    onPress={() => {
-      //debugger; // .24d
-      props.onSelectContact(props); // .24
-    }}>
-    <Text>{props.name}</Text>
-    <Text>{props.phone}</Text>
-  </TouchableOpacity>
-); // .24
-```
-
-.24 ContactListsScreens.js whereby onSelectContact from the SectionListContacts.js
-``` jsx
-  render() {
-    return (
-      <View style={styles.container}>
-        {this.state.showContacts && (
-          <SectionListContacts 
-            contacts={this.props.screenProps.contacts}
-            onSelectContact={(contact) => {
-              // debugger; // .24c
-              this.props.navigation.navigate('ContactDetails'); // .24b
-            }}
-            />
-        )} // .24
-      </View>
-    );
-  }
-```
-
-**Debugger** [57:48]   
-quick trip to debug. Go to device, and 2nd screen, on the 'Debug Remote JS'.
-myNote: It just auto pause at the Chrome developer tool on web browser, didnt activate the Debug Remote. 
-
-:+1: Now, it work!
-
-[:top: Top](#top)
-
----
-#### Passing param on contacts list
-we pass params here, we can pass an arbitrary object
-of various pieces of information, like contact dot phone number.
-
-.25 ContactListScreen.js add information, phone number above name
-``` jsx
-            onSelectContact={(contact) => {
-              this.props.navigation.navigate('ContactDetails', {
-                phone: contact.phone, // .25
-                name: contact.name,   // .25
-              }); // .24b
-```
-.myNote: this also work:
-``` jsx
-              this.props.navigation.push('ContactDetails', contact); 
-```
-ContactDetailsScreen.js, it shown the phone contact on the top left.
-``` jsx
-  render() {
-    return (
-      <View>
-        <Text>{this.props.navigation.getParam('phone') /** .25**/}</Text>
-        ...
-```
-
-.26 ContactDetailScreen.js add header detail > shown header of name
-``` jsx
-export default class ContactDetailsScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => ({
-    headerTitle: navigation.getParam('name')    
-  }) //.26
-  render() {
-```
-
-ContactDetailScreen.js add ramdonContact > TypeError: Cannot read property 'contacts' of null
-``` jsx
-  _goToRandom= () => {
-    const { contacts } = null;
-    const phone = null;
-    let randomContact;
-    while (!randomContact) {
-      const randomIndex = Math.floor(Math.random() * contacts.length);
-      if (contacts[randomIndex].phone !== phone) {
-        randomContact = contacts[randomIndex];
-      }
-    }
-  }
-```
-contacts.js
-``` jsc
-const NUM_CONTACTS = 3;
-```
-
-.27 ContactDetailScreen.js add ramdonContact
-``` jsx
-  _goToRandom= () => {
-    const { contacts } = this.props.screenProps; // was this.props.screenProps.contacts;
-    const phone = this.props.navigation.getParam('phone');
-    ...
-    } //.27
-    
-    debugger; // .27 React Native Debugger 
-  }
-```  
-
-.27 ContactDetailScreen.js add ramdonContact
-``` jsx
-  _goToRandom= () => {
-    const { contacts } = this.props.screenProps; // was this.props.screenProps.contacts;
-    const phone = this.props.navigation.getParam('phone');
-    let randomContact;
-    while (!randomContact) {
-      const randomIndex = Math.floor(Math.random() * contacts.length);
-      if (contacts[randomIndex].phone !== phone) {
-        randomContact = contacts[randomIndex];
-      }
-    } //.27
-
-    this.props.navigation.navigate('ContactDetails', { // .27b
-      name: randomContact.name,
-      phone: randomContact.phone,
-    })
-    //debugger; // .27 React Native Debugger 
-    //todo
-  }
-```
-
-.myNote, also work, if i changed to
-``` jsx
-  _goToRandom= () => {
-  ...
-    this.props.navigation.navigate('ContactDetails', randomContact)
-  }
-```
-[:top: _Top](#top)
-
-~~~
-// “Push” a new screen, even if it already is in the stack
-push('MyRouteName');
-~~~
-.27b ContactDetailScreen.js to push() :+1: , flip stack to next screens. (Snack, not working)
-``` jsx
-     this.props.navigation.push('ContactDetails', {
-       name: randomContact.name,
-       phone: randomContact.phone,
-     })
-```
-### Stack specific navigation actions
-- push(..)
-- pop(..)
-- popToTop(..)
-- replace(..)
-* More information: https://v2.reactnavigation.org/docs/navigation-prop.html#...
-
-[:top: Top](#top)
-### Composing navigators
-- Navigators can be composed when one type of navigation visually appears to
-be inside another navigator
-- A navigator can be the Screen Component of another navigator
-- The app should only contain one top-level navigator
-- You can navigate() to any route in the app
-- goBack() works for the whole app, supports Android back button
-
-### Composing navigators
-~~~
-const MyStackNavigator = createStackNavigator({
-  "Home": HomeScreen,
-  "AddContact": AddContactScreen,
-});
-const AppNavigator = createSwitchNavigator({
-  "Login": LoginScreen,
-  "Main": MyStackNavigator,
-});
-~~~
-[:top: Top](#top)
-### **Do not render a navigator inside a screen**
-~~~
-class MyScreen extends React.Component {
-  render() {
-    return <MyStackNavigator />;
-  }
 }
-~~~
-**Instead, set as a screen within the AppNavigator**
-~~~
-const AppNavigator = createSwitchNavigator({
-  "Main": MyStackNavigator,
-});
-~~~
 
-.28 App.js add createdSwitchNavigator, login
-``` jsx
-import React from 'react'; //
-import {Button, FlatList, ScrollView, StyleSheet, Text, View} from 'react-native';
-import Constants from 'expo-constants'; //import { Constants } from 'expo';
-import contacts, { compareNames } from './contacts';
-import { createStackNavigator, createSwitchNavigator } from 'react-navigation'; // .19 .28
-import AddContactScreen from './screens/AddContactScreen';
-import ContactListScreen from './screens/ContactListScreen';
-import ContactDetailsScreen from './screens/ContactDetailsScreen'; // .23
-import LoginScreen from './screens/LoginScreen'; // .28
-
-const MainNavigator = createStackNavigator( // .19 .28
-  {
-    AddContact: AddContactScreen,
-    ContactList: ContactListScreen,
-    ContactDetails: ContactDetailsScreen, // .23
-  }, 
-  {
-    initialRouteName: 'ContactList',
-  }
-);
-
-const AppNavigator = createSwitchNavigator({
-    Main: MainNavigator,
-    Login: LoginScreen,
-}, {
-    initialRouteName: 'Login',
-}) // .28
-
-export default class App extends React.Component {
-...
 ```
-.new file **LoginScreen.js**
+
+[:top: Top](#top)
+
+#### before/screens/LoginScreen.js
+Files ./after/screens/LoginScreen.js and ./before/screens/LoginScreen.js differ
 ``` jsx
-import React from "react";
-import { Button, View, StyleSheet, Text } from "react-native";
+import React from 'react'
+import {Button, View, StyleSheet, Text} from 'react-native'
 
 export default class LoginScreen extends React.Component {
+  _login = () => {
+    this.props.navigation.navigate('Main')
+  }
+
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.text}>You are currently logged out.</Text>
         <Button title="Press to Log In" onPress={this._login} />
       </View>
-    );
-  }
-  _login = () => {
-    // navigator to main navigator
-  };
-}
-
-const styles = StyleSheet.create({
-  container: { justifyContent: "center", flex: 1 },
-  text: { textAlign: "center" }
-}); // .28
-```
-
-[07:28]
-
-.29 LoginScreen.js navigate to main screen
-``` jsx
-  _login = () => {
-    this.props.navigation.navigate('Main') ; // .29
-    // navigator to main navigator
-  };
-```
-.29b we could also explicitly navigate to the Contact List.
-``` jsx
-    this.props.navigation.navigate('ContactList') ; // .29 .29b
-```
-.29c Like let's explicitly navigate to Add Contact.
-And it jumps you deep inside the stack, but it still
-``` jsx
-    this.props.navigation.navigate('AddContact') ; // .29 .29b .29c
-```
-[:top: Top](#top) [1:13:10]
-
-### Tab navigators
-- Display one screen at a time
-- The state of inactive screens is maintained
-- Platform-specific layout, animations, and gestures
-  - createMaterialTopTabNavigator
-  - createMaterialBottomTabNavigator
-  - createBottomTabNavigator
-- The navigate() action is used to switch to different tabs
-- goBack() can be called to go back to the first tab
-  - The tab navigator goBack behavior is configurable
-
-### Creating a tab navigator
-~~~
-const AppNavigator = createBottomTabNavigator({
-  "TabOne": ScreenComponentOne,
-  "TabTwo": ScreenComponentTwo,
-});
-
-export default class App extends React.Component {
-  render() {
-    return <AppNavigator />
-  }
-}
-~~~
-
-[Snack/07_Navigation app.js is workable](#snack07_navigation-appjs-is-workable)
-But sometime got error.
-
-.30 App.js add some color ??
-``` jsx
-  {
-    initialRouteName: 'ContactList',
-    navigationOptions: {
-      headerTintColor: '#a41034',
-    }, // .30
-  },
-```
-.31 ContactListScreen.js add color on the Add
-``` jsx
-      <Button
-        title="Add"
-        color='#a41034' // .31
-        onPress={() => {
-          navigation.navigate('AddContact');
-        }}
-      />
-```
-
-.32 App.js added Tabs
-``` jsx
-...
-import {
-  createStackNavigator,
-  createSwitchNavigator,
-  createTabNavigator,
-} from 'react-navigation'; // .19 .28 .32
-...
-import SettingsScreen from './screens/SettingsScreen' // .32
-
-const ContactsTab = createStackNavigator( // .19 .28 .32
-  {
-    AddContact: AddContactScreen,
-    ContactList: ContactListScreen,
-    ContactDetails: ContactDetailsScreen, // .23
-  }, 
-  {
-    initialRouteName: 'ContactList',
-    navigationOptions: {
-      headerTintColor: '#a41034',
-    }, // .30
-  },
-);
-
-const MainNavigator = createTabNavigator({
-  contacts: ContactsTab,
-  Settings: SettingsScreen, // .32
-})
-
-const AppNavigator = createSwitchNavigator({
-...
-...
-```
-.new file: **SettingsScreen.js**
-``` jsx
-import React from "react";
-import { Button, View, StyleSheet, Text } from "react-native";
-
-export default class SettingsScreen extends React.Component {
-  static navigationOptions = {};
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.text}>Settings coming soon.</Text>
-      </View>
-    );
+    )
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: "center",
-    flex: 1
+    justifyContent: 'center',
+    flex: 1,
   },
   text: {
-    textAlign: "center"
-  }
-}); // .32
-```
-### Configure tab bar settings
-~~~
-const MainTabs = createBottomTabNavigator(
-  {
-    ...
-  },
-  {
-    tabBarOptions: {
-      activeTintColor: "#a41034"
-    }
-  }
-);
-~~~
-* Full reference for tabBarOptions: https://v2.reactnavigation.org/docs/tab-navigator.html#...
-
-.33 App.js add color on tabs
-``` jsx
-const MainNavigator = createTabNavigator({
-  Contacts: ContactsTab,
-  Settings: SettingsScreen, // .32
-}, {
-  tabBarOptions: {
-    activeTintColor: '#a41034',
-  }, // .33
-})
-```
-:+1: Tested. It work on Snack Web, Snack IOS device, Snack Andriod.
-
-[:top: Top](#top)
-### Configure tab icons
-~~~
-MainStack.navigationOptions = {
-  tabBarIcon: ({ focused, tintColor }) => (
-    <Ionicons
-      name={`ios-contacts${focused ? "" : "-outline"}`}
-      size={25}
-      color={tintColor}
-    />
-  )
-};
-~~~
-
-### Use common icon packs
-~~~
-# Install it in your shell
-npm install --save react-native-vector-icons
-
-// Import a supported icon set in your code
-import Ionicons from "react-native-vector-icons/Ionicons";
-
-// Use it as a React component
-<Ionicons name="md-checkmark" size={25} color="#000" />
-
-See other icon sets that are included: https://expo.github.io/vector-icons/
-~~~
-
-``$ yarn add react-native-vector-icons``
-
-.34 added Ionicons, into app.js
-``` jsx
-...
-import {Ionicons} from 'react-native-vector-icons' // .34
-
-const ContactsTab = createStackNavigator( // .19 .28 .32
-...
-
-ContactsTab.navigationOptions = {
-  tabBarIcon: ({ focused, tintColor }) => (
-    <Ionicons
-      name={`ios-contacts${focused ? "" : "-outline"}`}
-      size={25}
-      color={tintColor}
-    />
-  )
-}; //.34
-
-const MainNavigator = createTabNavigator({
-...
-```
-It work on online IOS device, and web.    
-it dont work on android!! Option to change package.json
-``` json
-{
-  "dependencies": {
-    "react-navigation": "2.0.0-beta.5",
-    "react-native-paper": "3.6.0",
-    "react-native-vector-icons": "^4.5.0"
-  }
-}
-```
-.35 SettingsScreen.js add icon on
-``` jsx
-import Ionicons from "react-native-vector-icons/Ionicons"; // .35 ?
-
-export default class SettingsScreen extends React.Component {
-  static navigationOptions = {
-    tabBarIcon: ({ focused, tintColor }) => (
-      <Ionicons
-        name={`ios-options${focused ? "" : "-outline"}`}
-        size={25}
-        color={tintColor}
-      />
-    )
-  }; //.35
-  ...
-```
-
-### React Navigation Resources
-- React Navigation Documentation 
-    https://v2.reactnavigation.org/
-- React Navigation API Reference 
-    https://v2.reactnavigation.org/docs/api-reference.html
-- NavigationPlayground example source code 
-    https://github.com/react-navigation/react-navigation/tree/master/examples/NavigationPlayground
-
-[:top: Top](#top)
-
----
----
-Source Code
----
-### before/...
-####  before/package.json
-``` js
-{
-  "main": "node_modules/expo/AppEntry.js",
-  "private": true,
-  "dependencies": {
-    "expo": "^25.0.0",
-    "prop-types": "^15.6.1",
-    "react": "16.2.0",
-    "react-native": "https://github.com/expo/react-native/archive/sdk-25.0.0.tar.gz"
-  }
-}
-
-```
-[:top: Top](#top)
-####  before/AddContactForm.js
-``` jsx
-import React from 'react'
-import {Button, KeyboardAvoidingView, StyleSheet, TextInput, View} from 'react-native'
-import Constants from 'expo-constants'; //import {Constants} from 'expo'
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#fff',
-    paddingTop: Constants.statusBarHeight,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: 'black',
-    minWidth: 100,
-    marginTop: 20,
-    marginHorizontal: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 3,
+    textAlign: 'center',
   },
 })
 
-export default class AddContactForm extends React.Component {
-  state = {
-    name: '',
-    phone: '',
-    isFormValid: false,
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.name !== prevState.name || this.state.phone !== prevState.phone) {
-      this.validateForm()
-    }
-  }
-
-  getHandler = key => val => {
-    this.setState({[key]: val})
-  }
-
-  handleNameChange = this.getHandler('name') // val => { this.setState({name: val}) }
-  handlePhoneChange = this.getHandler('phone')
-
-    /*
-  handleNameChange = name => {
-    this.setState({name})
-  }
-  */
-
-  handlePhoneChange = phone => {
-    if (+phone >= 0 && phone.length <= 10) {
-      this.setState({phone})
-    }
-  }
-
-  validateForm = () => {
-    console.log(this.state)
-    const names = this.state.name.split(' ')
-    if (+this.state.phone >= 0 && this.state.phone.length === 10 && names.length >= 2 && names[0] && names[1]) {
-      this.setState({isFormValid: true})
-    } else {
-      this.setState({isFormValid: false})
-    }
-  }
-
-  validateForm2 = () => {
-    if (+this.state.phone >= 0 && this.state.phone.length === 10 && this.state.name.length >= 3) {
-      return true
-    } else {
-      return false
-    }
-  }
-
-  // myNote, to resolve the VirtualizedList: missing keys for items ...
-  handleSubmit = (key) => {
-    this.props.onSubmit({key: key, ...this.state })
-  }
-
-  render() {
-    return (
-      <KeyboardAvoidingView behavior="padding" style={styles.container}>
-        <TextInput
-          style={styles.input}
-          value={this.state.name}
-          onChangeText={this.getHandler('name')}
-          placeholder="Name"
-        />
-        <TextInput
-          keyboardType="numeric"
-          style={styles.input}
-          value={this.state.phone}
-          onChangeText={this.getHandler('phone')}
-          placeholder="Phone"
-        />
-        <Button title="Submit" onPress={this.handleSubmit} disabled={!this.state.isFormValid} />
-      </KeyboardAvoidingView>
-    )
-  }
-}
-
 ```
 [:top: Top](#top)
 
-####  before/App.js
+
+---
+### after/...
+
+#### after/contacts.js
 ``` jsx
-import React from 'react';
-import { Button, FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Constants from 'expo-constants'; //import {Constants} from 'expo'
+const NUM_CONTACTS = 3
 
-import contacts, {compareNames} from './contacts'
-//import ScrollViewContacts from './ScrollViewContacts'
-//import FlatListContacts from './FlatListContacts'
-import SectionListContacts from './SectionListContacts'
-import AddContactForm from './AddContactForm'
+const firstNames = ['Emma','Noah','Olivia','Liam','Ava','William','Sophia','Mason','Isabella','James','Mia',
+'Benjamin','Charlotte','Jacob','Abigail','Michael','Emily','Elijah','Harper','Ethan','Amelia','Alexander',
+'Evelyn','Oliver','Elizabeth','Daniel','Sofia','Lucas','Madison','Matthew','Avery','Aiden','Ella','Jackson',
+'Scarlett','Logan','Grace','David','Chloe','Joseph','Victoria','Samuel','Riley','Henry','Aria','Owen','Lily',
+'Sebastian','Aubrey','Gabriel','Zoey','Carter','Penelope','Jayden','Lillian','John','Addison','Luke','Layla',
+'Anthony','Natalie','Isaac','Camila','Dylan','Hannah','Wyatt','Brooklyn','Andrew','Zoe','Joshua','Nora',
+'Christopher','Leah','Grayson','Savannah','Jack','Audrey','Julian','Claire','Ryan','Eleanor','Jaxon','Skylar',
+'Levi','Ellie','Nathan','Samantha','Caleb','Stella','Hunter','Paisley','Christian','Violet','Isaiah','Mila',
+'Thomas','Allison','Aaron','Alexa','Lincoln']
 
-export default class App extends React.Component {
-  state = {
-    showContacts: true,
-    showForm: false,
-    contacts: contacts,
-  }
-
-  addContact = newContact => {
-    this.setState(prevState => ({showForm: false, contacts: [...prevState.contacts, newContact]}))
-  }
-
-  toggleContacts = () => {
-    this.setState(prevState => ({showContacts: !prevState.showContacts}))
-  }
-
-  sort = () => {
-    this.setState(prevState => ({contacts: prevState.contacts.sort(compareNames)}))
-  }
-
-  showForm = () => {
-    this.setState({showForm: true})
-  }
-
-  render() {
-    if (this.state.showForm) return <AddContactForm onSubmit={this.addContact} />
-    return (
-      <View style={styles.container}>
-        <Button title="toggle contacts" onPress={this.toggleContacts} />
-        <Button title="add contact" onPress={this.showForm} />
-        {this.state.showContacts && <SectionListContacts contacts={this.state.contacts} />}
-      </View>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: Constants.statusBarHeight,
-  },
-});
-
-```
-[:top: Top](#top)
-
-####  before/Row.js
-``` jsx
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import PropTypes from 'prop-types';
-
-const styles = StyleSheet.create({
-  row: { padding: 20 },
-});
-
-const Row = props => (
-  <View style={styles.row}>
-    <Text>{props.name}</Text>
-    <Text>{props.phone}</Text>
-  </View>
-);
-
-Row.propTypes = {
-  name: PropTypes.string,
-  phone: PropTypes.string,
-};
-
-export default Row;
-
-```
-[:top: Top](#top)
-
-####  before/SectionListContacts.js
-``` jsx
-import React from 'react';
-import { SectionList, Text } from 'react-native';
-import PropTypes from 'prop-types';
-
-import Row from './Row';
-
-const renderItem = ({ item }) => <Row {...item} />;
-
-const renderSectionHeader = ({ section }) => <Text>{section.title}</Text>;
-
-const SectionListContacts = props => {
-  const contactsByLetter = props.contacts.reduce((obj, contact) => {
-    const firstLetter = contact.name[0].toUpperCase();
-    return {
-      ...obj,
-      [firstLetter]: [...(obj[firstLetter] || []), contact],
-    };
-  }, {});
-
-  const sections = Object.keys(contactsByLetter)
-    .sort()
-    .map(letter => ({
-      data: contactsByLetter[letter],
-      title: letter,
-    }));
-
-  return (
-    <SectionList
-      sections={sections}
-      renderItem={renderItem}
-      renderSectionHeader={renderSectionHeader}
-    />
-  );
-};
-
-SectionListContacts.propTypes = {
-  contacts: PropTypes.array,
-};
-
-export default SectionListContacts;
-
-```
-[:top: Top](#top)
-
-####  before/contacts.js
-``` jsx
-const NUM_CONTACTS = 1;
-
-const firstNames = ['Emma','Noah','Olivia','Liam','Ava','William','Sophia','Mason','Isabella','James','Mia','Benjamin','Charlotte','Jacob','Abigail','Michael','Emily','Elijah','Harper','Ethan','Amelia','Alexander','Evelyn','Oliver','Elizabeth','Daniel','Sofia','Lucas','Madison','Matthew','Avery','Aiden','Ella','Jackson','Scarlett','Logan','Grace','David','Chloe','Joseph','Victoria','Samuel','Riley','Henry','Aria','Owen','Lily','Sebastian','Aubrey','Gabriel','Zoey','Carter','Penelope','Jayden','Lillian','John','Addison','Luke','Layla','Anthony','Natalie','Isaac','Camila','Dylan','Hannah','Wyatt','Brooklyn','Andrew','Zoe','Joshua','Nora','Christopher','Leah','Grayson','Savannah','Jack','Audrey','Julian','Claire','Ryan','Eleanor','Jaxon','Skylar','Levi','Ellie','Nathan','Samantha','Caleb','Stella','Hunter','Paisley','Christian','Violet','Isaiah','Mila','Thomas','Allison','Aaron','Alexa','Lincoln']
-
-const lastNames = ['Smith','Jones','Brown','Johnson','Williams','Miller','Taylor','Wilson','Davis','White','Clark','Hall','Thomas','Thompson','Moore','Hill','Walker','Anderson','Wright','Martin','Wood','Allen','Robinson','Lewis','Scott','Young','Jackson','Adams','Tryniski','Green','Evans','King','Baker','John','Harris','Roberts','Campbell','James','Stewart','Lee','County','Turner','Parker','Cook','Mc','Edwards','Morris','Mitchell','Bell','Ward','Watson','Morgan','Davies','Cooper','Phillips','Rogers','Gray','Hughes','Harrison','Carter','Murphy']
+const lastNames = ['Smith','Jones','Brown','Johnson','Williams','Miller','Taylor','Wilson','Davis','White',
+'Clark','Hall','Thomas','Thompson','Moore','Hill','Walker','Anderson','Wright','Martin','Wood','Allen','Robinson',
+'Lewis','Scott','Young','Jackson','Adams','Tryniski','Green','Evans','King','Baker','John','Harris','Roberts',
+'Campbell','James','Stewart','Lee','County','Turner','Parker','Cook','Mc','Edwards','Morris','Mitchell','Bell',
+'Ward','Watson','Morgan','Davies','Cooper','Phillips','Rogers','Gray','Hughes','Harrison','Carter','Murphy']
 
 // generate a random number between min and max
-const rand = (max, min = 0) =>
-  Math.floor(Math.random() * (max - min + 1)) + min;
+const rand = (max, min = 0) => Math.floor(Math.random() * (max - min + 1)) + min
 
 // generate a name
 const generateName = () =>
-  `${firstNames[rand(firstNames.length - 1)]} ${
-    lastNames[rand(lastNames.length - 1)]
-  }`;
+  `${firstNames[rand(firstNames.length - 1)]} ${lastNames[rand(lastNames.length - 1)]}`
 
 // generate a phone number
-const generatePhoneNumber = () =>
-  `${rand(999, 100)}-${rand(999, 100)}-${rand(9999, 1000)}`;
+const generatePhoneNumber = () => `${rand(999, 100)}-${rand(999, 100)}-${rand(9999, 1000)}`
 
 // create a person
 const createContact = () => ({
   name: generateName(),
   phone: generatePhoneNumber(),
-});
+})
 
 // compare two contacts for alphabetizing
-export const compareNames = (contact1, contact2) =>
-  contact1.name > contact2.name;
+export const compareNames = (contact1, contact2) => contact1.name > contact2.name
 
 // add keys to based on index
-const addKeys = (val, key) => ({ key, ...val });
+const addKeys = (val, key) => ({key, ...val})
 
 // create an array of length NUM_CONTACTS and add keys
-export default Array.from({ length: NUM_CONTACTS }, createContact).map(addKeys);
+export default Array.from({length: NUM_CONTACTS}, createContact).map(addKeys)
 
 ```
 [:top: Top](#top)
 
----
-### after/...
-####  after/package.json
-``` js
+#### after/App.js
+``` jsx
+import React from 'react'
+import {
+  createStackNavigator,
+  createSwitchNavigator,
+  createBottomTabNavigator,
+} from 'react-navigation'
+import Ionicons from 'react-native-vector-icons/Ionicons'
+
+import AddContactScreen from './screens/AddContactScreen'
+import SettingsScreen from './screens/SettingsScreen'
+import ContactListScreen from './screens/ContactListScreen'
+import ContactDetailsScreen from './screens/ContactDetailsScreen'
+import LoginScreen from './screens/LoginScreen'
+import {fetchUsers} from './api'
+
+const MainStack = createStackNavigator(
+  {
+    ContactList: ContactListScreen,
+    ContactDetails: ContactDetailsScreen,
+    AddContact: AddContactScreen,
+  },
+  {
+    initialRouteName: 'ContactList',
+    navigationOptions: {
+      headerTintColor: '#a41034',
+      headerStyle: {
+        backgroundColor: '#fff',
+      },
+    },
+  }
+)
+
+MainStack.navigationOptions = {
+  tabBarIcon: ({focused, tintColor}) => (
+    <Ionicons name={`ios-contacts${focused ? '' : '-outline'}`} size={25} color={tintColor} />
+  ),
+}
+
+const MainTabs = createBottomTabNavigator(
+  {
+    Contacts: MainStack,
+    Settings: SettingsScreen,
+  },
+  {
+    tabBarOptions: {
+      activeTintColor: '#a41034',
+    },
+  }
+)
+
+const AppNavigator = createSwitchNavigator({
+  Login: LoginScreen,
+  Main: MainTabs,
+})
+
+export default class App extends React.Component {
+  state = {
+    contacts: null,
+  }
+
+  componentDidMount() {
+    this.getUsers()
+  }
+
+  getUsers = async () => {
+    const results = await fetchUsers()
+    this.setState({contacts: results})
+  }
+
+  addContact = newContact => {
+    this.setState(prevState => ({
+      contacts: [...prevState.contacts, newContact],
+    }))
+  }
+
+  render() {
+    return (
+      <AppNavigator
+        screenProps={{
+          contacts: this.state.contacts,
+          addContact: this.addContact,
+        }}
+      />
+    )
+  }
+}
+
+```
+
+#### after/Row.js
+``` jsx
+import React from 'react'
+import {TouchableOpacity, StyleSheet, Text, View} from 'react-native'
+import PropTypes from 'prop-types'
+
+const styles = StyleSheet.create({
+  row: {padding: 20},
+})
+
+const Row = props => (
+  <TouchableOpacity style={styles.row} onPress={() => props.onSelectContact(props)}>
+    <Text>{props.name}</Text>
+    <Text>{props.phone}</Text>
+  </TouchableOpacity>
+)
+
+Row.propTypes = {
+  name: PropTypes.string,
+  phone: PropTypes.string,
+}
+
+export default Row
+
+```
+
+#### after/api.js
+``` jsx
+const processContact = contact => ({
+  name: `${contact.name.first} ${contact.name.last}`,
+  phone: contact.phone,
+})
+
+export const fetchUsers = async () => {
+  const response = await fetch('https://randomuser.me/api/?results=50&nat=us')
+  const {results} = await response.json()
+  return results.map(processContact)
+}
+
+export const login = async (username, password) => {
+  const response = await fetch('http://localhost:8000', {
+    method: 'POST',
+    headers: {'content-type': 'application/json'},
+    body: JSON.stringify({username, password}),
+  })
+
+  if (response.ok) {
+    return true
+  }
+
+  const errMessage = await response.text()
+  throw new Error(errMessage)
+}
+
+```
+
+#### after/package.json
+``` json
 {
   "main": "node_modules/expo/AppEntry.js",
   "private": true,
@@ -1880,555 +984,151 @@ export default Array.from({ length: NUM_CONTACTS }, createContact).map(addKeys);
 
 ```
 [:top: Top](#top)
+#### after/authServer/README.md
+``` markdown
+# Mock Authentication Server
+This is a simple mock auth server. You can POST to any endpoint and it will act as a login.
 
-####  after/AddContactForm.js
-contents of ./after/AddContactForm.js and ./before/AddContactForm.js are identical
+There is only one user with username: `username` and password: `password`. There is no
+way to add new users.
 
+## Installation
+- Install dependencies with `npm install`
+- Run the server with `npm start`
+- Visit [http://localhost:8000](http://localhost:8000)
 
-####  after/App.js
-[Snack/07_Navigation app.js is workable](#snack07_navigation-appjs-is-workable)
-But sometime got error.
+You can optionally declare a `PORT` env variable to override the default port:
+- `PORT=12345 npm start`
+- Visit [http://localhost:12345](http://localhost:12345)
+```
+#### after/authServer/index.js
 ``` jsx
-// import Example from './examples/0-Switch';
-// import Example from './examples/1-Stack';
-// export default Example;
+const express = require('express')
+const bodyParser = require('body-parser')
 
-import React from "react";
-import { StatusBar, View } from "react-native";
-import {
-  createStackNavigator,
-  createSwitchNavigator,
-  createBottomTabNavigator
-} from "react-navigation";
-import Ionicons from "react-native-vector-icons/Ionicons";
+const PORT = process.env.PORT || 8000
 
-import AddContactScreen from "./screens/AddContactScreen";
-import SettingsScreen from "./screens/SettingsScreen";
-import ContactListScreen from "./screens/ContactListScreen";
-import ContactDetailsScreen from "./screens/ContactDetailsScreen";
-import LoginScreen from "./screens/LoginScreen";
-import contacts from "./contacts";
+// usernames are keys and passwords are values
+const users = {
+  username: 'password',
+}
 
-const MainStack = createStackNavigator(
-  {
-    ContactList: ContactListScreen,
-    ContactDetails: ContactDetailsScreen,
-    AddContact: AddContactScreen
+const app = express()
+app.use(bodyParser.json())
+
+app.post('*', (req, res) => {
+  const {username, password} = req.body
+
+  if (!username || !password) return res.status(400).send('Missing username or password')
+  // in practice, this is potentially revealing too much information.
+  // an attacker can probe the server to find all of the usernames.
+  if (!users[username]) return res.status(403).send('User does not exist')
+  if (users[username] !== password) return res.status(403).send('Incorrect password')
+  return res.status(200).send()
+})
+
+// catch 404
+app.use((req, res, next) => {
+  const err = new Error('Not Found')
+  err.status = 404
+  next(err)
+})
+
+app.use((err, req, res, next) => res.status(err.status || 500).send(err.message || 'There was a problem'))
+
+const server = app.listen(PORT)
+console.log(`Listening at http://localhost:${PORT}`)
+
+```
+[:top: Top](#top)
+
+#### after/authServer/package.json
+``` json
+{
+  "name": "authserver",
+  "version": "1.0.0",
+  "description": "Simple auth server for a demo",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index"
   },
-  {
-    initialRouteName: "ContactList",
-    navigationOptions: {
-      headerTintColor: "#a41034",
-      headerStyle: {
-        backgroundColor: "#fff"
-      }
-    }
-  }
-);
-
-MainStack.navigationOptions = {
-  tabBarIcon: ({ focused, tintColor }) => (
-    <Ionicons
-      name={`ios-contacts${focused ? "" : "-outline"}`}
-      size={25}
-      color={tintColor}
-    />
-  )
-};
-
-const MainTabs = createBottomTabNavigator(
-  {
-    Contacts: MainStack,
-    Settings: SettingsScreen
-  },
-  {
-    tabBarOptions: {
-      activeTintColor: "#a41034"
-    }
-  }
-);
-
-const AppNavigator = createSwitchNavigator({
-  Login: LoginScreen,
-  Main: MainTabs
-});
-
-export default class App extends React.Component {
-  state = {
-    contacts
-  };
-
-  addContact = newContact => {
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, newContact]
-    }));
-  };
-
-  render() {
-    return (
-      <AppNavigator
-        screenProps={{
-          contacts: this.state.contacts,
-          addContact: this.addContact
-        }}
-      />
-    );
+  "author": "Jordan Hayashi",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.3"
   }
 }
 
 ```
 [:top: Top](#top)
 
-####  after/Row.js
+#### after/screens/LoginScreen.js
 ``` jsx
-import React from 'react';
-import { TouchableOpacity, StyleSheet, Text, View } from 'react-native';
-import PropTypes from 'prop-types';
+import React from 'react'
+import {Button, View, StyleSheet, Text, TextInput} from 'react-native'
 
-const styles = StyleSheet.create({
-  row: { padding: 20 },
-});
-
-const Row = props => (
-  <TouchableOpacity
-    style={styles.row}
-    onPress={() => props.onSelectContact(props)}>
-    <Text>{props.name}</Text>
-    <Text>{props.phone}</Text>
-  </TouchableOpacity>
-);
-
-Row.propTypes = {
-  name: PropTypes.string,
-  phone: PropTypes.string,
-};
-
-export default Row;
-
-```
-[:top: Top](#top)
-
-####  after/SectionListContacts.js
-``` jsx
-import React from 'react';
-import { SectionList, Text } from 'react-native';
-import PropTypes from 'prop-types';
-
-import Row from './Row';
-
-const renderSectionHeader = ({ section }) => <Text>{section.title}</Text>;
-
-const SectionListContacts = props => {
-  const contactsByLetter = props.contacts.reduce((obj, contact) => {
-    const firstLetter = contact.name[0].toUpperCase();
-    return {
-      ...obj,
-      [firstLetter]: [...(obj[firstLetter] || []), contact],
-    };
-  }, {});
-
-  const sections = Object.keys(contactsByLetter)
-    .sort()
-    .map(letter => ({
-      data: contactsByLetter[letter],
-      title: letter,
-    }));
-
-  return (
-    <SectionList
-      keyExtractor={item => item.phone}
-      sections={sections}
-      renderItem={({ item }) => <Row {...item} onSelectContact={props.onSelectContact} /> }
-      renderSectionHeader={renderSectionHeader}
-    />
-  );
-};
-
-SectionListContacts.propTypes = {
-  contacts: PropTypes.array,
-};
-
-export default SectionListContacts;
-
-```
-
-####  after/contacts.js
-from before/contacts.js, just chance
-``` jsx
-const NUM_CONTACTS = 3;
-...
-```
-
-[:top: Top](#top)
-
-####  after/examples/0-Switch.js
-``` jsx
-import React from 'react';
-import { Button, View } from 'react-native';
-import { createSwitchNavigator } from 'react-navigation';
-
-export default class App extends React.Component {
-  render() {
-    return <MyNavigator />;
-  }
-}
-
-class ScreenComponentOne extends React.Component {
-  render() {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          borderWidth: 25,
-          borderColor: 'teal',
-        }}>
-        <Button
-          title="Go to two"
-          onPress={() => this.props.navigation.navigate('routeNameTwo')}
-        />
-      </View>
-    );
-  }
-}
-
-class ScreenComponentTwo extends React.Component {
-  render() {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          borderWidth: 25,
-          borderColor: 'orange',
-        }}>
-        <Button
-          title="Go to one"
-          onPress={() => this.props.navigation.navigate('routeNameOne')}
-        />
-      </View>
-    );
-  }
-}
-
-const MyNavigator = createSwitchNavigator({
-  routeNameOne: ScreenComponentOne,
-  routeNameTwo: ScreenComponentTwo,
-});
-
-```
-[:top: Top](#top)
-
-####  after/examples/1-Stack.js
-``` jsx
-import React from 'react';
-import { Button, Text, View } from 'react-native';
-import { createStackNavigator } from 'react-navigation';
-
-export default class App extends React.Component {
-  render() {
-    return <MyNavigator />;
-  }
-}
-
-function getRandomNumber() {
-  return Math.floor(Math.random() * 10);
-}
-
-class ScreenComponentOne extends React.Component {
-  static navigationOptions = {
-    title: 'First screen',
-  };
-
-  render() {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          borderWidth: 25,
-          borderColor: 'teal',
-        }}>
-        <Button
-          title="Go to two"
-          onPress={() => this.props.navigation.navigate('routeNameTwo')}
-        />
-      </View>
-    );
-  }
-}
-
-class ScreenComponentTwo extends React.Component {
-  static navigationOptions = {
-    title: 'Second screen',
-  };
-
-  render() {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          borderWidth: 25,
-          borderColor: 'orange',
-        }}>
-        <Button
-          title="Go to three"
-          onPress={() =>
-            this.props.navigation.navigate('routeNameThree', {
-              randomNumber: getRandomNumber(),
-            })
-          }
-        />
-      </View>
-    );
-  }
-}
-
-class ScreenComponentThree extends React.Component {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      title: `Number: ${navigation.getParam('randomNumber')}`,
-    };
-  };
-
-  render() {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          borderWidth: 25,
-          borderColor: 'purple',
-        }}>
-        <Text style={{ fontSize: 25 }}>
-          {this.props.navigation.getParam('randomNumber')}
-        </Text>
-        <Button
-          title="Get a new random number"
-          onPress={() => {
-            this.props.navigation.setParams({
-              randomNumber: getRandomNumber(),
-            });
-          }}
-        />
-        <Button
-          title="Go back"
-          onPress={() => this.props.navigation.goBack()}
-        />
-      </View>
-    );
-  }
-}
-
-const MyNavigator = createStackNavigator(
-  {
-    routeNameOne: ScreenComponentOne,
-    routeNameTwo: ScreenComponentTwo,
-    routeNameThree: ScreenComponentThree,
-  },
-  {
-    // headerTransitionPreset: 'uikit',
-    // mode: 'modal',
-  }
-);
-
-```
-[:top: Top](#top)
-
-####  after/screens/AddContactScreen.js
-``` jsx
-import React from 'react';
-import AddContactForm from '../AddContactForm';
-
-export default class AddContactScreen extends React.Component {
-  static navigationOptions = {
-    headerTitle: 'New Contact',
-  };
-
-  handleSubmit = formState => {
-    this.props.screenProps.addContact(formState);
-    this.props.navigation.navigate('ContactList');
-  };
-
-  render() {
-    return <AddContactForm onSubmit={this.handleSubmit} />;
-  }
-}
-
-```
-[:top: Top](#top)
-
-####  after/screens/ContactDetailsScreen.js
-``` jsx
-import React from 'react';
-import { Button, Text, View } from 'react-native';
-
-export default class ContactDetailsScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerTitle: navigation.getParam('name'),
-    };
-  };
-
-  render() {
-    return (
-      <View>
-        <Text>{this.props.navigation.getParam('phone')}</Text>
-        <Button title="Go to random contact" onPress={this.goToRandomContact} />
-      </View>
-    );
-  }
-
-  goToRandomContact = () => {
-    const { contacts } = this.props.screenProps;
-    const phone = this.props.navigation.getParam('phone');
-    let randomContact;
-    while (!randomContact) {
-      const randomIndex = Math.floor(Math.random() * contacts.length);
-      if (contacts[randomIndex].phone !== phone) {
-        randomContact = contacts[randomIndex];
-      }
-    }
-
-    // this.props.navigation.navigate('ContactDetails', {
-    //   ...randomContact,
-    // });
-    this.props.navigation.push('ContactDetails', {
-      ...randomContact,
-    });
-  };
-}
-
-```
-[:top: Top](#top)
-
-####  after/screens/ContactListScreen.js
-``` jsx
-import React from 'react';
-import { Button, View, StyleSheet } from 'react-native';
-
-import SectionListContacts from '../SectionListContacts';
-
-export default class ContactListScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerTitle: 'Contacts',
-      headerRight: (
-        <Button
-          title="Add"
-          onPress={() => navigation.navigate('AddContact')}
-          color="#a41034"
-        />
-      ),
-    };
-  };
-
-  state = {
-    showContacts: true,
-  };
-
-  toggleContacts = () => {
-    this.setState(prevState => ({ showContacts: !prevState.showContacts }));
-  };
-
-  handleSelectContact = contact => {
-    this.props.navigation.push('ContactDetails', contact);
-  };
-
-  render() {
-    return (
-      <View style={styles.container}>
-        <Button title="toggle contacts" onPress={this.toggleContacts} />
-        {this.state.showContacts && (
-          <SectionListContacts
-            contacts={this.props.screenProps.contacts}
-            onSelectContact={this.handleSelectContact}
-          />
-        )}
-      </View>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
-
-```
-[:top: Top](#top)
-
-####  after/screens/LoginScreen.js
-``` jsx
-import React from "react";
-import { Button, View, StyleSheet, Text } from "react-native";
+import {login} from '../api'
 
 export default class LoginScreen extends React.Component {
-  _login = () => {
-    this.props.navigation.navigate("Main");
-  };
+  state = {
+    username: '',
+    password: '',
+  }
+
+  _login = async () => {
+    try {
+      const success = await login(this.state.username, this.state.password)
+      this.props.navigation.navigate('Main')
+    } catch (err) {
+      const errMessage = err.message
+      this.setState({err: errMessage})
+    }
+  }
+
+  handleUsernameUpdate = username => {
+    this.setState({username})
+  }
+
+  handlePasswordUpdate = password => {
+    this.setState({password})
+  }
 
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.text}>You are currently logged out.</Text>
+        <Text style={styles.error}>{this.state.err}</Text>
+        <TextInput
+          placeholder="username"
+          value={this.state.username}
+          onChangeText={this.handleUsernameUpdate}
+          autoCapitalize="none"
+        />
+        <TextInput
+          placeholder="password"
+          value={this.state.password}
+          onChangeText={this.handlePasswordUpdate}
+          secureTextEntry
+        />
         <Button title="Press to Log In" onPress={this._login} />
       </View>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    justifyContent: "center",
-    flex: 1
-  },
-  text: {
-    textAlign: "center"
-  }
-});
-
-```
-[:top: Top](#top)
-
-####  after/screens/SettingsScreen.js
-``` jsx
-import React from "react";
-import { Button, View, StyleSheet, Text } from "react-native";
-
-import Ionicons from "react-native-vector-icons/Ionicons";
-
-export default class SettingsScreen extends React.Component {
-  static navigationOptions = {
-    tabBarIcon: ({ focused, tintColor }) => (
-      <Ionicons
-        name={`ios-options${focused ? "" : "-outline"}`}
-        size={25}
-        color={tintColor}
-      />
     )
-  };
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.text}>Settings coming soon.</Text>
-      </View>
-    );
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: "center",
-    flex: 1
+    justifyContent: 'center',
+    flex: 1,
   },
   text: {
-    textAlign: "center"
-  }
-});
+    textAlign: 'center',
+  },
+  error: {
+    textAlign: 'center',
+    color: 'red',
+  },
+})
 
 ```
 [:top: Top](#top)
@@ -2436,189 +1136,54 @@ const styles = StyleSheet.create({
 ---
 myNote
 ---
+### my expo.io/ snacks: https://expo.io/snacks/@awesome2/. 
 
-concole.log revised on AddContactForm.js
-``` jsx
-  validateForm = () => {
-    console.log(this.state, 'AddContactForm');
-    ...
+:joy: https://www.markdownguide.org/basic-syntax/     
+:sunny: https://www.markdownguide.org/extended-syntax/
+
+### on Expo Cli 
+react-navigation@2.0.0
 ```
-:+1: to temporary blank view
-`**render() { return <View />; ... **`
-
-
-before/AddContactForm.js style was
-``` jsx
-  container: {
-    backgroundColor: '#fff',
-    paddingTop: Constants.statusBarHeight,
-  },
-```
-changed to after//AddContactForm.js style
-``` jsx
-  container: {
-    flex: 1,
-  },
+$ npm install react-navigation@2.0.0 --save
 ```
 
-#### debug using console.log 
-`console.log('CDS ', this.props.screenProps.contacts) `, it shown the full contact list
-``` jsx
-  _goToRandom= () => {
-    const { contacts } = this.props.screenProps;
-    console.log('CDS ', this.props.screenProps.contacts) 
-    ...
+### console
+> console.clear()
+
+##### vim
+to change word to next in vim, select the sentence first, then
 ```
-
-#### debug placing **debugger;** [57:48]   
-SectionListContacts.js [[55:12]
-``` jsx
-      onSelectContact={contact => {
-        //debugger; // .24f
-        props.onSelectContact(contact);
-      }} // .24 .24e
+:'<,'>s/username/password/g
 ```
-Row.js
-``` jsx
-    onPress={() => {
-      //debugger; // .24d
-      props.onSelectContact(props); // .24
-    }}>
+?? `: noh`
+
+#### How to compare to files:
 ```
-.24 ContactListsScreens.js 
-``` jsx
-            onSelectContact={(contact) => {
-              // debugger; // .24c
-              this.props.navigation.navigate('ContactDetails'); // .24b
-            }}
+~/cs50m/src7/ $ diff -qs ./after/Row.js ./before/Row.js                                                 
+Files ./after/Row.js and ./before/Row.js are identical
 ```
-
-
-
-#### Some changes 
-if necessary, **import Constants**
-``` jsx
-import Constants from 'expo-constants'; //import {Constants} from 'expo'
-```
-
-#### Snack/07_Navigation app.js is workable
-But sometime got error.
-``` jsx
-// original from my Snack 07_Navigation Pro
-import React from 'react'; 
-import {StatusBar, View} from 'react-native';
-import {
-  createStackNavigator,
-  createSwitchNavigator,
-  createTabNavigator,
-} from 'react-navigation';
-import {Ionicons} from 'react-native-vector-icons' 
-
-import AddContactScreen from './screens/AddContactScreen';
-import ContactListScreen from './screens/ContactListScreen';
-import ContactDetailsScreen from './screens/ContactDetailsScreen'; 
-import LoginScreen from './screens/LoginScreen'; 
-import SettingsScreen from './screens/SettingsScreen' 
-
-import contacts, { compareNames } from './contacts';
-
-const ContactsTab = createStackNavigator( 
-  {
-    AddContact: AddContactScreen,
-    ContactList: ContactListScreen,
-    ContactDetails: ContactDetailsScreen, 
-  }, 
-  {
-    initialRouteName: 'ContactList',
-    navigationOptions: {
-      headerTintColor: '#a41034',
-    }, // .30
-  },
-);
-
-ContactsTab.navigationOptions = {
-  tabBarIcon: ({ focused, tintColor }) => (
-    <Ionicons
-      name={`ios-contacts${focused ? "" : "-outline"}`}
-      size={25}
-      color={tintColor}
-    />
-  )
-}; 
-
-const MainNavigator = createTabNavigator({
-  Contacts: ContactsTab,
-  Settings: SettingsScreen,
-}, {
-  tabBarOptions: {
-    activeTintColor: '#a41034',
-  }, // .33
-})
-
-const AppNavigator = createSwitchNavigator({
-    Main: MainNavigator,
-    Login: LoginScreen,
-}, {
-    initialRouteName: 'Login',
-}) // .28
-
-export default class App extends React.Component {
-  state = {
-    contacts: contacts,
-  };
-
-  addContact = newContact => {
-    this.setState(prevState => ({
-      showForm: false,
-      contacts: [...prevState.contacts, newContact],
-    }));
-  };
-
-  render() {
-    return (
-      <AppNavigator
-        screenProps={{
-          contacts: this.state.contacts,
-          addContact: this.addContact,
-        }} 
-      />
-    );
-  } 
-}
-```
-Snack/07_Navigation  package.json
-``` js
-{
-  "dependencies": {
-    "react-navigation": "2.0.0",
-    "react-native-paper": "3.6.0",
-    "react-native-vector-icons": "^4.5.0",
-    "react-native-vector-icons/Ionicons": "latest"
-  }
-}
-```
----
 [:top: Top](#top)
 
-#### Git branch 07_Navigation
+---
+#### Git branch 08_Data
 ```
     Ts-MacBook-Pro:cs50m twng$ cat .gitignore
     .DS_Store
-    /expo-app
+    /Jun18
     .gitignore
     Ts-MacBook-Pro:cs50m twng$ git branch -v
     Ts-MacBook-Pro:cs50m twng$ git add .    
     Ts-MacBook-Pro:cs50m twng$ git status
     Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push -u origin 07_Navigation
+    Ts-MacBook-Pro:cs50m twng$ git push -u origin 08_Data
 ```
-checked on github, https://github.com/alvinng222/cs50m/tree/07_Navigation
+checked on github, https://github.com/alvinng222/cs50m/tree/08_Data
 
 [:top: Top](#top)
 
 --- 
 to master branch: [CS50M](https://github.com/alvinng222/cs50m/tree/master)  
-back to previous:  [06_UserInputDebugging](https://github.com/alvinng222/cs50m/tree/06_UserInputDebugging).   
-continue to next:  [08_Data](https://github.com/alvinng222/cs50m/tree/08_Data).
+back to previous: [07_Navigation](https://github.com/alvinng222/cs50m/tree/07_Navigation)    
+continue to next: [09_ExpoComponents](https://github.com/alvinng222/cs50m/tree/09_ExpoComponents)
 
 ---
