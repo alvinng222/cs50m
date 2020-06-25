@@ -1,5 +1,4 @@
 import React from 'react'
-import {StatusBar, View} from 'react-native'
 import {
   createStackNavigator,
   createSwitchNavigator,
@@ -12,6 +11,7 @@ import SettingsScreen from './screens/SettingsScreen'
 import ContactListScreen from './screens/ContactListScreen'
 import ContactDetailsScreen from './screens/ContactDetailsScreen'
 import LoginScreen from './screens/LoginScreen'
+import {fetchUsers} from './api'
 import contacts from './contacts'
 
 const MainStack = createStackNavigator(
@@ -59,6 +59,17 @@ export default class App extends React.Component {
     contacts,
   }
 
+  /*
+  componentDidMount() {
+    this.getUsers()
+  }
+
+  getUsers = async () => {
+    const results = await fetchUsers()
+    this.setState({contacts: results})
+  }
+  */
+
   addContact = newContact => {
     this.setState(prevState => ({
       contacts: [...prevState.contacts, newContact],
@@ -67,7 +78,7 @@ export default class App extends React.Component {
 
   render() {
     return (
-      <AppNavigator
+      <MainTabs
         screenProps={{
           contacts: this.state.contacts,
           addContact: this.addContact,

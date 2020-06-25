@@ -1,658 +1,1024 @@
-Lecture 7: Data
+Lecture 9: Redux
 ===
-lecture: http://video.cs50.net/mobile/2018/spring/lectures/7
-
-slides: http://cdn.cs50.net/mobile/2018/spring/lectures/7/lecture7.pdf
-- [APIs](#api),
-- [randomuser.me/ documentation](#randomuserme-documentation)
-- [Making Network Requests](#making-network-requests),
-- [Promises](#promises), [Async/Await](#asyncawait),
-- [Data Transformations](#transforming-data),
-- [Authentication](#authentication),
-- [HTTP Methods](#http-methods),
-- [HTTP Response Codes](#http-response-codes),
-- [Expo Components](09_ExpoComponents.md)
-
 [top]: topOfThePage
+lecture: http://video.cs50.net/mobile/2018/spring/lectures/9
+
+slides: http://cdn.cs50.net/mobile/2018/spring/lectures/9/lecture9.pdf
+
+final project: http://docs.cs50.net/mobile/2020/x/projects/final/final.html
+* [Scaling Complexity](#scaling-complexity)
+* [Scaling Complexity: Facebook](#scaling-complexity-facebook)
+* [Flux](#flux)
+* [Redux](#redux)
+* [simpleRedux/](#simpleredux)
+* [Reducer](#reducer)
+* [Store](#store)
+* [Actions](#actions)
+* [simpleRedux → redux](#simpleredux--redux)
+* [Review: HOCs](#review-hocs)
+
 [Source Code](#source-code)
-files: src07.zip   
+files: src9.zip
+
 [**before/...**](#before)
-  contacts.js
-  AddContactForm.js
-  [App.js](#beforeappjs)
-  Row.js
-  SectionListContacts.js
-  package.json     
+    AddContactForm.js
+    [App.js](#beforeappjs)
+    Row.js
+    SectionListContacts.js
+    api.js
+    contacts.js
+    package.json
+
 before/screens/...
-    AddContactScreen.js
-    ContactDetailsScreen.js
-    ContactListScreen.js
-    [LoginScreen.js](#beforeloginscreenjs)
-    SettingsScreen.js
+        [AddContactScreen.js](#beforescreensaddcontactscreenjs)
+        [ContactDetailsScreen.js](#beforescreenscontactdetailsscreenjs)
+        [ContactListScreen.js](#beforescreenscontactlistscreenjs)
+        LoginScreen.js
+        SettingsScreen.js
 
 [**after/...**](#after)
-  [contacts.js](#aftercontactsjs)
-  AddContactForm.js
-  [App.js](#afterappjs)
-  Row.js
-  SectionListContacts.js
-  [api.js](#afterapijs)
-  [package.json](#afterpackagejson) 
+    AddContactForm.js
+    [App.js](#afterappjs)
+    Row.js
+    SectionListContacts.js
+    contacts.js
+    package.json
+
 after/...
-    [authServer](#afterauthserverreadmemd)/README.md
-    authServer/index.js
-    authServer/package-lock.json
-    authServer/package.json   
+    [redux/actions.js](#reduxactionsjs)
+    [redux/reducer.js](#reduxreducerjs)
+    [redux/store.js](#reduxstorejs)
+    [simpleRedux/reducer.js](#simplereduxreducerjs)
+    [simpleRedux/store.js](#simplereduxstorejs)
+    [simpleRedux/store2.js](#simplereduxstore2js)
+    
 after/screens/...
-    AddContactScreen.js
-    ContactDetailsScreen.js
-    ContactListScreen.js
-    [LoginScreen.js](#afterloginscreenjs)
-    SettingsScreen.js
+        [AddContactScreen.js](#afterscreensaddcontactscreenjs)
+        ContactDetailsScreen.js
+        [ContactListScreen.js](#afterscreenscontactlistscreenjs)
+        SettingsScreen.js
+
+[without React-Redux connect](#without-react-redux-connect)
+
+final project: [Final Project: Self-Designed App](https://github.com/alvinng222/cs50m/tree/projectFinal)
 
 [**myNote**](#mynote)
 
----
-[:top: Top](#top)
-### Previous Lecture [07_Navigation](https://github.com/alvinng222/cs50m/tree/07_Navigation).  
-- react-navigation
-- SwitchNavigator
-- navigation prop
-- StackNavigator
-- Configuring navigators
-- TabNavigator
-- Composing navigators
+--------------------------------------
 
----
-### Data
-- Not all apps are self-contained
-- Any app that wants to rely on information not computed
-within the app needs to get it from somewhere
-  - Communicate with other resources using an API
+### Previous Lecture [08_Data](https://github.com/alvinng222/cs50m/tree/08_Data).   
+- APIs
+- Making Network Requests
+- Promises, Async/Await
+- Data Transformations
+- Authentication
+- HTTP Methods
+- HTTP Response Codes
+- Expo Components
 
----
-### API
-- “Application Programming Interface”
-- A defined set of ways with which a resource can be
-interacted
-  - React components have APIs; you interact by passing props
-  - A class has an API; you interact by invoking methods
-  - A web service has an API; you interact by making network requests
-- Providers often get to decide on the API, but sometimes
-it’s decided for them
-- Consumers have to read docs to know how to use an API
+### Scaling Complexity
+- Our apps have been relatively simple, but we’re already
+starting to see bugs related to app complexity
+    - Forgetting to pass a prop
+    - Directly managing deeply nested state
+    - Duplicated information in state
+    - Not updating all dependent props
+    - Components with large number of props
+    - Uncertainty where a piece of data is managed
 
----
-### randomuser.me/ documentation
-- https://randomuser.me/documentation
+### Scaling Complexity: Facebook
+- Facebook found the MVC architecture too complex for
+their scale
+- The complexity manifested itself into bugs
+- Facebook rearchitected into one-way data flow
+* https://youtu.be/nYkdrAPrdcw?t=10m22s
 
----
-an API that is free in the cloud
+### Flux
+- “An application architecture for React utilizing a
+unidirectional data flow”
+    - The views react to changes in some number of “stores”
+    - The only thing that can update data in a store is a “dispatcher”
+    - The only way to trigger the dispatcher is by invoking “actions”
+    - Actions are triggered from the views
+- Many implementations
+    - https://github.com/facebook/flux
+    - https://github.com/reactjs/redux
+        - Whether redux is an implementation of Flux is an opinion that can be argued either way
 
-lets say copy their `https://randomuser.me/api/?results=5000`
-and copy and pass on new tab, will get a bunch of this stuff called JSON.
-Or in other words, JavaScript Object Notation.
-
-{"results":[{"gender":"female","name":{"title":"Mrs","first":"Isabella","last":"Thomsen"},"location":{"street":{"number":5813,"name":"Søndergårds Haver"},"city":"Assens", ...
- 
-And if we scroll down, we'll see 5,000 other randomlygenerated users.
-
-If we only wanted females, we can do gender=female.
-`https://randomuser.me/api/?gender=female`
-
-So if we want to get the same results back every time, we can pass in a seed,
-`https://randomuser.me/api/?seed=foobar`
-
-We can determine the format, so we can get JSON or CSV, YAML, XML.
-
-And lastly, we can determine nationalities.
-`https://randomuser.me/api/?nat=gb`
+> ` [ Action ] → [dispatcher ] → [Store],[Store],[S] → [View],[View],[View] → back to Action `
 
 [:top: Top](#top)
-### Making Network Requests
-- fetch() is polyfilled
-  - It’s not natively part of JavaScript, but it is implemented to match the
-usage of the browser fetch()
-- fetch() expects an URL and optionally some config
-- fetch() returns a Promise, which is fulfilled with a
-Response object
-* https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
-* https://developer.mozilla.org/en-US/docs/Web/API/Response
 
 ---
-And so fetch is a function that comes in all browsers,
+### Redux
+- A data management library inspired by Flux
+- Single source of truth for data
+- State can only be updated by an action that triggers a
+recomputation
+- Updates are made using pure functions
+- **Action → Reducer → Update Store**
+* https://redux.js.org
 
-Google Chorme console,
-Going to do fetch that URL, enter, and I see this thing promise pending.
-```
-fetch('https://randomuser.me/api/?nat=gb')
-  > Promise {<pending>}
-```
+> `[ Action ] → [ Store ] → [View],[View],[View] → back to Action `
 
-### Promises
-- Allows writing asynchronous, non-blocking code
-- Allows chaining callbacks and/or error handlers
-  - .then() - executed after the previous Promise block returns
-  - .catch() - executed if the previous Promise block errors
-* https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
-
----
-*.then(response => console.log(response))*
-```
-fetch('https://randomuser.me/api/?nat=gb').then(response => console.log(response))
-  > Promise {<pending>}
-  v Response {type: "cors", url: "https://randomuser.me/api/?nat=gb", redirected: false, status: 200, ok: true, …}
-    body: (...)
-    bodyUsed: false
-    > headers: Headers {} 
-```
-And if we inspect it, we see a bunch of stuff.
-We see body, bodyUsed false, headers, and in it
-are any headers, ok true, redirected false, status 200, type basic, URL.
-
-#### response.json()
-```
-fetch('https://randomuser.me/api/?nat=gb').then(response => response.json()).then(result => console.log(result))
-  > Promise {<pending>} 
-  > {results: Array(1), info: {…}}
-      > info: {seed: "c32bb1b866df3b53", results: 1, page: 1, version: "1.3"}
-      v results: Array(1)
-        > 0: {gender: "male", name: {…}, location: {…}, email: "tom.ellis@example.com", login: {…}, …} length: 1
-        > __proto__: Array(0)
-      > __proto__: Object
-```
-#### fetch more results
-checked with documentation, we can have results = 50. will be use at .01
-```
-fetch('https://randomuser.me/api/?results=50&nat=gb').then(response => response.json()).then(result => console.log(result))
-  > Promise {<pending>}
-  v {results: Array(50), info: {…}}
-    > info: {seed: "efd7bae302f932e2", results: 50, page: 1, version: "1.3"}
-    > results: (50) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
-    > __proto__: Object
-```
+[13:08]
 [:top: Top](#top)
+### simpleRedux/
+mkdir simpleRedux
 
-### Async/Await
-- Allows writing async code as if it were synchronous
-  - Still non-blocking
-- A function can be marked as async, and it will return a
-Promise
-- Within an async function, you can await the value of
-another async function or Promise
-- Use try/catch to handle errors
-* https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
-* https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await
+### Reducer
+- Takes the previous state and an update and applies the
+update
+- Should be a pure function
+    - Result is deterministic and determined exclusively by arguments
+    - No side effects
+- Should be immutable
+    - Return a new object
+- What is responsible for invoking the reducer?
 
----
-at chrome console, which is same as previous fetch(...). shift-Enter for new line during edting.
+.new 01 ./simpleRedux/reducer.js, simple reducer, on CS50 IDE
+``` js
+const reducer = (state, update) => ({
+    ...state,
+    ...update,
+})
+```
+.02 reducer.js
+``` js
+const reducer = (state, update) => ({
+    ...state,
+    ...update,
+})
+
+let state ={}
+state = reducer(state,{foo: 'foo'})
+state = reducer(state,{bar: 'bar'})
+state = reducer(state,{foo: 'baz'})
+```
+But first, since object spread `...state` is not yet supported by **node**,
+
+.03 reducer.js
 ``` jsx
-> async function fetchUsers() {
-    const response = await fetch('https://randomuser.me/api/?results=50&nat=gb')
-    const result = await response.json()
-    console.log(result)
-  }
+const merge = (prev, next) => Object.assign({}, prev, next)
 
-> fetchUsers()
-  > Promise {<pending>}
-  v {results: Array(50), info: {…}}
-    > info: {seed: "8964dd0830addddc", results: 50, page: 1, version: "1.3"}
-    v results: Array(50)
-      > 0: {gender: "male", name: {…}, location: {…}, email: "roberto.mccoy@example.com", login: {…}, …}
-      > 1: {gender: "female", name: {…}, location: {…}, email: "debra.jones@example.com", login: {…}, …}
-      > 2: {gender: "male", name: {…}, location: {…}, email: "wesley.herrera@example.com", login: {…}, …}
+const reducer = (state, update) => merge(state, update)
+
+let state ={}
+state = reducer(state, {foo: 'foo'})
+state = reducer(state, {bar: 'bar'})
+state = reducer(state, {foo: 'baz'})
+
+console.log(state)
 ```
+Terminal: **$ node reducer.js**
+``` console
+        simpleRedux twng$ vim reducer.js
+        simpleRedux twng$ node reducer.js
+        { foo: 'baz', bar: 'bar' }
+```
+And so to recap, all a reducer is is something
+that takes some previous state and something that we want to update it
+with and then returns a new state.  
+And so like I alluded to earlier, we can make our reducer even simpler by
+```
+const reducer = (state, update) => state 
+```
+, which donesnt do any things  
+[:top: Top](#top)
+[20:01]
 
-So if we wanted to add error handling to this fetchUsers, what we would do
+---
+### Store
+- Responsible for maintaining state
+- Exposes getter via getState()
+- Can only be updated by using dispatch()
+- Can add listeners that get invoked when state changes
+
+.new ./simpleRedux/store.js .04, So if we run that, we just get an empty object back, which is as expected.
 ``` jsx
-async function fetchUsersWithErrorHandling() {
-    try {
-        const response = await fetch('https://randomuser.me/api/?results=50&nat=gb')
-        const result = await response.json()
-        console.log(result)
-    } catch (err) {
-        console.error(err)
+const merge = (prev, next) => Object.assign({}, prev, next);
+
+const reducer = (state, update) => merge(state, update);
+
+class Store{
+    constructor(reducer, initialState) {
+        this.reducer = reducer;
+        this.state = initialState;
+    }
+    
+    getState() {
+        return this.state;
     }
 }
 
-fetchUsersWithErrorHandling()
+const store = new Store(reducer, {});
+console.log(store.getState());
+/*  ~/cs50m/simpleRedux/ $ node store.js
+    {} */
 ```
-[:top: Top](#top)
-
-installed source code [/before](/before)
-
-##### for Expo Cli
-react-navigation@2.0.0
-```
-$ npm install react-navigation@2.0.0 --save
-```
-##### for Snack   
-.01 package.json, changed json, 
-``` json
-{
-  "dependencies": {
-    "react-native-paper": "3.6.0",
-    "react-native-vector-icons": "^4.5.0",
-    "react-navigation": "2.0.0",
-    "react-native-vector-icons/Ionicons": "latest"
-  }
-}
-```
-
-from [before/App.js](#beforeappjs)  [03:30]
-
-.01 App.js, to fetch data. not working, but shown Array(50) on console.log
-``` jsx
-export default class App extends React.Component {
-  state = {
-    contacts: null, // .01
-  }
-
-  componentDidMount() {
-    fetch('https://randomuser.me/api/?results=50&nat=gb')
-      .then(response => response.json())
-      .then(({results}) => {
-        console.log(results)
-        this.setState({contacts: results})
-        })
-  } // .01
-```
-Error due to, checked from console, the `name`  is an object. Need to Transforming Data, later...
-
-.03 app.js, using Async/Await. atleast it shown data from console.log
-``` jsx
-export default class App extends React.Component {
-  state = {
-    contacts: null, // .01
-  }
-
-  componentDidMount() {
-    this.fetchUsers()
-  } // .03
-
-  fetchUsers = async () => {
-    const response = await fetch('https://randomuser.me/api/?results=50&nat=gb')
-    const {results} = await response.json()
-    console.log(results)
-    this.setState({contacts: results})
-  } // .02 .03
-  ...
-```
-[:top: Top](#top)
-### Transforming Data
-- Sometimes the shape of the data returned by an API isn’t
-ideal
-  - Where should we do this “transformation?”
-- Doing it early gives us an abstraction barrier and is more
-efficient
-
----
-.new file
-.04 **api.js**
-``` jsx
-export const fetchUsers = async () => {
-  const response = await fetch('https://randomuser.me/api/?results=50&nat=gb');
-  const { results } = await response.json();
-  return results
-}; // .02 .03 .04
-```
-.4b for app.js
-``` jsx
- //import contacts from './contacts'
- import { fetchUsers } from './api'
- ...
-  componentDidMount() {
-    fetchUsers().then(results => this.setState({contacts: results}))
-  } // .03 .04b
-  /* or */
-  async getUsers = () => {
-    const results = await fetchUsers()
-    this.setState({contacts: results})
-  } // .04b
-```
-.4c app.js we use the async. > it shown TypeError: Cannot read property 'toUpperCase' of undefined.
-``` jsx
- //import contacts from './contacts'
- import { fetchUsers } from './api'
- ...
-  componentDidMount() {
-    this.getUsers()
-  } // .03 .04b .04c
-
-  getUsers = async () => {
-    const results = await fetchUsers()
-    this.setState({contacts: results})
-  } // .04b .04c
-```
-.4d api.js, we can do backticks, which allows us to create a string literal and within it. 
-Now, it fixed the problem. :+1:
-``` jsx
-const processContact = contact => ({
-  name: `${contact.name.first} ${contact.name.last}`,
-  phone: contact.phone,
-}) //.04d
-
-export const fetchUsers = async () => {
-  const response = await fetch('https://randomuser.me/api/?results=50&nat=gb');
-  const { results } = await response.json();
-  return results.map(processContact) // .04d
-}; // .02 .03 .04 
-```
-[:top: Top](#top)
-
-[46:50] Break!
-### Authentication
-- A process to determine if a user is who they say they are
-- Generally done using a name and password
-_ But how do we send the name and password in the
-request?
-
----
-### HTTP Methods
-- GET
-  - The default in browsers and in fetch()
-  - Add parameters in the url by appending a **?** and chaining key=value
-pairs separated by **&**
-- POST
-  - Submit data (e.g. a form) to an endpoint
-  - Parameters are included in the request body
-  - If POSTing JSON, must have content-type: application/json
-header and body must be JSON string
-
----
-check on the ./authServer/README.md for this server that provide username: `username` and password: `password`.  
-Use this server as api.
-
-.05 to install this server `authServer`. if we visit this `http://localhost:8000`, we can see it run. [47:53]
-```
-$ authServer $  ls
-README.md	index.js	package.json
-$ authServer $  cat README.md
-$ authServer $ npm install
-$ authServer $ npm start
-$ authServer $ exit (if error due to background is running other)
-$ authServer $ npm start
-Listening at http://localhost:8000
-```
-
-- GET
-  - The default in browsers and in fetch()
-  - Add parameters in the url by appending a **?** and chaining key=value
-pairs separated by **&**
-
-eaxmples of passing parameters using ? & & :
-`https://randomuser.me/api/?nat=gb&results=10&gender=female`
-
-- POST
-  - Submit data (e.g. a form) to an endpoint
-  - Parameters are included in the request body
-  - If POSTing JSON, must have content-type: application/json header and body must be JSON string
-
-to send a post request to our API, in Chrome's console [56:43]
-```
-console.clear()
-fetch('http://localhost:8000')
-  > VM202:1 GET http://localhost:8000/ 404 (Not Found)
-...
-fetch('http://localhost:8000', {method: 'POST'})
-  > VM368:1 POST http://localhost:8000/ 400 (Bad Request)
-```
-click on the Network > `localhost` > 
-```
-v General
-    Request URL: http://localhost:8000/
-    Request Method: POST
-    Status Code: 400 Bad Request
-    Remote Address: [::1]:8000
-    ...
-```
-
-
-.06 LoginScreen.js [59:43],   
-just able to key in with/without the correct username and password.
-``` jsx
-import React from 'react'
-import {Button, View, StyleSheet, TextInput} from 'react-native' //.06
-
-export default class LoginScreen extends React.Component {
-  state = {
-    username: '',
-    password: '',
-  } // .06
-
-  _login = () => {
-    this.props.navigation.navigate('Main')
-  }
-
-  handleUsernameUpdate = username => {
-    // this.setState({username: username}) // use shorthoad below
-    this.setState({username})
-  } // .06
-
-  handlePasswordUpdate = password => {
-    // this.setState({username: username}) // use shorthoad below
-    this.setState({password})
-  } // .06
-
-  render() {
-    return (
-      <View style={styles.container}>
-        <TextInput 
-          placeholder="Username" 
-          value={this.state.username}
-          onChangeText={this.handleUsernameUpdate} // .06
-        />
-        <TextInput 
-          placeholder="password"
-          value={this.state.password}
-          onChangeText={this.handlePasswordUpdate} // .06
-        />
-        <Button title="Press to Log In" onPress={this._login} />
-      </View>
-    )
-  } // .06
-}
-
-const styles = StyleSheet.create({
-  container: {justifyContent: 'center',flex: 1,},
-  //text: {textAlign: 'center',},
-})
-```
-.07 LoginScreen.js add in localhost, but didnt work!! [1:05:00]
-``` jsx
-  _login = () => {
-    fetch('http://localhost:8000', {
-      method: 'POST',
-      header: {'content-type': 'application/JSON'},
-      body: JSON.stringify({
-        username: this.state.username, 
-        password: this.state.password,
-      }),
-    }).then(res => console.log(res))
-    this.props.navigation.navigate('Main')
-  } // .06 .07
-```
-
-#### Error shown from my console: 
-Access to fetch at 'http://localhost:8000/' from origin 'http://localhost:19006' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
-
-
-
-[:top: Top](#top)
-### HTTP Response Codes
-- Every network response has a “code” associated with it
-  - 200: OK
-  - 400: Bad Request
-  - 403: Forbidden
-  - 404: Not Found
-  - 500: Internal Server Error
-  - 418: I’m a teapot
-* https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-
----
-my check on the Dev Tools, Network > All, the Local shown 404.  
-Click on the LocalHost > Header show status Code: 404.
-
-`if (response.ok)` is similar to    
-`if (response.status === 400 || response.status === 401 || response.status === 402 || response.status === 403)`  
-
-.08 loginscreen.js [1:22:40] > it dont work! Failed to load resource: net::ERR_FAILED
-``` jsx
-import React from 'react'
-import {Button, View, StyleSheet, Text, TextInput} from 'react-native' //.06 .08b
-
-export default class LoginScreen extends React.Component {
-  state = {
-    username: '',
-    password: '',
-  } // .06
-
-  _login = async () => { // .08
-    const response = await fetch('http://localhost:8000', { // .08
-      method: 'POST',
-      header: {'content-type': 'application/JSON'},
-      body: JSON.stringify({
-        username: this.state.username, 
-        password: this.state.password,
-      }),
-    })
-
-    if (response.ok) {
-      this.props.navigation.navigate('Main')
-      return
-    } // .08
-
-    const errMessage = await response.text()
-    this.setState({err: errMessage})
-  } // .06 .07 .08
-
-  handleUsernameUpdate = username => {
-    // this.setState({username: username}) // use shorthoad below
-    this.setState({username})
-  } // .06
-
-  handlePasswordUpdate = password => {
-    this.setState({password})
-  } // .06
-
-  render() {
-    return (
-      <View style={styles.container}>
-        <TextInput 
-          placeholder="Username" 
-          value={this.state.username}
-          onChangeText={this.handleUsernameUpdate} // .06
-        />
-        <TextInput 
-          placeholder="password"
-          value={this.state.password}
-          onChangeText={this.handlePasswordUpdate} // .06
-        />
-        <Button title="Press to Log In" onPress={this._login} />
-      </View>
-    )
-  } // .06
-}
-
-const styles = StyleSheet.create({
-  container: {justifyContent: 'center',flex: 1,},
-  //text: {textAlign: 'center',},
-})
-```
-``` jsx
-import {Button, View, StyleSheet, Text, TextInput} from 'react-native' //.06 .08b
-...
-    return (
-      <View style={styles.container}>
-        <Text style={styles.error}>{this.state.err}</Text> {/*.08b*/}
-...
-const styles = StyleSheet.create({
-  container: {justifyContent: 'center',flex: 1,},
-  //text: {textAlign: 'center',},
-  error: {
-    textAlign: 'center',
-    color: 'red',
-  }, // .08b
-})
-```
-.09 LoginScreen.js none capitalise, and invinsible password
-``` jsx
-        <TextInput 
-          placeholder="Username" 
-          value={this.state.username}
-          onChangeText={this.handleUsernameUpdate} // .06
-          autoCapitalize="none"  //.09
-        />
-        <TextInput 
-          placeholder="password"
-          value={this.state.password}
-          onChangeText={this.handlePasswordUpdate} // .06
-          secureTextEntry // short-hand .09
-          //secureTextEntry="true" //.09
-        />
-```
-[:top: Top](#top)
-
-[1:30:05]
-
-.10 api.js transfer from loginScreen.js, and edit
+.05 store.js And if we add instead past its arbitrary object like foo foo, and then ran it,
 ``` jsx
 ...
-}; // .02 .03 .04 
-
-export const login = async (username, password) => { 
-      const response = await fetch('http://localhost:8000', { 
-      method: 'POST',
-      header: {'content-type': 'application/JSON'},
-      body: JSON.stringify({username, password}),
-    })
-
-    if (response.ok) {
-      return true
-    } 
-
-    const errMessage = await response.text()
-    throw new Error(errMessage)
-  } // .10
+const store = new Store(reducer, {foo: 'foo'});
+console.log(store.getState()); // => { foo: 'foo' }
 ```
-.10 cont loginScreen.js
-``` jsx
-import {login} from '../api'
-...
+So first, and most importantly, we should have some sort of way
+to update that state.
+And the way that we do this in Redux is by dispatching an action
+or by just invoking this method called dispatch with some way of updating.
 
-  _login = async () => {
-    try {
-      const success = await login(this.state.username, this.state.password)
-      this.props.navigation.navigate('Main')
-    } catch (err) {
-      const errMessage = err.message
-      this.setState({err: errMessage})
+And let's, for now, actually just not pass an initial value at all.
+And so we dispatch a few updates, and then now let's
+log some initials, or the state after those dispatches. And so we get back what we wanted.   
+.06 store.js. 
+``` jsx
+class Store{
+    constructor(reducer, initialState) {
+        this.reducer = reducer;
+        this.state = initialState;
     }
-  } // .10
+
+    getState() {
+        return this.state;
+    }
+
+    dispatch(update) {
+        this.state = this.reducer(this.state, update)
+    } // .06
+}
+
+const merge = (prev, next) => Object.assign({}, prev, next);
+
+const reducer = (state, update) => merge(state, update);
+
+const store = new Store(reducer); // .06
+
+store.dispatch({foo: 'foo'}); // .06
+store.dispatch({bar: 'bar'})
+store.dispatch({foo: 'baz'})
+
+console.log(store.getState()); 
+//  $ node store.js
+//  { foo: 'baz', bar: 'bar' }
+```
+[:top: Top](#top)
+[29:43]
+
+
+---
+### Actions
+- An action is a piece of data that contains the information
+required to make a state update
+    - Usually objects with a type key
+    - https://github.com/redux-utilities/flux-standard-action
+- Functions that create actions are called action creators
+- Actions must be dispatched in order to affect the state
+
+Example for FSA,   
+**A basic Flux Standard Action:**
+```
+    {
+      type: 'ADD_TODO',
+      payload: {
+        text: 'Do something.'  
+      }
+    }
+```
+Actions
+An action MUST  
+    . be a plain JavaScript object.  
+    . have a type property.   
+An action MAY  
+    . have an error property.  
+    . have a payload property.  
+    . have a meta property.  
+An action MUST NOT include properties other than type, payload, error, and meta.
+
+[30:51]   
+to keep track our contact, users; username, login or not, key values  ...    
+**.new 08 ./simpleRedux/store2.js** on CS50 IDE.   
+reducers handle contact and user. The main reducer will combine all these reducers.
+
+ Consider an action in Flux. The object has a key called **type**, and **payload**.
+``` jsx
+class Store{
+    constructor(reducer, initialState) {
+        this.reducer = reducer;
+        this.state = initialState;
+    }
+
+    getState() {
+        return this.state;
+    }
+
+    dispatch(update) {
+        this.state = this.reducer(this.state, update)
+    } // .06
+}
+
+const DEFAULT_STATE = {user: {}, contacts: []} //user:object; contacts:array .08
+
+const merge = (prev, next) => Object.assign({}, prev, next);
+
+const contactReducer = (state, newContact) => [...state, newContact] //.08
+const userReducer = (state, update) => merge(state, update) //.08
+
+/* will be syntax error on node
+const reducer = (state, action) => {
+  if (action.type === 'UPDATE_USER') {
+    return {
+      ... state,
+      user: userReducer(state.user, action.payload)
+    }
+  }
+*/
+const reducer = (state, action) => {
+  if (action.type === 'UPDATE_USER') {
+    return merge(
+      state,
+      {user: userReducer(state.user, action.payload)}
+    )
+  }
+
+  return state
+} // .08
+
+const store = new Store(reducer, DEFAULT_STATE); // .06 .08
+store.dispatch({type: 'UPDATE_USER', payload: {foo: 'foo'}}); // .06 .08
+store.dispatch({type: 'UPDATE_USER', payload: {bar: 'bar'}})
+store.dispatch({type: 'UPDATE_USER', payload: {foo: 'baz'}})
+
+console.log(store.getState());
+//      $ node store2.js
+//      { user: { foo: 'baz', bar: 'bar' }, contacts: [] }
+```
+[:top: Top](#top)
+[47:14]
+
+.09 store2.js allowing us to add ontacts. Using Reducer
+``` jsx
+class Store{
+    constructor(reducer, initialState) {
+        this.reducer = reducer;
+        this.state = initialState;
+    }
+
+    getState() {
+        return this.state;
+    }
+
+    dispatch(update) {
+        this.state = this.reducer(this.state, update)
+    } // .06
+}
+
+const DEFAULT_STATE = {user: {}, contacts: []} // .08
+
+const merge = (prev, next) => Object.assign({}, prev, next);
+
+const contactReducer = (state, newContact) => [...state, newContact] //.08
+const userReducer = (state, update) => merge(state, update) //.08
+
+const reducer = (state, action) => {
+  if (action.type === 'UPDATE_USER') {
+    return merge(
+      state,
+      {user: userReducer(state.user, action.payload)}
+      )
+  }
+
+  if (action.type === 'UPDATE_CONTACT') {
+    return merge(
+      state,
+      {contacts: contactReducer(state.contacts, action.payload)}
+      )
+  } // .09
+
+  return state
+} // .08
+
+const store = new Store(reducer, DEFAULT_STATE); // .06 .08
+store.dispatch({type: 'UPDATE_USER', payload: {foo: 'foo'}}); // .06 .08
+store.dispatch({type: 'UPDATE_USER', payload: {bar: 'bar'}})
+store.dispatch({type: 'UPDATE_USER', payload: {foo: 'baz'}})
+
+store.dispatch({type: 'UPDATE_CONTACT', payload:{name: 'Jorhan', number:'1234567890'}}) // .09
+store.dispatch({type: 'UPDATE_CONTACT', payload:{name: 'Jorhan', number:'1234567890'}}) // .09b
+
+console.log(store.getState());
+/* >
+        $ node store2.js
+        {
+          user: { foo: 'baz', bar: 'bar' },
+          contacts: [
+            { name: 'Jorhan', number: '1234567890' },
+            { name: 'Jorhan', number: '1234567890' }
+          ]
+        } */
+```
+.10 store2.js action types, tidy up via creating objects. Creating Constants type.
+``` jsx
+// action types
+const UPDATE_USER = 'UPDATE_USER' // .10
+const UPDATE_CONTACT = 'UPDATE_CONTACT' //.10
+
+class Store{
+...
+const reducer = (state, action) => {
+  if (action.type === UPDATE_USER) { //.10
+...
+
+  if (action.type === UPDATE_CONTACT) { //.10
+...
+
+const store = new Store(reducer, DEFAULT_STATE); // .06 .08
+store.dispatch({type: UPDATE_USER, payload: {foo: 'foo'}}); // .06 .08 .10
+store.dispatch({type: UPDATE_USER, payload: {bar: 'bar'}})
+store.dispatch({type: UPDATE_USER, payload: {foo: 'baz'}})
+
+store.dispatch({type: UPDATE_CONTACT, payload:{name: 'Jorhan', number:'1234567890'}}) // .09
+store.dispatch({type: UPDATE_CONTACT, payload:{name: 'Jorhan', number:'1234567890'}}) // .09b
+
+console.log(store.getState()); 
+
+```
+But now, every single time we want to dispatch an action,
+we have to type that entire action out.
+And so maybe it might be better to create a function that
+creates our actions for us.   
+.11 store2.js
+``` jsx
+...
+  return state
+} // .08 
+
+// action creators
+const updateUser = update => ({
+  type: UPDATE_USER,
+  payload: update,
+}) //.11
+
+const addContact = newContact => ({
+  type: UPDATE_CONTACT,
+  payload: newContact,
+}) //.11b
+
+const store = new Store(reducer, DEFAULT_STATE); // .06 .08
+store.dispatch(updateUser({foo: 'foo'})); // .06 .08 .10 .11
+store.dispatch(updateUser({bar: 'bar'}))
+store.dispatch(updateUser({foo: 'baz'}))
+
+store.dispatch(addContact({name: 'Jorhan', number:'1234567890'})) // .09 .11b
+store.dispatch(addContact({name: 'Jorhan', number:'1234567890'})) // .09b
+```
+[:top: Top](#top)
+[59:40]
+
+There is scalability problem. when we update, we need to change alot of code in our Reducers.
+
+main reducer just pass the action to all of them smaller reducers.  
+And now the previous contacts stored in the user
+is indeed the most recently added contact.  
+
+.12 store2.js
+``` jsx
+...
+const merge = (prev, next) => Object.assign({}, prev, next);
+
+const contactReducer = (state, action) => {
+   if (action.type === UPDATE_CONTACT) return [...state, action.payload]
+   return state
+} //.08 .12
+
+const userReducer = (state, action) => {
+  if (action.type === UPDATE_USER) return merge(state, action.payload)
+  if (action.type === UPDATE_CONTACT) return merge(state, {prevContact: action.payload}) //.12b
+  return state
+} //.08 .12
+
+const reducer = (state, action) => ({
+  user: userReducer(state.user, action),
+  contacts: contactReducer(state.contacts, action),
+}) //.12
+
+// action creators
+...
+```
+Terminal:
+``` console
+        $ node store2.js
+        {
+          user: {
+            foo: 'baz',
+            bar: 'bar',
+            prevContact: { name: 'Jorhan', number: '1234567890' }
+          },
+          contacts: [
+            { name: 'Jorhan', number: '1234567890' },
+            { name: 'Jorhan', number: '1234567890' }
+          ]
+        }
+```
+[:top: Top](#top)
+[1:10:00]
+
+---
+### simpleRedux → redux
+- Our redux implementation has a very similar API
+    - Missing a way to notify that state has updated
+- How do we get the info from the store to our components?
+    - store.getState()
+- How do we update the store?
+    - store.dispatch()
+- How do we get the application to update when the store
+changes?
+
+Expo Cli install Redux
+``` 
+    $ npm install redux
+``` 
+can also install on CS50 IDE, `~/cs50m/Redux/`
+
+.new .13 ./Redux/store.js copied from ./SimpleRedux/store2.js
+```
+$ mkdir redux
+$ cd redux
+redux $ cp ../simpleRedux/store2.js store.js
+redux $ vim store.js
+```
+.14 store.js on CS50 IDE, working
+``` jsx
+//import {createStore} from 'redux' // not support on node //.14
+const {createStore} = require('redux') //this for node //.14 
+
+// action types
+const UPDATE_USER = 'UPDATE_USER' // .10
+const UPDATE_CONTACT = 'UPDATE_CONTACT' //.10
+
+/* .14  delete class Store
+class Store{
+ ...
+} */
+
+const DEFAULT_STATE = {user: {}, contacts: []} // .08
+
+const merge = (prev, next) => Object.assign({}, prev, next);
+
+const contactReducer = (state, action) => {
+   if (action.type === UPDATE_CONTACT) return [...state, action.payload]
+   return state
+} //.08 .12
+
+const userReducer = (state, action) => {
+  if (action.type === UPDATE_USER) return merge(state, action.payload)
+  if (action.type === UPDATE_CONTACT) return merge(state, {prevContact: action.payload}) //.12b
+  return state
+} //.08 .12
+
+const reducer = (state, action) => ({
+  user: userReducer(state.user, action),
+  contacts: contactReducer(state.contacts, action),
+}) //.12
+
+// action creators
+const updateUser = update => ({
+  type: UPDATE_USER,
+  payload: update,
+}) //.11
+
+const addContact = newContact => ({
+  type: UPDATE_CONTACT,
+  payload: newContact,
+}) //.11b
+
+const store = createStore(reducer, DEFAULT_STATE); // .06 .08 .14
+store.dispatch(updateUser({foo: 'foo'})); // .06 .08 .10 .11
+store.dispatch(updateUser({bar: 'bar'}))
+store.dispatch(updateUser({foo: 'baz'}))
+
+store.dispatch(addContact({name: 'Jorhan', number:'1234567890'})) // .09 .11b
+store.dispatch(addContact({name: 'Jorhan', number:'1234567890'})) // .09b
+store.dispatch(addContact({name: 'David M', number:'50505050505'})) //.12c
+
+console.log(store.getState());
+```
+Terminal
+``` console
+        redux $ ls
+        store.js
+        redux $ node store.js
+        {
+          user: {
+            foo: 'baz',
+            bar: 'bar',
+            prevContact: { name: 'David', number: '505050505050' }
+          },
+          contacts: [
+            { name: 'Jorhan', number: '1234567890' },
+            { name: 'Jorhan', number: '1234567890' },
+            { name: 'David', number: '505050505050' }
+          ]
+        }
+```
+[:top: Top](#top)
+
+Redux actually, also, gives us a few other goodies. **combineReducers**.   
+.15 store.js
+``` jsx
+//import {createStore} from 'redux' //not support on node //.14
+const {combineReducers, createStore} = require('redux') //this for node //.14 .15
+...
+
+const contactReducer = (state = [], action) => {
+   if (action.type === UPDATE_CONTACT) return [...state, action.payload]
+   return state
+} //.08 .12 .15
+
+const userReducer = (state = {}, action) => {
+  if (action.type === UPDATE_USER) return merge(state, action.payload)
+  if (action.type === UPDATE_CONTACT) return merge(state, {prevContact: action.payload}) //.12b
+  return state
+} //.08 .12 .15
+
+const reducer = combineReducers({
+    user: userReducer,
+    contacts: contactReducer,
+}) //.15
+
+...
+```
+[:top: Top](#top)
+
+And so let's start to **split those out into separate files**
+> redux $ cp store.js reducer.js  
+> redux $ cp store.js action.js
+
+.new .16 actions.js
+``` jsx
+// action types
+export const UPDATE_USER = 'UPDATE_USER' // .10 .16
+export const UPDATE_CONTACT = 'UPDATE_CONTACT' //.10 .16
+
+// action creators
+export const updateUser = update => ({
+  type: UPDATE_USER,
+  payload: update,
+}) //.11 .16
+
+export const addContact = newContact => ({
+  type: UPDATE_CONTACT,
+  payload: newContact,
+}) //.11b .16
+```
+.new .17 reducer.js
+``` jsx
+import {combineReducers} from 'redux' //not support on node //.14 .17
+
+import {UPDATE_USER, UPDATE_CONTACT} from './actions' //.17
+
+const merge = (prev, next) => Object.assign({}, prev, next);
+
+const contactReducer = (state = [], action) => {
+   if (action.type === UPDATE_CONTACT) return [...state, action.payload]
+   return state
+} //.08 .12 .15
+
+const userReducer = (state = {}, action) => {
+  if (action.type === UPDATE_USER) return merge(state, action.payload)
+  if (action.type === UPDATE_CONTACT) return merge(state, {prevContact: action.payload}) //.12b
+  return state
+} //.08 .12 .15
+
+const reducer = combineReducers({
+    user: userReducer,
+    contacts: contactReducer,
+}) //.15
+
+export default reducer //.17
+
+/* can be
+const reducer = combineReducers({
+    user: combineReducers({
+      meta: userMetaReducer,
+      logins: userLoginReducer,
+    }),
+    contacts: contactReducer,
+}) //.15 .17 */
+```
+(.new) .18 store.js
+``` jsx
+import {createStore} from 'redux' //not support on node //.14
+
+import reducer from './reducer' // .18
+
+const store = createStore(reducer); // .14 .18
 
 /*
-  _login = async () => { // .08
-  ...
-*/ // .10
+store.dispatch(updateUser({foo: 'foo'})); // .06 .08 .10 .11
+store.dispatch(updateUser({bar: 'bar'}))
+store.dispatch(updateUser({foo: 'baz'}))
 
-  handleUsernameUpdate = username => {
-  ...
+store.dispatch(addContact({name: 'Jorhan', number:'1234567890'})) // .09 .11b
+store.dispatch(addContact({name: 'Jorhan', number:'1234567890'})) // .09b
+store.dispatch(addContact({name: 'David M', number:'50505050505'})) //.12c
+
+console.log(store.getState());
+*/
+
+export default store
 ```
-Still unable to login on Web, and device !!
+.19 reducers.js easier to read
+``` jsx
+...
+const userReducer = (state = {}, action) => {
+    switch (action.type) {
+        case UPDATE_USER:
+            return merge(state, action.payload)
+        case UPDATE_CONTACT:
+            return merge(state, {prevContact: action.payload}) //.12b
+        default:
+            return state
+    } //.19
+} //.08 .12 .15
+```
+[:top: Top](#top)
+[01:27:32]
+### back to contacts
 
+working on is this contacts app.
+... namely that the login screen is gone and the asynchronous request
+for fetching the contacts is gone.
+
+myNote: 10_Redux via Snack, download [*before/...*](#before) except *LoginScreen.js, api.js*, FlatListContacts.js ScrollViewContacts.js/ To work, modify json &  
+**.new 07 app.js**
+``` jsx
+//.07 import LoginScreen from './screens/LoginScreen'
+//.07 import {fetchUsers} from './api'
+...
+const AppNavigator = createSwitchNavigator({
+  //.07 Login: LoginScreen,
+  Main: MainTabs,
+})
+```
+.07 package.json
+``` jsx
+{
+  "dependencies": {
+    "react-navigation": "2.0.0",
+    "react-native-paper": "3.6.0",
+    "react-native-vector-icons": "6.6.0",
+    "react-native-vector-icons/Ionicons": "6.6.0"
+  }
+}
+```
+Terminal, copied to store.js
+``` console
+        $ cp simpleRedux/store2.js store.js
+        $ ls
+        AddContactForm.js	api.js			node_modules
+        app.json		package-lock.json
+        App.js			babel.config.js		package.json
+        Row.js			contacts.js		screens
+        SectionListContacts.js	index.js		simpleRedux
+        __tests__		ios			store.js
+        android			metro.config.js		web-build
+        $ 
+```
+[:top: Top](#top)
+
+> ● How do we get the info from the store to our components? store.getState()
+
+using Snack, 
+cont from *.new 07 app.js*  
+action.js, reducer.js & store.js
+
+> **a space before 'action.js' costs my time to trace the bug!!!**
+
+And so we don't really care about contacts in all of our pages.
+We only care about it in the page that displays them.
+And so let's delete this code that passes the contacts as a screen.  
+.20 app.js, to change after .21 .22
+``` jsx
+  render() {
+    return (
+      <MainTabs />
+    )
+  } //.20
+```
+
+.22 contactListScreen.js, atleast shown that the actions reducer & store 
+``` jsx
+import store from '../redux/store' //.22
+...
+  render() {
+    const contacts = store.getState().contacts //.22
+    return (
+      <View style={styles.container}>
+        <Button title="toggle contacts" onPress={this.toggleContacts} />
+        {this.state.showContacts && (
+          <SectionListContacts  
+            contacts={contacts} // .22 was //contacts={this.props.screenProps.contacts}
+            onSelectContact={this.handleSelectContact}
+          />
+        )}
+      </View>
+    )
+  }
+```
+
+.21 store.js release contacts data, import {addContact}. It just shown listing.
+```jsx
+import {createStore} from 'redux' //not support on node //.14
+import reducer from './reducer' // .18
+import {addContact} from './actions' // .23
+
+const store = createStore(reducer); // .14 .18
+
+/*
+store.dispatch(updateUser({foo: 'foo'})); // .06 .08 .10 .11
+store.dispatch(updateUser({bar: 'bar'}))
+store.dispatch(updateUser({foo: 'baz'}))
+*/
+store.dispatch(addContact({name: 'Jorhan', number:'1234567890'})) // .09 .11b //.21
+store.dispatch(addContact({name: 'Jorhan', number:'1234567890'})) // .09b
+store.dispatch(addContact({name: 'David M', number:'50505050505'})) //.12c
+
+console.log(store.getState());
+
+export default store
+```
+
+[01:33:23]  **so far so good**, contacts showing up, however phone are not, unable to update.
+
+[:top: Top](#top)
+
+.23 store.js changed number to phone.
+``` jsx
+...
+store.dispatch(addContact({name: 'David M', phone:'50505050505'})) //.12c
+```
+[1:34:55]
+> ● How do we update the store? ○ store.dispatch()
+
+.24 AddContactScreen.js, it show up the new contact after trigger Toggle Contact
+``` jsx
+import React from 'react'
+import AddContactForm from '../AddContactForm'
+
+import store from '../redux/store'//.24
+import {addContact} from '../redux/actions'  //.24
+
+export default class AddContactScreen extends React.Component {
+  static navigationOptions = {
+    headerTitle: 'New Contact',
+  }
+
+  handleSubmit = formState => {
+    //store.dispatch(addContact(formState)) // .24b
+    store.dispatch(addContact({name: formState.name, phone: formState.phone})) // .24b
+    this.props.navigation.navigate('ContactList')
+  }
+
+  render() {
+    return <AddContactForm onSubmit={this.handleSubmit} />
+  }
+}
+```
+> ● How do we get the application to update when the store
+changes?
+
+[:top: Top](#top)
+
+---
+### Review: HOCs
+- Higher-Order Components take components as
+arguments or return components
+- We could create a HOC that does the following:
+    - Check for state updates and pass new props when that happens
+    - Automatically bind our action creators with store.dispatch()
+- We’d also need to subscribe to store updates
+* https://github.com/reactjs/react-redux
+
+**Provider** & **Connect**
+
+ExpoCli install `react-redux`, shown in package.json. Also can use Snack.
+```
+        $ npm install react-redux@5.0.7 --save
+```        
+
+.25 ContactListScreen.js `connect`, but it doens't work yet
+``` jsx
+import React from 'react'
+import {Button, View, StyleSheet} from 'react-native'
+import {connect} from 'react-redux' // .25
+
+import SectionListContacts from '../SectionListContacts'
+//.25 import store from '../redux/store' //.22
+
+class ContactListScreen extends React.Component { //.25
+...
+
+  render() {
+    //.25b const contacts = store.getState().contacts // .22
+    return (
+      <View style={styles.container}>
+        <Button title="toggle contacts" onPress={this.toggleContacts} />
+        {this.state.showContacts && (
+          <SectionListContacts
+            contacts={this.props.contacts} // .22 25b
+            onSelectContact={this.handleSelectContact}
+          />
+        )}
+      </View>
+    )
+  }
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, },
+})
+
+const mapStateToProps = state => ({
+  contacts: state.contacts,
+}) //.25
+export default connect(mapStateToProps)(ContactListScreen) //.25
+```
+.26 App.js  `Provider`
+``` jsx
+...
+import {Provider} from 'react-redux' // .26
+
+...
+import store from './redux/store' // .26
+
+...
+
+  render() {
+    return (
+      <Provider store={store}>
+      <MainTabs />
+      </Provider>
+    )
+  } //.20 .26
+}
+```
+It work now! my note need to change to `"react-redux": "5.0.7"`.    
+package.json for Snack
+``` js
+{
+  "dependencies": {
+    "redux": "4.0.5",
+    "react-redux": "5.0.7",
+    "react-navigation": "2.0.0",
+    "react-native-paper": "3.6.0",
+    "react-native-vector-icons": "6.6.0",
+    "react-native-vector-icons/Ionicons": "6.6.0"
+  }
+}
+```
+
+
+.27 AddContactScreen.js
+``` jsx
+import React from 'react'
+import AddContactForm from '../AddContactForm'
+import {connect} from 'react-redux' //.27
+//.27 import store from '../redux/store'//.24
+import {addContact} from '../redux/actions'  //.24
+
+//.27export default class AddContactScreen extends React.Component {
+class AddContactScreen extends React.Component { //.27
+  static navigationOptions = {
+    headerTitle: 'New Contact',
+  }
+
+  handleSubmit = formState => {
+    //store.dispatch(addContact(formState)) // .24b
+    //store.dispatch(addContact({name: formState.name, phone: formState.phone})) // .24b
+    this.props.addContact({name: formState.name, phone: formState.phone}) //.27
+    this.props.navigation.navigate('ContactList')
+  }
+
+  render() {
+    return <AddContactForm onSubmit={this.handleSubmit} />
+  }
+}
+
+export default connect(null, {addContact: addContact})(AddContactScreen) //.27` 
+```
+
+It have error on other pages, such as gotoRandom.
+
+[:top: Top](#top)
 
 ---
 Source Code
 ---
-[:top: Top](#top)
-
 ### before/...
+
 #### before/App.js
-Files ./after/App.js and ./before/App.js differ
-see my note, using workable app.js, due to createBottomTabNavigator error
 ``` jsx
 import React from 'react'
-import {StatusBar, View} from 'react-native'
 import {
   createStackNavigator,
   createSwitchNavigator,
@@ -665,6 +1031,7 @@ import SettingsScreen from './screens/SettingsScreen'
 import ContactListScreen from './screens/ContactListScreen'
 import ContactDetailsScreen from './screens/ContactDetailsScreen'
 import LoginScreen from './screens/LoginScreen'
+import {fetchUsers} from './api'
 import contacts from './contacts'
 
 const MainStack = createStackNavigator(
@@ -712,6 +1079,17 @@ export default class App extends React.Component {
     contacts,
   }
 
+  /*
+  componentDidMount() {
+    this.getUsers()
+  }
+
+  getUsers = async () => {
+    const results = await fetchUsers()
+    this.setState({contacts: results})
+  }
+  */
+
   addContact = newContact => {
     this.setState(prevState => ({
       contacts: [...prevState.contacts, newContact],
@@ -720,7 +1098,7 @@ export default class App extends React.Component {
 
   render() {
     return (
-      <AppNavigator
+      <MainTabs
         screenProps={{
           contacts: this.state.contacts,
           addContact: this.addContact,
@@ -731,25 +1109,130 @@ export default class App extends React.Component {
 }
 
 ```
-
 [:top: Top](#top)
 
-#### before/screens/LoginScreen.js
-Files ./after/screens/LoginScreen.js and ./before/screens/LoginScreen.js differ
+#### before/package.json
+``` jsx
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "private": true,
+  "dependencies": {
+    "expo": "^25.0.0",
+    "prop-types": "^15.6.1",
+    "react": "16.2.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-25.0.0.tar.gz",
+    "react-native-vector-icons": "^4.5.0",
+    "react-navigation": "2.0.0-beta.5"
+  }
+}
+
+```
+[:top: Top](#top)
+
+
+### before/screens/...
+#### before/screens/AddContactScreen.js
 ``` jsx
 import React from 'react'
-import {Button, View, StyleSheet, Text} from 'react-native'
+import AddContactForm from '../AddContactForm'
 
-export default class LoginScreen extends React.Component {
-  _login = () => {
-    this.props.navigation.navigate('Main')
+export default class AddContactScreen extends React.Component {
+  static navigationOptions = {
+    headerTitle: 'New Contact',
+  }
+
+  handleSubmit = formState => {
+    this.props.screenProps.addContact(formState)
+    this.props.navigation.navigate('ContactList')
+  }
+
+  render() {
+    return <AddContactForm onSubmit={this.handleSubmit} />
+  }
+}
+
+```
+[:top: Top](#top)
+
+#### before/screens/ContactDetailsScreen.js
+``` jsx
+import React from 'react'
+import {Button, Text, View} from 'react-native'
+
+export default class ContactDetailsScreen extends React.Component {
+  static navigationOptions = ({navigation}) => ({
+    headerTitle: navigation.getParam('name'),
+  })
+
+  render() {
+    return (
+      <View>
+        <Text>{this.props.navigation.getParam('phone')}</Text>
+        <Button title="Go to random contact" onPress={this.goToRandomContact} />
+      </View>
+    )
+  }
+
+  goToRandomContact = () => {
+    const {contacts} = this.props.screenProps
+    const phone = this.props.navigation.getParam('phone')
+    let randomContact
+    while (!randomContact) {
+      const randomIndex = Math.floor(Math.random() * contacts.length)
+      if (contacts[randomIndex].phone !== phone) {
+        randomContact = contacts[randomIndex]
+      }
+    }
+
+    // this.props.navigation.navigate('ContactDetails', {
+    //   ...randomContact,
+    // });
+    this.props.navigation.push('ContactDetails', {
+      ...randomContact,
+    })
+  }
+}
+
+```
+[:top: Top](#top)
+
+#### before/screens/ContactListScreen.js
+``` jsx
+import React from 'react'
+import {Button, View, StyleSheet} from 'react-native'
+
+import SectionListContacts from '../SectionListContacts'
+
+export default class ContactListScreen extends React.Component {
+  static navigationOptions = ({navigation}) => ({
+    headerTitle: 'Contacts',
+    headerRight: (
+      <Button title="Add" onPress={() => navigation.navigate('AddContact')} color="#a41034" />
+    ),
+  })
+
+  state = {
+    showContacts: true,
+  }
+
+  toggleContacts = () => {
+    this.setState(prevState => ({showContacts: !prevState.showContacts}))
+  }
+
+  handleSelectContact = contact => {
+    this.props.navigation.push('ContactDetails', contact)
   }
 
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.text}>You are currently logged out.</Text>
-        <Button title="Press to Log In" onPress={this._login} />
+        <Button title="toggle contacts" onPress={this.toggleContacts} />
+        {this.state.showContacts && (
+          <SectionListContacts
+            contacts={this.props.screenProps.contacts}
+            onSelectContact={this.handleSelectContact}
+          />
+        )}
       </View>
     )
   }
@@ -757,68 +1240,15 @@ export default class LoginScreen extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
     flex: 1,
-  },
-  text: {
-    textAlign: 'center',
   },
 })
 
 ```
 [:top: Top](#top)
-
 
 ---
 ### after/...
-
-#### after/contacts.js
-``` jsx
-const NUM_CONTACTS = 3
-
-const firstNames = ['Emma','Noah','Olivia','Liam','Ava','William','Sophia','Mason','Isabella','James','Mia',
-'Benjamin','Charlotte','Jacob','Abigail','Michael','Emily','Elijah','Harper','Ethan','Amelia','Alexander',
-'Evelyn','Oliver','Elizabeth','Daniel','Sofia','Lucas','Madison','Matthew','Avery','Aiden','Ella','Jackson',
-'Scarlett','Logan','Grace','David','Chloe','Joseph','Victoria','Samuel','Riley','Henry','Aria','Owen','Lily',
-'Sebastian','Aubrey','Gabriel','Zoey','Carter','Penelope','Jayden','Lillian','John','Addison','Luke','Layla',
-'Anthony','Natalie','Isaac','Camila','Dylan','Hannah','Wyatt','Brooklyn','Andrew','Zoe','Joshua','Nora',
-'Christopher','Leah','Grayson','Savannah','Jack','Audrey','Julian','Claire','Ryan','Eleanor','Jaxon','Skylar',
-'Levi','Ellie','Nathan','Samantha','Caleb','Stella','Hunter','Paisley','Christian','Violet','Isaiah','Mila',
-'Thomas','Allison','Aaron','Alexa','Lincoln']
-
-const lastNames = ['Smith','Jones','Brown','Johnson','Williams','Miller','Taylor','Wilson','Davis','White',
-'Clark','Hall','Thomas','Thompson','Moore','Hill','Walker','Anderson','Wright','Martin','Wood','Allen','Robinson',
-'Lewis','Scott','Young','Jackson','Adams','Tryniski','Green','Evans','King','Baker','John','Harris','Roberts',
-'Campbell','James','Stewart','Lee','County','Turner','Parker','Cook','Mc','Edwards','Morris','Mitchell','Bell',
-'Ward','Watson','Morgan','Davies','Cooper','Phillips','Rogers','Gray','Hughes','Harrison','Carter','Murphy']
-
-// generate a random number between min and max
-const rand = (max, min = 0) => Math.floor(Math.random() * (max - min + 1)) + min
-
-// generate a name
-const generateName = () =>
-  `${firstNames[rand(firstNames.length - 1)]} ${lastNames[rand(lastNames.length - 1)]}`
-
-// generate a phone number
-const generatePhoneNumber = () => `${rand(999, 100)}-${rand(999, 100)}-${rand(9999, 1000)}`
-
-// create a person
-const createContact = () => ({
-  name: generateName(),
-  phone: generatePhoneNumber(),
-})
-
-// compare two contacts for alphabetizing
-export const compareNames = (contact1, contact2) => contact1.name > contact2.name
-
-// add keys to based on index
-const addKeys = (val, key) => ({key, ...val})
-
-// create an array of length NUM_CONTACTS and add keys
-export default Array.from({length: NUM_CONTACTS}, createContact).map(addKeys)
-
-```
-[:top: Top](#top)
 
 #### after/App.js
 ``` jsx
@@ -829,6 +1259,7 @@ import {
   createBottomTabNavigator,
 } from 'react-navigation'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import {Provider} from 'react-redux'
 
 import AddContactScreen from './screens/AddContactScreen'
 import SettingsScreen from './screens/SettingsScreen'
@@ -836,6 +1267,8 @@ import ContactListScreen from './screens/ContactListScreen'
 import ContactDetailsScreen from './screens/ContactDetailsScreen'
 import LoginScreen from './screens/LoginScreen'
 import {fetchUsers} from './api'
+import contacts from './contacts'
+import store from './redux/store'
 
 const MainStack = createStackNavigator(
   {
@@ -879,9 +1312,10 @@ const AppNavigator = createSwitchNavigator({
 
 export default class App extends React.Component {
   state = {
-    contacts: null,
+    contacts,
   }
 
+  /*
   componentDidMount() {
     this.getUsers()
   }
@@ -890,6 +1324,7 @@ export default class App extends React.Component {
     const results = await fetchUsers()
     this.setState({contacts: results})
   }
+  */
 
   addContact = newContact => {
     this.setState(prevState => ({
@@ -899,218 +1334,295 @@ export default class App extends React.Component {
 
   render() {
     return (
-      <AppNavigator
-        screenProps={{
-          contacts: this.state.contacts,
-          addContact: this.addContact,
-        }}
-      />
+      <Provider store={store}>
+        <MainTabs />
+      </Provider>
     )
   }
 }
 
 ```
-
-#### after/Row.js
-``` jsx
-import React from 'react'
-import {TouchableOpacity, StyleSheet, Text, View} from 'react-native'
-import PropTypes from 'prop-types'
-
-const styles = StyleSheet.create({
-  row: {padding: 20},
-})
-
-const Row = props => (
-  <TouchableOpacity style={styles.row} onPress={() => props.onSelectContact(props)}>
-    <Text>{props.name}</Text>
-    <Text>{props.phone}</Text>
-  </TouchableOpacity>
-)
-
-Row.propTypes = {
-  name: PropTypes.string,
-  phone: PropTypes.string,
-}
-
-export default Row
-
-```
-
-#### after/api.js
-``` jsx
-const processContact = contact => ({
-  name: `${contact.name.first} ${contact.name.last}`,
-  phone: contact.phone,
-})
-
-export const fetchUsers = async () => {
-  const response = await fetch('https://randomuser.me/api/?results=50&nat=us')
-  const {results} = await response.json()
-  return results.map(processContact)
-}
-
-export const login = async (username, password) => {
-  const response = await fetch('http://localhost:8000', {
-    method: 'POST',
-    headers: {'content-type': 'application/json'},
-    body: JSON.stringify({username, password}),
-  })
-
-  if (response.ok) {
-    return true
-  }
-
-  const errMessage = await response.text()
-  throw new Error(errMessage)
-}
-
-```
+[:top: Top](#top)
 
 #### after/package.json
-``` json
-{
-  "main": "node_modules/expo/AppEntry.js",
-  "private": true,
-  "dependencies": {
-    "expo": "^25.0.0",
-    "prop-types": "^15.6.1",
-    "react": "16.2.0",
-    "react-native": "https://github.com/expo/react-native/archive/sdk-25.0.0.tar.gz",
-    "react-native-vector-icons": "^4.5.0",
-    "react-navigation": "2.0.0-beta.5"
-  }
-}
-
-```
-[:top: Top](#top)
-#### after/authServer/README.md
-``` markdown
-# Mock Authentication Server
-This is a simple mock auth server. You can POST to any endpoint and it will act as a login.
-
-There is only one user with username: `username` and password: `password`. There is no
-way to add new users.
-
-## Installation
-- Install dependencies with `npm install`
-- Run the server with `npm start`
-- Visit [http://localhost:8000](http://localhost:8000)
-
-You can optionally declare a `PORT` env variable to override the default port:
-- `PORT=12345 npm start`
-- Visit [http://localhost:12345](http://localhost:12345)
-```
-#### after/authServer/index.js
+last updated Jun25,'20, Snack
 ``` jsx
-const express = require('express')
-const bodyParser = require('body-parser')
-
-const PORT = process.env.PORT || 8000
-
-// usernames are keys and passwords are values
-const users = {
-  username: 'password',
+{
+  "dependencies": {
+    "react-navigation": "2.0.0",
+    "react-native-paper": "3.6.0",
+    "react-native-vector-icons": "6.6.0",
+    "react-native-vector-icons/Ionicons": "6.6.0",
+    "redux": "4.0.5",
+    "react-redux": "5.0.7"
+  }
 }
+```
+[:top: Top](#top)
+    
+after/...
+#### redux/actions.js
+``` jsx
+// action types
+export const UPDATE_USER = 'UPDATE_USER'
+export const UPDATE_CONTACT = 'UPDATE_CONTACT'
 
-const app = express()
-app.use(bodyParser.json())
-
-app.post('*', (req, res) => {
-  const {username, password} = req.body
-
-  if (!username || !password) return res.status(400).send('Missing username or password')
-  // in practice, this is potentially revealing too much information.
-  // an attacker can probe the server to find all of the usernames.
-  if (!users[username]) return res.status(403).send('User does not exist')
-  if (users[username] !== password) return res.status(403).send('Incorrect password')
-  return res.status(200).send()
+// action creators
+export const updateUser = update => ({
+  type: UPDATE_USER,
+  payload: update,
 })
 
-// catch 404
-app.use((req, res, next) => {
-  const err = new Error('Not Found')
-  err.status = 404
-  next(err)
+export const addContact = newContact => ({
+  type: UPDATE_CONTACT,
+  payload: newContact,
 })
-
-app.use((err, req, res, next) => res.status(err.status || 500).send(err.message || 'There was a problem'))
-
-const server = app.listen(PORT)
-console.log(`Listening at http://localhost:${PORT}`)
 
 ```
 [:top: Top](#top)
 
-#### after/authServer/package.json
-``` json
-{
-  "name": "authserver",
-  "version": "1.0.0",
-  "description": "Simple auth server for a demo",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index"
-  },
-  "author": "Jordan Hayashi",
-  "license": "ISC",
-  "dependencies": {
-    "body-parser": "^1.18.2",
-    "express": "^4.16.3"
+#### redux/reducer.js
+``` jsx
+import {combineReducers} from 'redux'
+
+import {UPDATE_USER, UPDATE_CONTACT} from './actions'
+
+const merge = (prev, next) => Object.assign({}, prev, next)
+
+const contactReducer = (state = [], action) => {
+  if (action.type === UPDATE_CONTACT) return [...state, action.payload]
+  return state
+}
+
+const userReducer = (state = {}, action) => {
+  switch (action.type) {
+    case UPDATE_USER:
+      return merge(state, action.payload)
+    case UPDATE_CONTACT:
+      return merge(state, {prevContact: action.payload})
+    default:
+      return state
   }
 }
 
+const reducer = combineReducers({
+  user: userReducer,
+  contacts: contactReducer,
+})
+
+export default reducer
+
 ```
 [:top: Top](#top)
 
-#### after/screens/LoginScreen.js
+#### redux/store.js
+``` jsx
+import {createStore} from 'redux'
+
+import {addContact} from './actions'
+import reducer from './reducer'
+
+const store = createStore(reducer)
+
+/*
+store.dispatch(updateUser({foo: 'foo'}))
+store.dispatch(updateUser({bar: 'bar'}))
+store.dispatch(updateUser({foo: 'baz'}))
+*/
+
+store.dispatch(addContact({name: 'jordan h', phone: '1234567890'}))
+store.dispatch(addContact({name: 'jordan h', phone: '1234567890'}))
+store.dispatch(addContact({name: 'david m', phone: '5050505050'}))
+
+console.log(store.getState())
+
+export default store
+
+```
+[:top: Top](#top)
+
+#### simpleRedux/reducer.js
+``` jsx
+const merge = (prev, next) => Object.assign({}, prev, next)
+
+const reducer = (state, update) => merge(state, update)
+
+let state = {}
+state = reducer(state, {foo: 'foo'})
+state = reducer(state, {bar: 'bar'})
+state = reducer(state, {foo: 'baz'})
+
+console.log(state)
+
+```
+[:top: Top](#top)
+
+#### simpleRedux/store.js
+``` jsx
+class Store {
+  constructor(reducer, initialState) {
+    this.reducer = reducer
+    this.state = initialState
+  }
+
+  getState() {
+    return this.state
+  }
+
+  dispatch(update) {
+    this.state = this.reducer(this.state, update)
+  }
+}
+
+const merge = (prev, next) => Object.assign({}, prev, next)
+
+const reducer = (state, update) => merge(state, update)
+
+const store = new Store(reducer)
+store.dispatch({foo: 'foo'})
+store.dispatch({bar: 'bar'})
+store.dispatch({foo: 'baz'})
+
+console.log(store.getState())
+
+```
+[:top: Top](#top)
+
+#### simpleRedux/store2.js
+``` jsx
+// action types
+const UPDATE_USER = 'UPDATE_USER'
+const UPDATE_CONTACT = 'UPDATE_CONTACT'
+
+class Store {
+  constructor(reducer, initialState) {
+    this.reducer = reducer
+    this.state = initialState
+  }
+
+  getState() {
+    return this.state
+  }
+
+  dispatch(update) {
+    this.state = this.reducer(this.state, update)
+  }
+}
+
+const DEFAULT_STATE = {user: {}, contacts: []}
+
+const merge = (prev, next) => Object.assign({}, prev, next)
+
+const contactReducer = (state, action) => {
+  if (action.type === UPDATE_CONTACT) return [...state, action.payload]
+  return state
+}
+
+const userReducer = (state, action) => {
+  if (action.type === UPDATE_USER) return merge(state, action.payload)
+  if (action.type === UPDATE_CONTACT) return merge(state, {prevContact: action.payload})
+  return state
+}
+
+const reducer = (state, action) => ({
+  user: userReducer(state.user, action),
+  contacts: contactReducer(state.contacts, action),
+})
+
+// action creators
+const updateUser = update => ({
+  type: UPDATE_USER,
+  payload: update,
+})
+
+const addContact = newContact => ({
+  type: UPDATE_CONTACT,
+  payload: newContact,
+})
+
+const store = new Store(reducer, DEFAULT_STATE)
+store.dispatch(updateUser({foo: 'foo'}))
+store.dispatch(updateUser({bar: 'bar'}))
+store.dispatch(updateUser({foo: 'baz'}))
+
+store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
+store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
+store.dispatch(addContact({name: 'david m', number: '5050505050'}))
+
+console.log(store.getState())
+```
+[:top: Top](#top)
+    
+### after/screens/...
+#### after/screens/AddContactScreen.js
 ``` jsx
 import React from 'react'
-import {Button, View, StyleSheet, Text, TextInput} from 'react-native'
+import AddContactForm from '../AddContactForm'
+import {connect} from 'react-redux'
 
-import {login} from '../api'
+import {addContact} from '../redux/actions'
 
-export default class LoginScreen extends React.Component {
+class AddContactScreen extends React.Component {
+  static navigationOptions = {
+    headerTitle: 'New Contact',
+  }
+
+  handleSubmit = formState => {
+    this.props.addContact({name: formState.name, phone: formState.phone})
+    this.props.navigation.navigate('ContactList')
+  }
+
+  render() {
+    return <AddContactForm onSubmit={this.handleSubmit} />
+  }
+}
+
+export default connect(null, {addContact: addContact})(AddContactScreen)
+
+```
+[:top: Top](#top)
+
+#### after/screens/ContactDetailsScreen.js
+Files ./after/screens/ContactDetailsScreen.js and ./before/screens/ContactDetailsScreen.js are identical
+
+#### after/screens/ContactListScreen.js
+``` jsx
+import React from 'react'
+import {Button, View, StyleSheet} from 'react-native'
+import {connect} from 'react-redux'
+
+import SectionListContacts from '../SectionListContacts'
+
+class ContactListScreen extends React.Component {
+  static navigationOptions = ({navigation}) => ({
+    headerTitle: 'Contacts',
+    headerRight: (
+      <Button title="Add" onPress={() => navigation.navigate('AddContact')} color="#a41034" />
+    ),
+  })
+
   state = {
-    username: '',
-    password: '',
+    showContacts: true,
   }
 
-  _login = async () => {
-    try {
-      const success = await login(this.state.username, this.state.password)
-      this.props.navigation.navigate('Main')
-    } catch (err) {
-      const errMessage = err.message
-      this.setState({err: errMessage})
-    }
+  toggleContacts = () => {
+    this.setState(prevState => ({showContacts: !prevState.showContacts}))
   }
 
-  handleUsernameUpdate = username => {
-    this.setState({username})
-  }
-
-  handlePasswordUpdate = password => {
-    this.setState({password})
+  handleSelectContact = contact => {
+    this.props.navigation.push('ContactDetails', contact)
   }
 
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.error}>{this.state.err}</Text>
-        <TextInput
-          placeholder="username"
-          value={this.state.username}
-          onChangeText={this.handleUsernameUpdate}
-          autoCapitalize="none"
-        />
-        <TextInput
-          placeholder="password"
-          value={this.state.password}
-          onChangeText={this.handlePasswordUpdate}
-          secureTextEntry
-        />
-        <Button title="Press to Log In" onPress={this._login} />
+        <Button title="toggle contacts" onPress={this.toggleContacts} />
+        {this.state.showContacts && (
+          <SectionListContacts
+            contacts={this.props.contacts}
+            onSelectContact={this.handleSelectContact}
+          />
+        )}
       </View>
     )
   }
@@ -1118,72 +1630,210 @@ export default class LoginScreen extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
     flex: 1,
   },
-  text: {
-    textAlign: 'center',
-  },
-  error: {
-    textAlign: 'center',
-    color: 'red',
+})
+
+const mapStateToProps = state => ({
+  contacts: state.contacts,
+})
+
+export default connect(mapStateToProps)(ContactListScreen)
+
+```
+[:top: Top](#top)
+
+---
+#### without React-Redux `connect`
+##### after/screens/AddContactScreen.js without React-Redux
+``` jsx
+import React from 'react'
+import AddContactForm from '../AddContactForm'
+
+import store from '../redux/store'//.24
+import {addContact} from '../redux/actions'  //.24
+
+export default class AddContactScreen extends React.Component {
+  static navigationOptions = {
+    headerTitle: 'New Contact',
+  }
+
+  handleSubmit = formState => {
+    //store.dispatch(addContact(formState)) // .24b
+    store.dispatch(addContact({name: formState.name, phone: formState.phone})) // .24b  
+    this.props.navigation.navigate('ContactList')
+  }
+
+  render() {
+    return <AddContactForm onSubmit={this.handleSubmit} />
+  }
+}
+
+```
+
+##### after/screens/ContactListScreen.js without React-Redux
+``` jsx
+import React from 'react'
+import {Button, View, StyleSheet} from 'react-native'
+
+import SectionListContacts from '../SectionListContacts'
+import store from '../redux/store' //.22
+
+export default class ContactListScreen extends React.Component {
+  static navigationOptions = ({navigation}) => ({
+    headerTitle: 'Contacts',
+    headerRight: (
+      <Button title="Add" onPress={() => navigation.navigate('AddContact')} color="#a41034" />
+    ),
+  })
+
+  state = {
+    showContacts: true,
+  }
+
+  toggleContacts = () => {
+    this.setState(prevState => ({showContacts: !prevState.showContacts}))
+  }
+
+  handleSelectContact = contact => {
+    this.props.navigation.push('ContactDetails', contact)
+  }
+
+  render() {
+    const contacts = store.getState().contacts //.22
+    return (
+      <View style={styles.container}>
+        <Button title="toggle contacts" onPress={this.toggleContacts} />
+        {this.state.showContacts && (
+          <SectionListContacts  
+            contacts={contacts} // .22
+            onSelectContact={this.handleSelectContact}
+          />
+        )}
+      </View>
+    )
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
   },
 })
 
 ```
-[:top: Top](#top)
 
 ---
 myNote
 ---
-### my expo.io/ snacks: https://expo.io/snacks/@awesome2/. 
+#### my expo.io/ snacks: https://expo.io/snacks/@awesome2/. 
 
 :joy: https://www.markdownguide.org/basic-syntax/     
 :sunny: https://www.markdownguide.org/extended-syntax/
 
-### on Expo Cli 
-react-navigation@2.0.0
-```
-$ npm install react-navigation@2.0.0 --save
-```
-
 ### console
 > console.clear()
 
-##### vim
-to change word to next in vim, select the sentence first, then
+##### console.log
+``` js
+        console.log(JSON.stringify(o))  // ***** 
 ```
-:'<,'>s/username/password/g
-```
-?? `: noh`
 
-#### How to compare to files:
+### vim
+https://vimhelp.org/pattern.txt.html#%2F%5C%25V.    
+An example of how to search for matches with a pattern and change the match
+with another word: 
 ```
-~/cs50m/src7/ $ diff -qs ./after/Row.js ./before/Row.js                                                 
-Files ./after/Row.js and ./before/Row.js are identical
+        /foo<CR>        find "foo"
+        c//e<CR>        change until end of match
+        bar<Esc>        type replacement
+        //<CR>          go to start of next match
+        c//e<CR>        change until end of match
+        beep<Esc>       type another replacement
+                        etc.
 ```
-[:top: Top](#top)
 
----
-#### Git branch 08_Data
+to replace number with phone: `:'<,'>s/number/phone`.   
+Note that the "'<,'>" will appear automatically when you press ":" in Visual
+mode.
+
+Vim CheatSheet https://github.com/hackjutsu/vim-cheatsheet
+
+### Terminal
+Use node, compare difference files, and Git diff
+``` console
+        simpleRedux twng$ node reducer.js
+        { foo: 'baz', bar: 'bar' }
+        
+        $ diff --help
+        $ diff -qs ./after/Row.js ./before/Row.js
+        Files ./after/Row.js and ./before/Row.js are identical
+
+        $ git diff App.js
+```
+Mac Terminal Cheat Sheet https://gist.github.com/poopsplat/7195274
+
+Mac OS X :: VI Keyboard Shortcut Cheat Sheet https://trevorsullivan.net/wp-content/uploads/2015/11/Trevor-Sullivan-VI-Shortcuts.pdf
+
+Mac keyboard shortcuts https://support.apple.com/en-us/HT201236  
+Option–Left Arrow: Move the insertion point to the beginning of the previous word.   
+Option–Right Arrow: Move the insertion point to the end of the next word.
+
+
+#### debug on node
+.14 store.js on CS50 IDE, working
+``` jsx
+//import {createStore} from 'redux' // not support on node //.14
+const {createStore} = require('redux') //this for node //.14 
+```
+
+#### Expo Cli, Contacts
+``` console
+        $ cd ..
+        $ expo init
+        $ cd Jun24
+        Jun24 $ npm install react-navigation@2.0.0 --save
+        Jun24 $ npm install prop-types
+        
+        Jun24 $ npm install redux
+        Jun24 $ npm install react-redux@5.0.7 --save
+        Jun24 $ npm run web
+```
+To run lecture *Contacts* add from ./before:   
+        AddContactForm.js	api.js			
+        App.js	
+        Row.js			contacts.js		screens
+        SectionListContacts.js
+``` console
+        Jun24 $ ls -c
+        AddContactForm.js	api.js			node_modules
+        app.json		package-lock.json
+        App.js			babel.config.js		package.json
+        Row.js			contacts.js		screens
+        SectionListContacts.js	index.js		web-build
+        __tests__		ios
+        android			metro.config.js
+```
+
+#### Git branch 10_Redux
 ```
     Ts-MacBook-Pro:cs50m twng$ cat .gitignore
     .DS_Store
-    /Jun18
+    /Jun24
     .gitignore
     Ts-MacBook-Pro:cs50m twng$ git branch -v
     Ts-MacBook-Pro:cs50m twng$ git add .    
     Ts-MacBook-Pro:cs50m twng$ git status
     Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push -u origin 08_Data
+    Ts-MacBook-Pro:cs50m twng$ git push -u origin 10_Redux
 ```
-checked on github, https://github.com/alvinng222/cs50m/tree/08_Data
+checked on github, https://github.com/alvinng222/cs50m/tree/10_Redux
 
 [:top: Top](#top)
 
 --- 
 to master branch: [CS50M](https://github.com/alvinng222/cs50m/tree/master)  
-back to previous: [07_Navigation](https://github.com/alvinng222/cs50m/tree/07_Navigation)    
-continue to next: [09_ExpoComponents](https://github.com/alvinng222/cs50m/tree/09_ExpoComponents)
+back to previous: [09_ExpoComponents](https://github.com/alvinng222/cs50m/tree/09_ExpoComponents)   
+continue to next: [11_AsyncRedux_Tools](https://github.com/alvinng222/cs50m/tree/11_AsyncRedux_Tools)
 
 ---
