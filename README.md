@@ -1,1696 +1,874 @@
-Lecture 10: Async Redux, Tools
+Lecture 11: Performance
 ===
 [top]: topOfThePage
-lecture: http://video.cs50.net/mobile/2018/spring/lectures/10
 
-Slides: http://cdn.cs50.net/mobile/2018/spring/lectures/10/lecture10.pdf
-* [Review: react-redux](#review-react-redux)
-* [Supporting Async Requests](#supporting-async-requests)
-* [Redux Middleware](#redux-middleware)
-* [Persisting State](#persisting-state)
-* [redux-persist](#redux-persist)
-* [Container vs Presentational Components](#container-vs-presentational-components)
-* [Do I need Redux?](#do-i-need-redux)
-* [JavaScript Tools](#javascript-tools)
-* [ESLint](#eslint)
-* [ESLint: Setup](#eslint-setup)
-* [ESLint: Running](#eslint-running)
-* [Prettier](#prettier)
+lecture: http://video.cs50.net/mobile/2018/spring/lectures/11
 
-[Source Code](#source-code)  
-files: src10.zip
+slides: http://cdn.cs50.net/mobile/2018/spring/lectures/11/lecture11.pdf
+- [Performance](#performance-1)
+- [Trade-Offs](#trade-offs)
+- [Measuring Performance](#measuring-performance)
+- [Common Inefficiencies](#common-inefficiencies)
+- [Rerendering Too Often](#rerendering-too-often)
+- [Unnecessarily Changing Props](#unnecessarily-changing-props)
+- [Unnecessary Logic in Mount/Update](#unnecessary-logic-in-mountupdate)
+- [Reminder: Trade-Offs](#reminder-trade-offs)
+- [Animations](#animations)
+- [Animated](#animated)
 
-[**before/...**](#before)
-  AddContactForm.js
-  [App.js](#beforeappjs)
-  contacts.js
-  Row.js
-  SectionListContacts.js
-  [api.js](#beforeapijs)
-  [package.json](#beforepackagejson)   
-before/authServer/...
-      README.md
-      [index.js](#beforeauthserverindexjs)
-      package.json  
-[before/redux/...](#beforeredux)
-      [actions.js](#beforereduxactionsjs)
-      [reducer.js](#beforereduxreducerjs)
-      [store.js](#beforereduxstorejs)  
-[before/screens/...](#beforescreens)
-      [AddContactScreen.js](#beforescreensaddcontactscreenjs)
-      ContactDetailsScreen.js
-      [ContactListScreen.js](#beforescreenscontactlistscreenjs)
-      [LoginScreen.js](#beforescreensloginScreenjs)
-      SettingScreen.js  
-[before/simpleRedux/...](#beforesimpleredux)
-      reducer.js
-      store.js
-      [store2.js](#beforesimplereduxstore2js)
+[Source Code](#source-code)
+files: src11.zip
 
-[**after/...**](#after)
-  AddContactForm.js
-  [App.js](#afterappjs)
-  contacts.js
-  Row.js
-  SectionListContacts.js
-  [api.js](#afterapijs)
-  [package.json](#afterpackagejson)   
-after/authServer/...
-      README.md
-      [index.js](#afterauthserverindexjs)
-      package.json  
-[after/redux/...](#afterredux)
-      [actions.js](#afterreduxactionsjs)
-      [reducer.js](#afterreduxreducerjs)
-      [store.js](#afterreduxstorejs)  
-[after/screens/...](#afterscreens)
-      AddContactScreen.js
-      ContactDetailsScreen.js
-      ContactListScreen.js
-      [LoginScreen.js](#afterscreensloginscreenjs)
-      SettingsScreen.js  
-[after/simpleRedux/...](#aftersimpleredux)
-      reducer.js
-      store.js
-      store2.js
-      [store3.js](#aftersimplereduxstore3js)
-`$ ls -1`
+[before/contacts/...](#beforecontacts)
+[App.js](#beforecontactsappjs)
+[Row.js](#beforecontactsrowjs)
+SectionListContacts.js
+api.js
+contacts.js
+[package.json](#beforecontactspackagejson)      
+before/contacts/redux/...
+    [actions.js](#beforecontactsreduxactionsjs.)
+    [reducer.js](#beforecontactsreduxreducerjs)
+    [store.js](#beforecontactsreduxstorejs)   
+before/contacts/screens/...
+    AddContactScreen.js
+    ContactDetailsScreen.js
+    [ContactListScreen.js](#beforecontactsscreenscontactlistscreenjs)
+    LoginScreen.js
+    SettingsScreen.js       
+[before/pomodoro-timer/...](#beforepomodoro-timer)
+[App.js](#beforepomodoro-timerappjs)
+package.json    
+before/pomodoro-timer/components/...
+    Countdown.js
+    TimeInput.js
+    TimerToggleButton.js
+    index.js   
+before/pomodoro-timer/utils/...
+    Timer.js
+    index.js
+    vibrate.js
 
-[**myNote**](#mynote)
+[after/contacts/...](#aftercontacts)
+App.js
+[PureButton.js](#aftercontactspurebuttonjs)
+[PureButtonScreen.js](#aftercontactspurebuttonscreenjs)
+Row.js
+SectionListContacts.js
+api.js
+contacts.js
+package.json   
+after/contacts/redux/...
+    actions.js
+    reducer.js
+    store.js   
+after/contacts/screens/...
+    AddContactScreen.js
+    ContactDetailsScreen.js
+    ContactListScreen.js
+    LoginScreen.js
+    SettingsScreen.js   
+[after/pomodoro-timer/...](#afterpomodoro-timer)
+App.js
+[ProgressBar.js](#beforepomodoro-timerprogressbarjs)
+ProgressBarAnimated.js
+package.json   
+after/pomodoro-timer/components/...
+      Countdown.js
+      TimeInput.js
+      TimerToggleButton.js
+      index.js   
+after/pomodoro-timer/utils/...
+    [Timer.js](#afterpomodoro-timerutilstimerjs)
+    index.js
+    vibrate.js
+
+[**myNote**](#mynote)  
 
 [:top: Top](#top)
 
 ---
-### Previous Lecture [10_Redux](https://github.com/alvinng222/cs50m/tree/10_Redux)  
-- Scaling Complexity
-- Flux
-- Redux
-- simpleRedux/
-- Reducers
-- Store
-- Actions
-- react-redux
-
----
-### Review: react-redux
-- React bindings for redux
-  - `<Provider />`
-  - `connect()`
-- Provider gives children access to our redux store
-- connect() helps us subscribe to any subset of our store
-and bind our action creators
-
-for instance `ContactListScreen.js`  
-.01 ContactListScreen.js
-``` jsx
-...
-const getPropsFromState = state => ({
-  contacts: state.contacts,
-})
-
-// connect(getPropsFromState, bindDispatchToActions, ContactListScreen)
-// connect(getPropsFromState)(ContactListScreen)
-
-export default connect(getPropsFromState)(ContactListScreen)
-```
-.02 AddContactScreen.js
-``` jsx
-...
-export default connect(null, {addContact: addContact})(AddContactScreen)
-```
-[:top: Top](#top)
-
----
-### Supporting Async Requests
-- Where do we want to add this support? How do we
-change our API?
-  - Reducers
-  - Store
-  - Actions
-  - Action creators
-- We need to change more than just the action creators
-- Store.dispatch() needs to accept other types
-- Our addition is unideal, since we had to change our redux
-implementation
-
-[:top: Top](#top)
-[17:00]
-
-cp store2.js store3.js
-``` terminal
-        simpleRedux $ node store3.js
-        {
-          user: {
-            foo: 'baz',
-            bar: 'bar',
-            prevContact: { name: 'david m', number: '5050505050' }
-          },
-          contacts: [ 
-            { name: 'jordan h', number: '1234567890' },
-            { name: 'jordan h', number: '1234567890' },
-            { name: 'david m', number: '5050505050' }
-          ]
-        }
-```
-.03 simpleRedux/store3.js it donest do anything.
-``` jsx
-// async action creator
-const logInUser = () => {
-  return {type: 'LOG_IN_SUCCESS'}
-} //.03
-
-const store = new Store(reducer, DEFAULT_STATE); 
-store.dispatch(logInUser()) // .03
-```
-.04 store3.js this donest work either
-``` jsx
-// async action creator
-const logInUser = () => {
-  fetch().then(() => ({type: 'LOG_IN_SUCCESS'}))
-  return 
-} //.03 .04
-```
-.05 store3.js, work as normal
-``` jsx
-// async action creator
-const logInUser = () => dispatch => {
-  fetch().then(() => ({type: 'LOG_IN_SUCCESS'}))
-  return 
-} //.03 .04 .05
-
-logInUser() // returns dispatch => {} .05
-```
-.06 store3.js as usual
-``` jsx
-// async action creator
-const logInUser = () => dispatch => {
-  dispatch({type: 'LOG_IN_SENT'})
-  /*
-  fetch().then(() => ({type: 'LOG_IN_SUCCESS'}))
-  return
-  */
-} //.03 .04 .05 .06
-```
-.07 store3.js starting to resemble an asynchronous action. > as usual
-``` jsx
-// async action creator
-const logInUser = () => dispatch => {
-  dispatch({type: 'LOG_IN_SENT'})
-  fetch().then(() => {
-    dispatch({type: 'LOG_IN_SUCCESS'})
-  }).catch(err => {
-    dispatch({type: 'LOG_IN_REJECTED'})
-  }) 
-} //.03 .04 .05 .06 .07
-```
-.08 store.js > error
-``` jsx
-    dispatch(action) {
-      if (typeof action === 'function') {
-        action(this.dispatch.bind(this)) 
-      } else {
-        this.state = this.reducer(this.state, action)
-      }
-    } // .08
-```
-[25:38] check if server acctually running, see myNote [authServer](#authserver)
-``` console
-            authServer $ npm start  
-```
-[:top: Top](#top)
-
-.09 simpleRedux/store3.js, copied from api.js..  working [26:15]
-```jsx
-const login = async (username, password) => {
-  const response = await fetch('http://localhost:8000', {
-    method: 'POST',
-    headers: {'content-type': 'application/json'},
-    body: JSON.stringify({username, password}),
-  })
-
-  if (response.ok) {
-    return true
-  }
-
-  const errMessage = await response.text()
-  throw new Error(errMessage)
-} // from api.js // .09
-
-// action types
-const UPDATE_USER = 'UPDATE_USER'
-const UPDATE_CONTACT = 'UPDATE_CONTACT'
-
-class Store {
-  constructor(reducer, initialState) {
-    this.reducer = reducer
-    this.state = initialState
-  }
-
-  getState() {
-    return this.state
-  }
-
-    dispatch(action) {
-      if (typeof action === 'function') {
-        action(this.dispatch.bind(this))
-      } else {
-        console.log('received an action:', action.type)
-        this.state = this.reducer(this.state, action)
-      }
-    } // .08 .09
-}
-
-const DEFAULT_STATE = {user: {}, contacts: []}
-
-const merge = (prev, next) => Object.assign({}, prev, next)
-
-const contactReducer = (state, action) => {
-  if (action.type === UPDATE_CONTACT) return [...state, action.payload]
-  return state
-}
-
-const userReducer = (state, action) => {
-  if (action.type === UPDATE_USER) return merge(state, action.payload)
-  if (action.type === UPDATE_CONTACT) return merge(state, {prevContact: action.payload})
-  return state
-}
-
-const reducer = (state, action) => ({
-  user: userReducer(state.user, action),
-  contacts: contactReducer(state.contacts, action),
-})
-
-// action creators
-const updateUser = update => ({
-  type: UPDATE_USER,
-  payload: update,
-})
-
-const addContact = newContact => ({
-  type: UPDATE_CONTACT,
-  payload: newContact,
-})
-
-// async action creator
-const logInUser = (username, password) => dispatch => {
-  dispatch({type: 'LOG_IN_SENT'})
-  login(username, password)
-    .then(() => {
-      dispatch({type: 'LOG_IN_SUCCESS'})
-    })
-    .catch(err => {
-      dispatch({type: 'LOG_IN_REJECTED'})
-    })
-} //.03 .04 .05 .06 .07 .09
-
-const store = new Store(reducer, DEFAULT_STATE)
-
-store.dispatch(logInUser('username', 'password')) // .09
-/* .09
-logInUser() // returns dispatch => {} .05
-store.dispatch(updateUser({foo: 'foo'}))
-store.dispatch(updateUser({bar: 'bar'}))
-store.dispatch(updateUser({foo: 'baz'}))
-
-store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
-store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
-store.dispatch(addContact({name: 'david m', number: '5050505050'}))
-*/
-console.log(store.getState())
-```
-[29:10] shown LOG_IN_REJECTED, because node does not have any concept of 'fetch'.
-Fetch was acctually part of browser API.
-``` console
-            simpleRedux $ node store3.js
-            received an action: LOG_IN_SENT
-            { user: {}, contacts: [] }
-            received an action: LOG_IN_REJECTED
-```
-[:top: Top](#top)
-
-isomorphic-fetch is a package for implement fetch that can use on node JS enviroment.
-``` console
-      simpleRedux $ npm install isomorphic-fetch.   
-```
-
-.10 store3.js, node version of import
-``` jsx
-const fetch = require('isomorphic-fetch') // node version of import .10
-
-export const login = async (username, password) => {
-...
-console.log(store.getState());
-/*
-// will respone:
-received an action: LOG_IN_SENT
-{user: {}, contacts: [] }
-received an action: LOG_IN_SUCCESS
-*/
-```
-[30:22] should see that Log-in success. See myNote [authServer](#authserver)
-
-.11 store3.js use **switch**
-``` jsx
-const userReducer = (state, action) => {
-  switch (action.type) {
-    case UPDATE_USER:
-      return merge(state, action.payload)
-    case UPDATE_CONTACT:
-      return merge(state, {prevContact: action.payload})
-    case 'LOG_IN_SUCCESS':
-      return merge(state, {token: 'fakeToken'})
-    default:
-      return state
-  } // .11
-}
-```
-[:top: Top](#top)
-[33.11]
-
----
-### Redux Middleware
-- This allows us to extend redux without having to touch the
-implementation
-- Any function with this prototype can be middleware
-  - `({getState, dispatch}) => next => action => void`
-- We can reimplement our feature as middleware
-- https://github.com/gaearon/redux-thunk
-  - “A thunk is a function that wraps an expression to delay its evaluation”
-
-copied files from **src10/before/*.* to Snack**, update JSON 
-from 10_Redux
-
-.11 package.json
-``` jsx
-{
-  "dependencies": {
-    "redux": "4.0.5",
-    "react-redux": "5.0.7",
-    "react-navigation": "2.0.0",
-    "react-native-paper": "3.6.0",
-    "react-native-vector-icons": "6.6.0",
-    "react-native-vector-icons/Ionicons": "6.6.0"
-  }
-}
-```
-
-*middleware* is a chain by which can just keep passing the action down the chain, and modify how we want, like eg thunk, log.
-
-.12  redux/store.js Snack, no error with _applyMiddle**w**are_ :+1:
-``` jsx
-import { createStore, applyMiddleware } from 'redux'; //.12
-import {addContact} from './actions' 
-import reducer from './reducer' 
-
-const thunkMiddleWare = store => next => action => {
-  if (typeof action === 'function') {
-    action(store.dispatch)
-  } else {
-    next(action)
-  }
-} //.12
-
-// const store = createStore(reducer); 
-const store = createStore(reducer, applyMiddleware(thunkMiddleWare)) //.12b
-
-
-/*
-store.dispatch(updateUser({foo: 'foo'})); 
-store.dispatch(updateUser({bar: 'bar'}))
-store.dispatch(updateUser({foo: 'baz'}))
-*/
-
-store.dispatch(addContact({name: 'Jorhan', phone:'1234567890'})) 
-store.dispatch(addContact({name: 'Jorhan', phone:'1234567890'})) 
-store.dispatch(addContact({name: 'David M', phone:'50505050505'})) 
-
-console.log(store.getState());
-
-export default store
-```
-[44:50]
-
-``` console
-            Jun24 $ npm install redux-thunk
-```
-
-.13 redux/store.js Snack, no error with _applyMiddle**w**are_ :+1:
-``` jsx
-import { createStore, applyMiddleware } from 'redux'; //.12
-import thunk from 'redux-thunk' //.13
-import {addContact} from './actions' 
-import reducer from './reducer' 
-
-/*
-const thunkMiddleWare = store => next => action => {
-  if (typeof action === 'function') {
-    action(store.dispatch)
-  } else {
-    next(action)
-  }
-} //.12
-*/
-
-const store = createStore(reducer, applyMiddleware(thunk)); //.13
-
-/*
-...
-```
-[45:12] re-add login screen to application, that removed last time.
-
-.14 App.js, Login bug: **Failed to fetch**  :disappointed: . :tired_face: . :exclamation: 
-``` jsx
-...
-  render() {
-    return (
-      <Provider store={store}>
-      <AppNavigator />
-      </Provider>
-    )
-  } //.14 was <MainTabs /> which work without Login
-}
-```
-now the screen:
-```
-      username
-      password
-                    PRESS TO LOG IN
-```
-So let's now start to use Redux here, rather than using the logic directly on this class.
-
-.15 redux/actions.js 
-``` jsx
-import {login} from '../api' // .16
-
-// action types
-export const UPDATE_USER = 'UPDATE_USER'
-export const UPDATE_CONTACT = 'UPDATE_CONTACT'
-export const LOG_IN_SENT = 'LOG_IN_SENT' //.15
-export const LOG_IN_FULFILLED = 'LOG_IN_FULFILLED' //.15
-export const LOG_IN_REJECTED = 'LOG_IN_REJECTED' //.15
-
-// action creators
-export const updateUser = update => ({
-  type: UPDATE_USER,
-  payload: update,
-})
-
-export const addContact = newContact => ({
-  type: UPDATE_CONTACT,
-  payload: newContact,
-})
-
-// async action creator
-export const logInUser = (username, password) => dispatch => {
-  dispatch({type: LOG_IN_SENT})
-  login(username, password)
-    .then(() => {
-      dispatch({type: LOG_IN_FULFILLED})
-    })
-    .catch(err => {
-      dispatch({type: LOG_IN_REJECTED})
-    })
-} // .15b from after/simpleRedux/store3.js
-```
-.15d screens/LoginScreen.js
-``` jsx
-import React from 'react'
-import {Button, View, StyleSheet, Text, TextInput} from 'react-native'
-import {connect} from 'react-redux' //.15c
-
-import {logInUser} from '../redux/actions' //.15c
-// .15c import {login} from '../api'
-
-class LoginScreen extends React.Component { //.15d
-  state = {
-    username: '',
-    password: '',
-  }
-
-  _login = async () => {
-    try {
-      this.props.logInUser(this.state.username, this.state.password) //.15c
-      //.15e const success = await login(this.state.username, this.state.password)
-      this.props.navigation.navigate('Main')
-    } catch (err) {
-      const errMessage = err.message
-      this.setState({err: errMessage})
-    }
-  }
-  
-...
-
-export default connect(null, {logInUser})(LoginScreen)//.15d [53:45]
-```
-login fialed.. 
-able to login, even without username.
-
-lecture shown able to username: username, & password: password
-
-.17 reducer.js
-``` jsx
-import {combineReducers} from 'redux'
-
-import {UPDATE_USER, UPDATE_CONTACT, LOG_IN_SENT, LOG_IN_FULFILLED, LOG_IN_REJECTED} from './actions' //.17
-
-const merge = (prev, next) => Object.assign({}, prev, next)
-
-const contactReducer = (state = [], action) => {
-  if (action.type === UPDATE_CONTACT) return [...state, action.payload]
-  return state
-}
-
-const userReducer = (state = {}, action) => {
-  switch (action.type) {
-    case UPDATE_USER:
-      return merge(state, action.payload)
-    case UPDATE_CONTACT:
-      return merge(state, {prevContact: action.payload})
-    case LOG_IN_FULFILLED:
-      return merge(state, {token: action.payload})
-    case LOG_IN_REJECTED:
-      return merge(state, {loginErr: action.payload})
-    default:
-      return state
-  } //.17
-}
-
-const reducer = combineReducers({
-  user: userReducer,
-  contacts: contactReducer,
-})
-
-export default reducer
-```
-.18 actions.js
-``` jsx
-// async action creator
-export const logInUser = (username, password) => dispatch => {
-  dispatch({type: LOG_IN_SENT})
-  login(username, password)
-    .then(token => {
-      dispatch({type: LOG_IN_FULFILLED, payload: token}) //.18
-    })
-    .catch(err => {
-      dispatch({type: LOG_IN_REJECTED, payload: err.message}) //.18
-    })
-} // .15b from after/simpleRedux/store3.js
-```
-.19 authServer/index.js. Do note was **`return res.status(200).send()`** :exclamation: [1:00:10]
-``` jsx
-  if (!username || !password) return res.status(400).send('Missing username or password')
-  // in practice, this is potentially revealing too much information.
-  // an attacker can probe the server to find all of the usernames.
-  if (!users[username]) return res.status(403).send('User does not exist')
-  if (users[username] !== password) return res.status(403).send('Incorrect password')
-  //return res.status(200).send()
-  return res.json({token: 'thisIsARealToken'}) //.19
-  //.19 return res.status(200).send() 
-})
-```
-.20 api.js
-``` jsx
-/*
-  if (response.ok) {
-    const json = await response.json() //.20
-    return json.token //.20
-  } */
-
-    if (response.ok) {
-    const {token} = await response.json() //.20a
-    return token //.20a
-  }
-````
-.21 actions.js
-``` jsx
-// async action creator
-export const logInUser = (username, password) => async dispatch => {
-  dispatch({type: LOG_IN_SENT})
-  try {
-    const token = await login(username, password)
-    dispatch({type: LOG_IN_FULFILLED, payload: token}) //.18
-  } catch (err) {
-    dispatch({type: LOG_IN_REJECTED, payload: err.message}) //.18
-  }
-}// .15b from after/simpleRedux/store3.js //.21
-```
-.22 LoginScreen.js > unable to login, also no error message
-``` jsx
-import PropTypes from 'prop-types' //.22
-
-import {logInUser} from '../redux/actions' //.15c
-
-//import {login} from '../api'
-
-class LoginScreen extends React.Component { //.15d
-  static propTypes = {
-    err: PropTypes.string,
-    token: PropTypes.string,
-    logInUser: PropTypes.func,
-  } //.22
-
-  state = {
-    username: '',
-    password: '',
-  }
-
-  _login = async () => {
-      this.props.logInUser(this.state.username, this.state.password) 
-  } //.22
-/* delete
-  _login = async () => {
-    try {
-      this.props.logInUser(this.state.username, this.state.password) 
-      this.props.navigation.navigate('Main')
-    } catch (err) {
-      const errMessage = err.message
-      this.setState({err: errMessage})
-    }
-  }
-*/ //.22  
-...
-
-const mapStateToProps = state => ({
-  err: state.user.loginErr,
-  token: state.user.token,
-}) //.22
-
-export default connect(mapStateToProps, {logInUser})(LoginScreen)//.15d [53:45] .22b
-```
-Lecture: if wrong username to alert 'Missing username or password'
-and update the error message correctly. And if we refresh with the correct username and password combo, nothing actually happens.
-
-.22c LoginScreen.js > Failed to fetch. > fail to go to main screen.
-``` jsx
-... // .22c
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.error}>{this.props.err}</Text>
-...
-```
-add some sort of listener
-that says, hey, if we get a new token, then maybe we
-**should navigate to our main screen.**
-
-.23 loginScreen.js > Failed to fetch
-``` jsx
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.token) {
-      this.props.navigation.navigate('Main')
-    }
-  } //.23
-
-  _login = async () => {
-```
-If closed the App, and we logout again, need to login, unideal.   
-So how might we go ahead and store the state of our app
-
-[:top: Top](#top)
-
----
-### Persisting State
-- Our app can now be a pure function of the redux store
-- If we can persist the store, we can reload the app into the
-current state
-- React Native provides AsyncStorage
-  - “Use an abstraction on top of AsyncStorage instead of using it directly
-for anything more than light usage since it operates globally.”
-
----
-### redux-persist
-- Abstracts out the storage of the store into AsyncStorage
-- Gives us persistStore, persistReducer, PersistGate
-  - Automatically stores the state at every change
-  - Automatically rehydrates the store when the app is re-opened
-  - Will display loading screen while waiting for store to rehydrate
-- https://github.com/rt2zz/redux-persist
-
-`screens $ npm install redux-persist` 
-
-.24 store.js
-``` jsx
-import { createStore, applyMiddleware } from 'redux'; //.12
-import thunk from 'redux-thunk' //.13
-import { persistStore, persistReducer } from 'redux-persist' //.24
-import storage from 'redux-persist/lib/storage' //.24
-
-import {addContact} from './actions' 
-import reducer from './reducer' 
-
-const persistConfig = {
-  key: 'root',
-  storage,
-} //.24
-
-const persistedReducer = persistReducer(persistConfig, reducer) //.24
-
-export const store = createStore(persistedReducer, applyMiddleware(thunk)); //.13 .24
-export const persistor = persistStore(store) //.24
-
-```
-.25 App.js > no error
-``` jsx
-import { PersistGate } from 'redux-persist/integration/react' //.25
-...
-import {store, persistor} from './redux/store' //.25
-...
-  render() {
-    return (
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <AppNavigator />
-        </PersistGate>
-      </Provider>
-    )
-  } //.14 was <MainTabs /> which work without Login //.25
-```
-:disappointed: .> still unable to login.   
-[:top: Top](#top)
-
----
-### Container vs Presentational Components
-- As an application grows in size and complexity, not all
-components need to be aware of application state
-- Container components are aware of redux state
-- Presentational components are only aware of their props
-* https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0
-
----
-### Do I need Redux?
-- Redux helps apps scale, but does add complexity
-- Sometimes, the complexity overhead isn’t worth it
-- Do as much as you can with local component state, then
-add redux if you hit pain points
-  - Forgetting to pass a prop
-  - Directly managing deeply nested state
-  - Duplicated information in state
-  - Not updating all dependent props
-  - Components with large number of props
-  - Uncertainty where a piece of data is managed
-
-[:top: Top](#top)
-
----
-### JavaScript Tools
-- NPM
-- Babel
-- @std/esm
-- Chrome devtools
-- React/Redux devtools
+### Previous Lecture [11_AsyncRedux_Tools](https://github.com/alvinng222/cs50m/tree/11_AsyncRedux_Tools). 
+- Async simpleRedux/
+- Redux Middleware
+- redux-persist
+- Container vs Presentational Components
 - ESLint
 - Prettier
-- Flow/TypeScript
 
-Babel - which allows us to write JavaScript as if it has all of the language
-features that we need and then transpile down to JavaScript
-that all browsers will understand.
+### Performance
+- How quickly and efficiently something works
+- Performance optimization is the process of making
+something work as efficiently as possible
+- Performance optimization is a very wide field
+    - Today we’ll discuss optimizing on the JavaScript side of things
+    - Mostly high-level, with examples
 
-@std/esm - And what that allows us to do is use our import statements
-and our export statements in Node.
+### Trade-Offs
+- Performance optimization usually comes at a complexity
+cost
+    - In most cases, optimization is not worth the cost in complexity and
+maintainability
+- Don’t over-optimize until a bottleneck is found
+- How do we measure for bottlenecks?
 
-Flow/TypeScript - Those are both things that allow us to statically check
-the types of all of our functions.
-And so it helps us eliminate bugs where maybe we
-changed the function prototype somewhere but forgot to update
-wherever we use those functions.
+### Measuring Performance
+- Be mindful of the environment setting of your application
+- React Native Perf Monitor
+    - Shows you the refresh rate on both the UI and JS threads
+    - Anything below 60 means frames are being dropped
+- Chrome Performance Profiler
+    - Shows you a flame chart of all of your components
+    - Only available in development mode
 
 [:top: Top](#top)
 
----
-### ESLint
-- “A fully pluggable tool for identifying and reporting on
-patterns in JavaScript”
-- Allows us to enforce code style rules and statically
-analyze our code to ensure it complies with the rules
-  - Ensure style consistency across a codebase
-  *https://github.com/eslint/eslint
+Using [before/contacts](https://github.com/alvinng222/cs50m/tree/12_Performance/before/contacts)   
+& based on [before/contacts/package.json](#beforecontactspackagejson)   
+App.js
+``` jsx
+import Constants from 'expo-constants'; //import {Constants} from 'expo'  
+```
 
-[1:32:23] May be there is hundred of people using the same code base, and everybody write Javascript slightly different,
-we can use Eslint to yell at our developers.
+There are actually two different enviroments, one is production, another is   
+non-production, which most people consider development mode.
 
-### ESLint: Setup
-- Install
-  - Per project: `npm install --save-dev eslint`
-  - Globally: `npm install -g eslint`
-- Create your own config
-  - Per project: `./node_modules/.bin/eslint --init`
-  - Globally: `eslint init`
-- Or extend an existing config
-  - https://github.com/airbnb/javascript
-  - https://github.com/kensho/eslint-config-kensho
+React actually has a few optimizations that it does when it's in production mode.
+And so things like prop types aren't necessarily checked.
+And warnings and errors are not necessarily displayed.
 
-
-To install in our project.    
-ExpoCli > see [Working eslint](#working-eslint) below.  
+#### Show Performance Monitor
+[4:43] If i shake the device on Expo, iPhone8, can bring up this menu:
+```
+            . Reload
+            . Copy link to clipboard
+            . Go to Home
+            ---
+            . Disable Fast Refresh
+            . Debug Remote JS
+            . Show Performance Monitor
+            . Show Element Inspector
+```
+in Expo Andriod phone, after clicked the `Show Performance Monitor` Toggling, will see the JS's frame droped to 2fps.
 ``` console
-Jun24 twng$ npm install -D eslint
-Jun24 twng$ ./node_modules/.bin/eslint --init
-✔ How would you like to use ESLint? · problems
-✔ What type of modules does your project use? · esm
-✔ Which framework does your project use? · react
-✔ Does your project use TypeScript? · Yes
-✔ Where does your code run? · browser
-✔ What format do you want your config file to be in? · YAML
-The config that you've selected requires the following dependencies:
-eslint-plugin-react@latest @typescript-eslint/eslint-plugin@latest @typescript-eslint/parser@latest
-✔ Would you like to install them now with npm? · Yes
-Installing eslint-plugin-react@latest, @typescript-eslint/eslint-plugin@latest, @typescript-eslint/parser@latest
-+ eslint-plugin-react@7.20.1
-+ @typescript-eslint/eslint-plugin@3.4.0
-+ @typescript-eslint/parser@3.4.0
-Successfully created .eslintrc.yml file
+            UI: 60.0 fps
+            12 dropped so far
+            0 stutters (4+) so far
+            JS: 58.9 fps
 ```
+[0:05:43] And in this case, shown ScrollView actually render everthing. Which shown the JS frame droped.
 
-``` jsx
-Jun24 twng$ ls -a
-Jun24 twng$ vim .eslintrc.yml
-  1 env:
-  2   browser: true
-  3   es2020: true
-  4 extends:
-  5   - 'eslint:recommended'
-  6   - 'plugin:react/recommended'
-  7   - 'plugin:@typescript-eslint/recommended'
-  8 parser: '@typescript-eslint/parser'
-  9 parserOptions:
- 10   ecmaFeatures:
- 11     jsx: true
- 12   ecmaVersion: 11
- 13   sourceType: module
- 14 plugins:
- 15   - react
- 16   - '@typescript-eslint'
- 17 rules: {}
-```
-can run on any file, > but error. > see [Working eslint](#working-eslint) below.
+#### Frame Chart
+Chrome Performance Profiler    
+Expo-Cli, Run in Web browser, right click for Inspect, that bring up he 
+Developer Tool > **Permformance** > click the Record button.
+
+It record and shown running Javascrip inside the Google Chrome.
+
+for this contacts, toggle off the contact, start record, and toggle on.   
+And then Chrome will analyze things and show us this chart here.
+And so we see Frames, Interactions, Main, Raster, GPU, User Timing.
+If we dive into User **Timing**, we can see a few things.
+
+Timing from Frame Chart, *ScrollViewContacts*
 ``` console
-Jun24 twng$ ./node_modules/.bin/eslint api.js
-Warning: React version not specified ....
+        . (React Tree Reconsilation: Completed Root) 993.06ms
+        . ContactListScreen [Update] 992.18ms
+        . View [Update] 991.56ms
+        . ScrollViewContact [Update] 989.59ms
+        . ScrollView [mount] 980.00ms
+        . ScrollViewBase [mount] 979.03ms
+        . View [mount] 978.48ms
+        . View [mount] 978.00ms
+        . Row [mount] 0.76ms
+        . View [mount] 0.50ms
+        . Text [mount] 0.16ms
 ```
-**install Kenso config**
+ContactListScreen.js, change to FlatListContacts [16:01]
+``` jsx
+const ContactsList = true ? FlatListContacts : ScrollViewContacts
+```
+See the difference of rendering..   
+Timing from Frame Chart, *FlatListContacts*
 ``` console
-Jun24 twng$ npm install -D eslint-config-kensho
+        . (React Tree Reconsilation: Completed Root) 22.61ms
+        . ContactListScreen [Update] 22.04ms
+        . View [Update] 21.63ms
+        . FlatListContact [Update] 20.00ms
+        . FlatList [mount] 19.72ms
+        . VirtaulizedList [mount] 18.85ms
+        . ScrollView [mount] 16.69ms
+        . ScrollViewBase [mount] 15.07ms
+        . View [mount] 14.38ms
+        . View [mount] 14.09ms
+        . CellRenderer [mount] 1.56ms
+        . View [mount] 1.26ms
+        . Row [mount] 1.09ms
+        . View [mount] 0.69ms
+        . Text [mount] 0.28ms
 ```
 
-.eslintrc.yml delete the whole file and replace with
-``` jsx
-extends: kensho
-```
-**npx** is a short cut for ./node_modules/.bin/eslint
-``` terminal
-$ npx eslint api.js
-```
-Error: Failed to load plugin '@typescript-eslint' ... >  see [Working eslint](#working-eslint) below. 
-  
-### ESLint: Running
-- Run on a file/directory
-  - Per project: `./node_modules/.bin/eslint <path>`
-  - Globally: `eslint <path>`
-- Lint whole project by adding as an NPM script
-- Most text editors have an integration
+### Common Inefficiencies
+- Rerendering too often
+- Unnecessarily changing props
+- Unnecessary logic in mount/update
 
 [:top: Top](#top)
+### Rerendering Too Often
+- Components will automatically rerender when they receive
+new props
+    - Sometimes, a prop that isn’t needed for the UI will change and cause an
+unnecessary rerender
+- If you use redux, only subscribe to the part of state that is
+necessary
+- keys in arrays/lists
+- shouldComponentUpdate() and React.PureComponent
+    - A PureComponent has a predefined shouldComponentUpdate() that
+does a shallow diff of props
 
----
-### Prettier
-- “Prettier is an opinionated code formatter”
-- Prettier will rewrite your files to adhere to a specified code
-style
-- It can integrate with ESLint
-  - Specify an eslint config and pass --fix to eslint to have prettier
-auto-fix improper styling
-* https://github.com/prettier/prettier
+#### To render just only the first contact
+[27:06] Let just changes the first person in the app. Add a button.
+And presumably, we won't need to re-render all 999 other people.
+And we're going to use something like shouldComponentUpdate.
 
-``` terminal
-$ npm install -D prettier
-$ npx eslint api.js
-```
-#### Working eslint
- https://github.com/kensho-technologies/eslint-config-kensho   
-**`$ npm i -D eslint prettier typescript eslint-config-kensho`** :+1: 
-``` console
-Jun24 $ npm i -D eslint prettier typescript eslint-config-kensho
-+ eslint-config-kensho@17.0.2
-+ eslint@7.3.1
-+ prettier@2.0.5
-+ typescript@3.9.5
-...
-Jun24 $ vim .eslintrc.yml
-    extends: kensho
+created Snack's `12_was 11_src10ZipBefore`from 11_src10Zip  
+App.js update from [before/contacts/appjs](#beforecontactsappjs)  
+Redux/reducers.js from [before/contacts/redux/reducerjs](#beforecontactsreduxreducerjs)  
+store.js from [before/contacts/redux/storejs](#beforecontactsreduxstorejs).  
+ContactListScreens.js from [before/contacts/screens/ContactListScreen.js](#beforecontactsscreenscontactlistscreenjs). 
 
-Jun24 $ npx eslint api.js
 
-Jun24/api.js
-   1:24  error  Replace `contact` with `(contact)`                            prettier/prettier
-  25:1   error  Delete `··`                                                   prettier/prettier
-  26:43  error  Expected exception block, space or tab after '//' in comment  spaced-comment
-  27:18  error  Expected exception block, space or tab after '//' in comment  spaced-comment
-
-✖ 4 problems (4 errors, 0 warnings)
-  4 errors and 0 warnings potentially fixable with the `--fix` option.
-Jun24 $ npx eslint api.js --fix
-```
-
-.26 api.js to add code for test
+actions.js [28:39]
 ``` jsx
-  ...
-  throw new Error(errMessage)
-}
-
-export const poorlyFormatted = (usedVar, unusedVar) => { return usedVar}
-```
-can automatic fixed the file, using **npx eslint api.js --fix**
-``` terminal
-Jun24 $ npx eslint api.js --fix
-
-Jun24/api.js
-  34:42  error  'unusedVar' is defined but never used  no-unused-vars
-
-✖ 1 problem (1 error, 0 warnings)
-```
-
-:+1: - Lint whole project by adding as an NPM script
-
-Example, the reason of it server work,
-``` terminal
-$ cd authServer
-authServer$ npm start
-authServer$ vim package.json
-```
- because package.json got this
-``` js
-  "scripts": {
-    "start": "node index"
-  },
-```
-It defined a script called `start` that just runs that index file.
-
-we can also in 
-``` terminal
-$ cd ..
-$ vim package.js
-```
-we can change  
-package.json
-``` json
-  "scripts": {
-    "lint": "eslint api.js simpleRedux/"
-  },
-```
-**npm run lint**.   
-And now this will automatically lint all of the files that we want for us. For this example we lint api.js and simpleRedux/
-``` console
-Ts-MacBook-Pro:Jun24 twng$ npm run
-Scripts available in my_nm via `npm run-script`:
-  lint
-    eslint api.js simpleRedux/
-Ts-MacBook-Pro:Jun24 twng$ npm run lint
-
-> @ lint /Users/twng/cs50m/Jun24
-> eslint api.js simpleRedux/
+export const CHANGE_FIRST_CONTACT = 'CHANGE_FIRST_CONTACT' // .01
 ...
+export const changeFirstContact = () => ({type: CHANGE_FIRST_CONTACT }) //.01
+
+// async action creator
+```
+reducer.js [30:12]
+``` jsx
+import {CHANGE_FIRST_CONTACT, UPDATE_USER, UPDATE_CONTACT, LOG_IN_FULFILLED, LOG_IN_REJECTED} from './actions' //.01b
 ...
-/Users/twng/cs50m/Jun24/simpleRedux/store3.js
-   36:7   warning  Unexpected console statement                                      no-console
-   44:31  error    Use an object spread instead of `Object.assign` eg: `{ ...foo }`  prefer-object-spread
-   70:7   error    'updateUser' is assigned a value but never used                   no-unused-vars
-   70:20  error    Replace `update` with `(update)`                                  prettier/prettier
-   75:7   error    'addContact' is assigned a value but never used                   no-unused-vars
-   75:20  error    Replace `newContact` with `(newContact)`                          prettier/prettier
-   81:43  error    Replace `dispatch` with `(dispatch)`                              prettier/prettier
-   87:12  error    Replace `err` with `(err)`                                        prettier/prettier
-   87:12  error    'err' is defined but never used                                   no-unused-vars
-   90:2   error    Delete `⏎`                                                        prettier/prettier
-   97:1   error    Delete `··`                                                       prettier/prettier
-  108:1   warning  Unexpected console statement                                      no-console
-...
-...
-```
-[:top: Top](#top)
-
----
-Source Code
----
-
-### before/...
-
-#### before/App.js
-``` jsx
-import React from 'react'
-import {
-  createStackNavigator,
-  createSwitchNavigator,
-  createBottomTabNavigator,
-} from 'react-navigation'
-import Ionicons from 'react-native-vector-icons/Ionicons'
-import {Provider} from 'react-redux'
-
-import AddContactScreen from './screens/AddContactScreen'
-import SettingsScreen from './screens/SettingsScreen'
-import ContactListScreen from './screens/ContactListScreen'
-import ContactDetailsScreen from './screens/ContactDetailsScreen'
-import LoginScreen from './screens/LoginScreen'
-import {fetchUsers} from './api'
-import contacts from './contacts'
-import store from './redux/store'
-
-const MainStack = createStackNavigator(
-  {
-    ContactList: ContactListScreen,
-    ContactDetails: ContactDetailsScreen,
-    AddContact: AddContactScreen,
-  },
-  {
-    initialRouteName: 'ContactList',
-    navigationOptions: {
-      headerTintColor: '#a41034',
-      headerStyle: {
-        backgroundColor: '#fff',
-      },
-    },
-  }
-)
-
-MainStack.navigationOptions = {
-  tabBarIcon: ({focused, tintColor}) => (
-    <Ionicons name={`ios-contacts${focused ? '' : '-outline'}`} size={25} color={tintColor} />
-  ),
-}
-
-const MainTabs = createBottomTabNavigator(
-  {
-    Contacts: MainStack,
-    Settings: SettingsScreen,
-  },
-  {
-    tabBarOptions: {
-      activeTintColor: '#a41034',
-    },
-  }
-)
-
-const AppNavigator = createSwitchNavigator({
-  Login: LoginScreen,
-  Main: MainTabs,
-})
-
-export default class App extends React.Component {
-  state = {
-    contacts,
-  }
-
-  /*
-  componentDidMount() {
-    this.getUsers()
-  }
-
-  getUsers = async () => {
-    const results = await fetchUsers()
-    this.setState({contacts: results})
-  }
-  */
-
-  addContact = newContact => {
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, newContact],
-    }))
-  }
-
-  render() {
-    return (
-      <Provider store={store}>
-        <MainTabs />
-      </Provider>
-    )
-  }
-}
-
-```
-[:top: Top](#top)
-
-
-#### before/api.js
-``` js
-const processContact = contact => ({
-  name: `${contact.name.first} ${contact.name.last}`,
-  phone: contact.phone,
-})
-
-export const fetchUsers = async () => {
-  const response = await fetch('https://randomuser.me/api/?results=50&nat=us')
-  const {results} = await response.json()
-  return results.map(processContact)
-}
-
-export const login = async (username, password) => {
-  const response = await fetch('http://localhost:8000', {
-    method: 'POST',
-    headers: {'content-type': 'application/json'},
-    body: JSON.stringify({username, password}),
-  })
-
-  if (response.ok) {
-    return true
-  }
-
-  const errMessage = await response.text()
-  throw new Error(errMessage)
-}
-
-```
-
-#### before/package.json
-updated from [10_Redux](https://github.com/alvinng222/cs50m/tree/10_Redux#afterpackagejson)
-``` js
-{
-  "dependencies": {
-    "react-navigation": "2.0.0",
-    "react-native-paper": "3.6.0",
-    "react-native-vector-icons": "6.6.0",
-    "react-native-vector-icons/Ionicons": "6.6.0",
-    "redux": "4.0.5",
-    "react-redux": "5.0.7"
-  }
-}
-```  
-[:top: Top](#top)
-
-### before/authServer/...
-#### before/authServer/index.js
-Last update Jun 30, 2020.  .19 was before lecture.
-``` jsx
-const express = require('express')
-const bodyParser = require('body-parser')
-
-const PORT = process.env.PORT || 8000
-
-// usernames are keys and passwords are values
-const users = {
-  username: 'password',
-}
-
-const app = express()
-app.use(bodyParser.json())
-
-app.post('*', (req, res) => {
-  const {username, password} = req.body
-
-  if (!username || !password) return res.status(400).send('Missing username or password')
-  // in practice, this is potentially revealing too much information.
-  // an attacker can probe the server to find all of the usernames.
-  if (!users[username]) return res.status(403).send('User does not exist')
-  if (users[username] !== password) return res.status(403).send('Incorrect password')
-  return res.status(200).send() // .19
-  // return res.json({token: 'thisIsAToken'})
-})
-
-// catch 404
-app.use((req, res, next) => {
-  const err = new Error('Not Found')
-  err.status = 404
-  next(err)
-})
-
-app.use((err, req, res, next) => res.status(err.status || 500).send(err.message || 'There was a problem'))
-
-const server = app.listen(PORT)
-console.log(`Listening at http://localhost:${PORT}`)
-
-```
-
-#### before/authServer/package.json  
-``` js
-{
-  "name": "authserver",
-  "version": "1.0.0",
-  "description": "Simple auth server for a demo",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index"
-  },
-  "author": "Jordan Hayashi",
-  "license": "ISC",
-  "dependencies": {
-    "body-parser": "^1.18.2",
-    "express": "^4.16.3"
-  }
-}
-
-```
-[:top: Top](#top)
-
-### before/redux/...
-#### before/redux/actions.js
-``` jsx
-// action types
-export const UPDATE_USER = 'UPDATE_USER'
-export const UPDATE_CONTACT = 'UPDATE_CONTACT'
-
-// action creators
-export const updateUser = update => ({
-  type: UPDATE_USER,
-  payload: update,
-})
-
-export const addContact = newContact => ({
-  type: UPDATE_CONTACT,
-  payload: newContact,
-})
-
-```
-#### before/redux/reducer.js
-``` jsx
-import {combineReducers} from 'redux'
-
-import {UPDATE_USER, UPDATE_CONTACT} from './actions'
-
-const merge = (prev, next) => Object.assign({}, prev, next)
-
-const contactReducer = (state = [], action) => {
+const contactReducer = (state = contacts, action) => {
   if (action.type === UPDATE_CONTACT) return [...state, action.payload]
+  if (action.type === CHANGE_FIRST_CONTACT){
+    const [firstContact, ... rest]= state
+    // [{name: 'Jordan', phone: '1234567890' }]
+    // firstContact, rest = []
+    if (!firstContact) return state
+    const newContact= {...firstContact, name: 'Jordan Hayashi'}
+    return [newContact, ...rest]
+  } //.01b
   return state
 }
-
-const userReducer = (state = {}, action) => {
-  switch (action.type) {
-    case UPDATE_USER:
-      return merge(state, action.payload)
-    case UPDATE_CONTACT:
-      return merge(state, {prevContact: action.payload})
-    default:
-      return state
-  }
-}
-
-const reducer = combineReducers({
-  user: userReducer,
-  contacts: contactReducer,
-})
-
-export default reducer
-
 ```
-#### before/redux/store.js  
+contactListScreens.js
 ``` jsx
-import {createStore} from 'redux'
-
-import {addContact} from './actions'
-import reducer from './reducer'
-
-const store = createStore(reducer)
-
-/*
-store.dispatch(updateUser({foo: 'foo'}))
-store.dispatch(updateUser({bar: 'bar'}))
-store.dispatch(updateUser({foo: 'baz'}))
-*/
-
-store.dispatch(addContact({name: 'jordan h', phone: '1234567890'}))
-store.dispatch(addContact({name: 'jordan h', phone: '1234567890'}))
-store.dispatch(addContact({name: 'david m', phone: '5050505050'}))
-
-console.log(store.getState())
-
-export default store
-
-```
-[:top: Top](#top)
-
-### before/screens/...
-#### before/screens/AddContactScreen.js
-``` jsx
-import React from 'react'
-import AddContactForm from '../AddContactForm'
-import {connect} from 'react-redux'
-
-import {addContact} from '../redux/actions'
-
-class AddContactScreen extends React.Component {
-  static navigationOptions = {
-    headerTitle: 'New Contact',
-  }
-
-  handleSubmit = formState => {
-    this.props.addContact({name: formState.name, phone: formState.phone})
-    this.props.navigation.navigate('ContactList')
-  }
-
-  render() {
-    return <AddContactForm onSubmit={this.handleSubmit} />
-  }
-}
-
-export default connect(null, {addContact: addContact})(AddContactScreen)
-
-```
-[:top: Top](#top)
-
-#### before/screens/ContactListScreen.js
-``` jsx
-import React from 'react'
-import {Button, View, StyleSheet} from 'react-native'
-import {connect} from 'react-redux'
-
-import SectionListContacts from '../SectionListContacts'
-
-class ContactListScreen extends React.Component {
-  static navigationOptions = ({navigation}) => ({
-    headerTitle: 'Contacts',
-    headerRight: (
-      <Button title="Add" onPress={() => navigation.navigate('AddContact')} color="#a41034" />
-    ),
-  })
-
-  state = {
-    showContacts: true,
-  }
-
-  toggleContacts = () => {
-    this.setState(prevState => ({showContacts: !prevState.showContacts}))
-  }
-
-  handleSelectContact = contact => {
-    this.props.navigation.push('ContactDetails', contact)
-  }
-
+import {changeFirstContact} from '../redux/actions' // .01c 
+...
   render() {
     return (
       <View style={styles.container}>
         <Button title="toggle contacts" onPress={this.toggleContacts} />
-        {this.state.showContacts && (
-          <SectionListContacts
-            contacts={this.props.contacts}
-            onSelectContact={this.handleSelectContact}
-          />
-        )}
+        <Button title="change first contacts" onPress={changeFirstContact}//.01c
+         />
+        {this.state.showContacts && <ContactsList contacts={this.props.contacts} />}
       </View>
     )
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-})
-
-const mapStateToProps = state => ({
-  contacts: state.contacts,
-})
-
-export default connect(mapStateToProps)(ContactListScreen)
-
 ```
-#### before/screens/LoginScreen.js 
+.02 contactListScreen.js [38:00]
 ``` jsx
-import React from 'react'
-import {Button, View, StyleSheet, Text, TextInput} from 'react-native'
-
-import {login} from '../api'
-
-export default class LoginScreen extends React.Component {
-  state = {
-    username: '',
-    password: '',
-  }
-
-  _login = async () => {
-    try {
-      const success = await login(this.state.username, this.state.password)
-      this.props.navigation.navigate('Main')
-    } catch (err) {
-      const errMessage = err.message
-      this.setState({err: errMessage})
-    }
-  }
-
-  handleUsernameUpdate = username => {
-    this.setState({username})
-  }
-
-  handlePasswordUpdate = password => {
-    this.setState({password})
-  }
-
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.error}>{this.state.err}</Text>
-        <TextInput
-          placeholder="username"
-          value={this.state.username}
-          onChangeText={this.handleUsernameUpdate}
-          autoCapitalize="none"
-        />
-        <TextInput
-          placeholder="password"
-          value={this.state.password}
-          onChangeText={this.handlePasswordUpdate}
-          secureTextEntry
-        />
-        <Button title="Press to Log In" onPress={this._login} />
+        <Button title="toggle contacts" onPress={this.toggleContacts} />
+        <Button title="change first contacts" onPress={this.props.changeFirstContact}//.01c .02
+         />
+        {this.state.showContacts && <ContactsList contacts={this.props.contacts} />}
+      </View>
+...
+
+export default connect(mapStateToProps,
+{changeFirstContact})(ContactListScreen) //.02
+```
+[:top: Top](#top)
+#### React.PureComponent
+we see that it take a litttle bit of time to change the first contact.
+because it render the whole list.
+
+let's try to **optimise** that. if props dont change dont render
+
+[40:12] And right now, row is just a stateless functional component.
+Row.js from [before/contacts/Row.js](#beforecontactsrowjs).
+
+.03 Row.js, So make it stateful. now the first contact on the screen changed immediately.
+``` jsx
+/* eslint-disable */
+...
+class Row extends React.PureComponent {
+  render () {
+    const {props} = this //const props = this.props
+    return (
+      <View style={styles.row}>
+        <Text>{props.name}</Text>
+        <Text>{props.phone}</Text>
       </View>
     )
   }
-}
+} // .03
 
-const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    flex: 1,
-  },
-  text: {
-    textAlign: 'center',
-  },
-  error: {
-    textAlign: 'center',
-    color: 'red',
-  },
-})
-
+Row.propTypes = {
+...
 ```
-[:top: Top](#top)
+[42:55]
 
-### before/simpleRedux/...
-#### before/simpleRedux/reducer.js
+#### shouldComponentUpdate
+.04 Row.js, shouldComponentUpdate
 ``` jsx
-const merge = (prev, next) => Object.assign({}, prev, next)
+// class Row extends React.PureComponent {
+class Row extends React.Component {
+  shouldComponentUpdate(nextProps) {
+    if (nextProps.name !== this.props.name) {
+      return true
+    } else {
+      return false
+    }
+  } //.04
 
-const reducer = (state, update) => merge(state, update)
-
-let state = {}
-state = reducer(state, {foo: 'foo'})
-state = reducer(state, {bar: 'bar'})
-state = reducer(state, {foo: 'baz'})
-
-console.log(state)
-
+  render () {
 ```
-
-#### before/simpleRedux/store2.js
+.05 Row.js, short hand
 ``` jsx
-// action types
-const UPDATE_USER = 'UPDATE_USER'
-const UPDATE_CONTACT = 'UPDATE_CONTACT'
+class Row extends React.Component {
+  shouldComponentUpdate(nextProps) {
+    return nextProps.name !== this.props.name
+  } //.04 .05
 
-class Store {
-  constructor(reducer, initialState) {
-    this.reducer = reducer
-    this.state = initialState
-  }
-
-  getState() {
-    return this.state
-  }
-
-  dispatch(update) {
-    this.state = this.reducer(this.state, update)
-  }
-}
-
-const DEFAULT_STATE = {user: {}, contacts: []}
-
-const merge = (prev, next) => Object.assign({}, prev, next)
-
-const contactReducer = (state, action) => {
-  if (action.type === UPDATE_CONTACT) return [...state, action.payload]
-  return state
-}
-
-const userReducer = (state, action) => {
-  if (action.type === UPDATE_USER) return merge(state, action.payload)
-  if (action.type === UPDATE_CONTACT) return merge(state, {prevContact: action.payload})
-  return state
-}
-
-const reducer = (state, action) => ({
-  user: userReducer(state.user, action),
-  contacts: contactReducer(state.contacts, action),
-})
-
-// action creators
-const updateUser = update => ({
-  type: UPDATE_USER,
-  payload: update,
-})
-
-const addContact = newContact => ({
-  type: UPDATE_CONTACT,
-  payload: newContact,
-})
-
-const store = new Store(reducer, DEFAULT_STATE)
-store.dispatch(updateUser({foo: 'foo'}))
-store.dispatch(updateUser({bar: 'bar'}))
-store.dispatch(updateUser({foo: 'baz'}))
-
-store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
-store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
-store.dispatch(addContact({name: 'david m', number: '5050505050'}))
-
-console.log(store.getState())
-
+  render () {
 ```
 [:top: Top](#top)
 
 ---
-### after/...
+### Unnecessarily Changing Props
+- Unnecessarily changing a value that is passed to a child
+could cause a rerender of the entire subtree
+- If you have any object (or array, function, etc.) literals in
+your render() method, a new object will be created at
+each render
+    - Use constants, methods, or properties on the class instance
 
-#### after/App.js
+.06 PureButton.js, from  after/contacts/PureButton.js
 ``` jsx
 import React from 'react'
-import {
-  createStackNavigator,
-  createSwitchNavigator,
-  createBottomTabNavigator,
-} from 'react-navigation'
-import Ionicons from 'react-native-vector-icons/Ionicons'
-import {Provider} from 'react-redux'
-import { PersistGate } from 'redux-persist/integration/react'
+import {Button} from 'react-native'
 
-import AddContactScreen from './screens/AddContactScreen'
-import SettingsScreen from './screens/SettingsScreen'
-import ContactListScreen from './screens/ContactListScreen'
-import ContactDetailsScreen from './screens/ContactDetailsScreen'
-import LoginScreen from './screens/LoginScreen'
-import {fetchUsers} from './api'
-import contacts from './contacts'
-import {store, persistor} from './redux/store'
-
-const MainStack = createStackNavigator(
-  {
-    ContactList: ContactListScreen,
-    ContactDetails: ContactDetailsScreen,
-    AddContact: AddContactScreen,
-  },
-  {
-    initialRouteName: 'ContactList',
-    navigationOptions: {
-      headerTintColor: '#a41034',
-      headerStyle: {
-        backgroundColor: '#fff',
-      },
-    },
-  }
-)
-
-MainStack.navigationOptions = {
-  tabBarIcon: ({focused, tintColor}) => (
-    <Ionicons name={`ios-contacts${focused ? '' : '-outline'}`} size={25} color={tintColor} />
-  ),
-}
-
-const MainTabs = createBottomTabNavigator(
-  {
-    Contacts: MainStack,
-    Settings: SettingsScreen,
-  },
-  {
-    tabBarOptions: {
-      activeTintColor: '#a41034',
-    },
-  }
-)
-
-const AppNavigator = createSwitchNavigator({
-  Login: LoginScreen,
-  Main: MainTabs,
-})
-
-export default class App extends React.Component {
+export default class PureButton extends React.PureComponent {
   state = {
-    contacts,
+    color: null,
   }
 
-  /*
-  componentDidMount() {
-    this.getUsers()
-  }
-
-  getUsers = async () => {
-    const results = await fetchUsers()
-    this.setState({contacts: results})
-  }
-  */
-
-  addContact = newContact => {
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, newContact],
-    }))
+  componentDidUpdate() {
+    this.setState({color: 'red'}) // eslint-disable-line
   }
 
   render() {
+    return <Button {...this.props} color={this.state.color} />
+  }
+}
+```
+
+.07 PureButtonScreen.js
+``` jsx
+import React from 'react'
+import { View, Text } from 'react-native'
+
+import PureButton from './PureButton'
+
+export default class PureButtonScreen extends React.Component {
+  state = {
+    count: 0,
+  }
+
+  render () {
     return (
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <AppNavigator />
-        </PersistGate>
-      </Provider>
+      <View style={{flex: 1}}>
+      <Text>{this.state.count}</Text>
+        <PureButton
+            title="increment count"
+          style={{alignSelf: 'center'}}
+          onPress={() => this.setState(prevState=> ({count: prevState.count + 1}))} 
+        />
+      </View>
     )
   }
 }
-
 ```
-[:top: Top](#top)
 
-#### after/api.js
+.08 App.js, changed to run PureButton
 ``` jsx
-const processContact = contact => ({
-  name: `${contact.name.first} ${contact.name.last}`,
-  phone: contact.phone,
-})
+// .08 import ContactListScreen from './screens/ContactListScreen'
+import PureButtonScreen from './PureButtonScreen' //.08
+...
+export default () => (
+  <Provider store={store}>
+    <View style={styles.app}>
+      <PureButtonScreen />
+    </View>
+  </Provider>
+) // .08
+```
+.09 PureButtonScreen.js
+``` jsx
+import React from 'react'
+import { StyleSheet, View, Text } from 'react-native'
 
-export const fetchUsers = async () => {
-  const response = await fetch('https://randomuser.me/api/?results=50&nat=us')
-  const {results} = await response.json()
-  return results.map(processContact)
-}
+import PureButton from './PureButton'
 
-export const login = async (username, password) => {
-  const response = await fetch('http://localhost:8000', {
-    method: 'POST',
-    headers: {'content-type': 'application/json'},
-    body: JSON.stringify({username, password}),
-  })
+const styles = StyleSheet.create({
+  button: {
+    alignSelf: 'center',
+  },
+}) //.09
 
-  if (response.ok) {
-    const {token} = await response.json()
-    return token
+export default class PureButtonScreen extends React.Component {
+  state = {
+    count: 0,
   }
 
-  const errMessage = await response.text()
-  throw new Error(errMessage)
+  inc = () => {
+    this.setState(prevState => ({count: prevState.count + 1}))
+  } //.09b
+
+  render () {
+    return (
+      <View style={{flex: 1}}>
+      <Text>{this.state.count}</Text>
+        <PureButton
+          title="increment count"
+          style={styles.button} //.09
+          onPress={this.inc} //.09c 
+        />
+      </View>
+    )
+  }
 }
+```
+[59:50]
 
-export const poorlyFormatted = usedVar => usedVar
+.10
+`$ npx eslint PureButtonScreen.js --fix`
 
+
+### Unnecessary Logic in Mount/Update
+- Adding properties to class instance instead of methods on
+the class
+    - Properties are created at each mount whereas methods are one time
+ever
+
+### Reminder: Trade-Offs
+- Performance optimization usually comes at a complexity
+cost
+    - In most cases, optimization is not worth the cost in complexity and
+maintainability
+- Don’t over-optimize until a bottleneck is found
+
+[:top: Top](#top)
+[1:04:33]
+
+---
+### Animations
+- Let’s add a progress bar to our Project 1 timer
+- Animations require both the JS and UI threads
+    - Sending messages over the bridge 10s of times per second is expensive
+    - Blocking either thread impacts the UX
+- We could implement the animation in native
+    - Requires knowing Obj-C/Swift and Java
+- What if we could declare the animation in JS and have it
+execute on the native thread?
+
+.> unable to run on Expo-Cli's run-on-web. ExpoCli's device ok. But, I run on Snack
+#### .11 before/pomodoro-timer/App.js
+``` jsx
+const DEFAULT_WORK_MINS = 0.1 // .11 6sec
+const DEFAULT_BREAK_MINS = 0.1 // .11 6sec
+```
+#### empty View
+.12 new before/pomodoro-timer/ProgressBar.js, rendered empty View
+``` jsx
+import React from 'react'
+import {StyleSheet, View} from 'react-native'
+
+export default props => (
+  <View />
+)
+```
+.13 App.js
+``` jsx
+import ProgressBar from './ProgressBar' //.13
+...
+        <ProgressBar />
+        <View style={[styles.buttonGroup, styles.center]}>
+```
+#### styles the bar
+14. ProgressBar.js, we styles the bar.
+``` jsx
+import React from 'react'
+import {StyleSheet, View} from 'react-native'
+
+const styles = StyleSheet.create({
+  progress: {
+    backgroundColor: 'blue',
+    height: 10,
+    width: 100,
+  },
+}) //.14
+
+export default props => (
+  <View style={styles.progress}/>
+) //.14
+```
+#### get `state`
+.15 App.js timing, pass the timings into progressBar
+``` jsx
+  getTimeTotal = () => {
+    const {workTime, breakTime} = this.state // short hand for
+    //const workTime = this.state.workTime
+    //const breakTime = this.state.breakTime
+    return (this.state.activeTimer === 'work' ? workTime : breakTime) * 1000
+  } //.15
+  
+  render() {
+...
+        <ProgressBar 
+          timeRemaining={this.state.timeRemaining} 
+          timeTotal= {this.getTimeTotal()} //.15
+          isRunning={this.state.isRunning} //.15b
+        />
+```
+.15c ProgressBar.js PropTypes, that we can remember exactly what props we have.
+``` jsx
+import React from 'react'
+import {StyleSheet, View} from 'react-native'
+import PropTypes from 'prop-types' // .15c
+
+const styles = StyleSheet.create({
+  progress: {
+    backgroundColor: 'blue',
+    height: 10,
+    width: 100,
+  },
+}) //.14
+
+const ProgressBar = props => (
+  <View style={styles.progress}/>
+) //.14 .15c
+
+ProgressBar.propTypes = {
+  timeRemaining: PropTypes.number,
+  timeTotal: PropTypes.number,
+  isRunning: PropTypes.bool,
+} //.15x
+
+export default ProgressBar // .15c
+```
+[1:17:43]
+
+How to get the bar to show the correct width?
+Import **Dimensions** from react native
+
+.16 ProgressBar.js Dimensions from react native. first window width, and some maths
+``` jsx
+import {Dimensions, StyleSheet, View} from 'react-native' //.16
+...
+const ProgressBar = props => {
+  //const width = Dimensions.get('window').width
+  const {width} = Dimensions.get('window') //.16
+  const percent = 1- (props.timeRemaining / props.timeTotal)
+  return (
+    <View style={[styles.progress, {width: percent * width}] }/>
+    )
+} //.14 .15c .16 
+```
+.17 utils/Timer.js reduce ticking, by 60 fps
+``` jsx
+//const TICK_DURATION = 1000 //.17
+const TICK_DURATION = 1000 /60 
+//.17 .17b
+
+export default class Timer {
+...
+      const nextTick = this.timeRemaining % TICK_DURATION // .17
+```
+---
+[1:23:02]  Write a function that random block the JavaScript,
+to stimulate a lot of work being done.
+
+.18 App.js And so now we'll see it's getting really jittery. It blocks for 200 milliseconds, and then goes again.
+``` jsx
+  block() {
+    const doneTime = Date.now() + 200
+    while (Date.now() < doneTime) {}
+  } //.18
+
+  render() {
+    if (Math.round(Math.random())) this.block()// .18b
+    return (
 ```
 [:top: Top](#top)
 
-#### after/package.json
-Expo Cli, last updated Jun 30, 2020
+
+### Animated
+- Allows us to declare a computation in JS and compute it
+on the native thread
+    - JS thread no longer needs to compute anything
+    - JS thread can be blocked and the animation will still run
+- Cannot use native driver for layout props
+* https://facebook.github.io/react-native/docs/animated.html
+
+new 
+`$ cp ProgressBar.js ProgressBarAnimated.js`
+
+.19 before/pomodoro-timer/App.js
 ``` jsx
+import ProgressBar from './ProgressBarAnimated' //.13 .19
+```
+#### import Animated
+.20 ProgressBarAnimated.js, need to change to class component.   
+Add in `const {props} = this` to work.
+``` jsx
+import {Animated, Dimensions, Easing, StyleSheet, View} from 'react-native' //.20
+...
+class ProgressBar extends React.Component { //.20
+  render () {
+    const {props} = this
+    const {width} = Dimensions.get('window') 
+    const percent = 1- (props.timeRemaining / props.timeTotal)
+    return (
+      <View style={[styles.progress, {width: percent * width}] }/>
+      )
+  }
+} //.20
+```
+#### new Animated.Value(0)
+.21 ProgressBarAnimated.js Easing from react native. `new Animated.Value(0),` going to chance in high frequency, and computed all native thread.  
+import Easing.
+``` jsx
+import React from 'react'
+import {Animated, Dimensions, Easing, StyleSheet, View} from 'react-native' //.20 .21
+import PropTypes from 'prop-types' 
+
+const styles = StyleSheet.create({
+  progress: {
+    backgroundColor: 'blue',
+    height: 10,
+    width: 100,
+  },
+}) 
+
+class ProgressBar extends React.Component {
+  state = {
+    percent: new Animated.Value(0),
+  } //.21
+
+  componentDidMount () {
+    this.animation = Animated.timing(
+      this.state.percent,
+      {
+        toValue: 100,
+        duration: this.props.timeRemaining,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      } //.21
+    )
+
+    this.animation.start()
+  } //.21
+
+  render () {
+    //onst {props} = this
+    const {percent} = this.state //.21b
+    const {width} = Dimensions.get('window') 
+    //const percent = 1- (props.timeRemaining / props.timeTotal)
+    return (
+      <View 
+        style={[
+          styles.progress, 
+          {transform: [{scaleX: percent * width}]},
+        ] }
+      />
+    )
+  }  //.20 //.21b
+}
+
+ProgressBar.propTypes = {
+  timeRemaining: PropTypes.number,
+  timeTotal: PropTypes.number,
+  isRunning: PropTypes.bool,
+} //.15x
+
+export default ProgressBar 
+```
+
+.21c ProgressBarAnimated.js Animated.View
+``` jsx
+...
+
+const styles = StyleSheet.create({
+  progress: {
+    backgroundColor: 'blue',
+    height: 10,
+    //width: 1, //.21C
+    width: 2, //.21d
+  },
+}) 
+
+...
+
+  render () {
+    const {percent} = this.state //.21b
+    const {width} = Dimensions.get('window') 
+    return (
+      <Animated.View //.21c
+        style={[
+          styles.progress, 
+          {transform: [{scaleX: percent.interpolate({
+            inputRange: [0, 100],
+            outputRange: [0, width],
+          })    }]},
+        ] } //.21c
+      />
+    )
+  }  //.20 //.21b 
+}
+
+...
+```
+.22 ProgressBarAnimated.js componentDidMount
+``` jsx
+class ProgressBar extends React.Component {
+  state = {
+    percent: new Animated.Value(0),
+  } //.21
+
+  componentDidMount() {
+    this.startAnimation()
+  } //.22
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (nextProps.timeRemaining > this.props.timeRemaining) {
+      this.setState({percent: new Animated.Value(0)}, this.startAnimation)
+    }
+  } //.22
+
+  startAnimation = () => { //.22
+    this.animation = Animated.timing(
+      this.state.percent,
+      {
+        toValue: 100,
+        duration: this.props.timeRemaining,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      } //.21
+    )
+
+    this.animation.start()
+  } //.21
+```
+.> still jarky at Snack, and bug when Pause.
+
+[:top: Top](#top)
+
+---
+---
+Source Code
+---
+[:top: Top](#top) 
+[before/contacts/...](#beforecontacts)
+[after/contacts/...](#aftercontacts) 
+### before/contacts/...
+before/contacts/.eslintrc.yml
+``` yml
+extends: kensho
+```
+before/contacts/.gitignore
+``` git
+node_modules/**/*
+.expo/*
+npm-debug.*
+```
+
+#### before/contacts/App.js
+``` jsx
+import React from 'react'
+import {Provider} from 'react-redux'
+import {StyleSheet, View} from 'react-native'
+import {Constants} from 'expo'
+
+import {PersistGate} from 'redux-persist/integration/react' // eslint-disable-line
+
+import ContactListScreen from './screens/ContactListScreen'
+import store from './redux/store'
+
+const styles = StyleSheet.create({
+  app: {
+    flex: 1,
+    marginTop: Constants.statusBarHeight,
+  },
+})
+
+export default () => (
+  <Provider store={store}>
+    <View style={styles.app}>
+      <ContactListScreen />
+    </View>
+  </Provider>
+)
+
+```
+#### before/contacts/Row.js
+``` jsx
+import React from 'react'
+import {StyleSheet, Text, View} from 'react-native'
+import PropTypes from 'prop-types'
+
+const styles = StyleSheet.create({
+  row: {padding: 20},
+})
+
+const Row = props => (
+  <View style={styles.row}>
+    <Text>{props.name}</Text>
+    <Text>{props.phone}</Text>
+  </View>
+)
+
+Row.propTypes = {
+  name: PropTypes.string,
+  phone: PropTypes.string,
+}
+
+export default Row
+
+```
+[:top: Top](#top) [before/contacts/...](#beforecontacts)
+#### before/contacts/package.json
+Snack, last update Jul 01, 2020, src11zipBeforeContacts
+``` yaml
+{
+  "dependencies": {
+    "redux": "^4.0.0",
+    "react-redux": "7.2.0",
+    "redux-thunk": "2.3.0",
+    "redux-persist": "6.0.0",
+    "react-native-paper": "3.6.0",
+    "redux-persist/lib/storage": "6.0.0",
+    "redux-persist/integration/react": "6.0.0"
+  }
+}
+```
+Expo-Cli, last update Jul 01, 2020
+``` yaml
 {
   "main": "index.js",
   "scripts": {
@@ -1741,55 +919,8 @@ Expo Cli, last updated Jun 30, 2020
 }
 
 ```
-[:top: Top](#top)
-### after/authServer/...
-
-#### after/authServer/index.js
-``` jsx
-const express = require('express')
-const bodyParser = require('body-parser')
-
-const PORT = process.env.PORT || 8000
-
-// usernames are keys and passwords are values
-const users = {
-  username: 'password',
-}
-
-const app = express()
-app.use(bodyParser.json())
-
-app.post('*', (req, res) => {
-  const {username, password} = req.body
-
-  if (!username || !password) return res.status(400).send('Missing username or password')
-  // in practice, this is potentially revealing too much information.
-  // an attacker can probe the server to find all of the usernames.
-  if (!users[username]) return res.status(403).send('User does not exist')
-  if (users[username] !== password) return res.status(403).send('Incorrect password')
-  return res.json({token: 'thisIsARealToken'})
-})
-
-// catch 404
-app.use((req, res, next) => {
-  const err = new Error('Not Found')
-  err.status = 404
-  next(err)
-})
-
-app.use((err, req, res, next) => res.status(err.status || 500).send(err.message || 'There was a problem'))
-
-const server = app.listen(PORT)
-console.log(`Listening at http://localhost:${PORT}`)
-
-```
-[:top: Top](#top)
-
-#### after/authServer/package.json 
-Files ./after/authServer/package.json and ./before/authServer/package.json are identical
-
-### after/redux/...
-#### after/redux/actions.js
+[:top: Top](#top)  [before/contacts/...](#beforecontacts)
+#### before/contacts/redux/actions.js
 ``` jsx
 import {login} from '../api'
 
@@ -1823,17 +954,17 @@ export const logInUser = (username, password) => async dispatch => {
 }
 
 ```
-[:top: Top](#top)
-
-#### after/redux/reducer.js
+#### before/contacts/redux/reducer.js
 ``` jsx
 import {combineReducers} from 'redux'
 
-import {UPDATE_USER, UPDATE_CONTACT, LOG_IN_SENT, LOG_IN_FULFILLED, LOG_IN_REJECTED} from './actions'
+import contacts from '../contacts'
+
+import {UPDATE_USER, UPDATE_CONTACT, LOG_IN_FULFILLED, LOG_IN_REJECTED} from './actions'
 
 const merge = (prev, next) => Object.assign({}, prev, next)
 
-const contactReducer = (state = [], action) => {
+const contactReducer = (state = contacts, action) => {
   if (action.type === UPDATE_CONTACT) return [...state, action.payload]
   return state
 }
@@ -1861,16 +992,13 @@ const reducer = combineReducers({
 export default reducer
 
 ```
-[:top: Top](#top)
-
-#### after/redux/store.js
+#### before/contacts/redux/store.js
 ``` jsx
 import {createStore, applyMiddleware} from 'redux'
 import thunk from 'redux-thunk'
-import { persistStore, persistReducer } from 'redux-persist'
+import {persistStore, persistReducer} from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 
-import {addContact} from './actions'
 import reducer from './reducer'
 
 const persistConfig = {
@@ -1893,6 +1021,9 @@ const thunkMiddleware = store => next => action => {
 export const store = createStore(persistedReducer, applyMiddleware(thunk))
 export const persistor = persistStore(store)
 
+// non-persistent store
+export default createStore(reducer, applyMiddleware(thunk))
+
 /*
 store.dispatch(updateUser({foo: 'foo'}))
 store.dispatch(updateUser({bar: 'bar'}))
@@ -1906,311 +1037,1021 @@ console.log(store.getState())
 */
 
 ```
-[:top: Top](#top)
-### after/screens/...
-#### after/screens/AddContactScreen.js
-Files ./after/screens/AddContactScreen.js and ./before/screens/AddContactScreen.js are identical
-
-#### after/screens/ContactListScreen.js
-Files ./after/screens/ContactListScreen.js and ./before/screens/ContactListScreen.js are identical
-
-#### after/screens/LoginScreen.js
+[:top: Top](#top)  [before/contacts/...](#beforecontacts)
+#### before/contacts/screens/ContactListScreen.js
 ``` jsx
+/* eslint-disable react/prop-types */
+
 import React from 'react'
-import {Button, View, StyleSheet, Text, TextInput} from 'react-native'
+import {Button, View, StyleSheet} from 'react-native'
 import {connect} from 'react-redux'
-import PropTypes from 'prop-types'
 
-import {logInUser} from '../redux/actions'
+import FlatListContacts from '../FlatListContacts'
+import ScrollViewContacts from '../ScrollViewContacts'
 
-class LoginScreen extends React.Component {
-  static propTypes = {
-    err: PropTypes.string,
-    token: PropTypes.string,
-    logInUser: PropTypes.func,
-  }
+// eslint-disable-next-line no-constant-condition
+const ContactsList = false ? FlatListContacts : ScrollViewContacts
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+})
+
+class ContactListScreen extends React.Component {
   state = {
-    username: '',
-    password: '',
+    showContacts: true,
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.token) {
-      this.props.navigation.navigate('Main')
-    }
-  }
-
-  _login = async () => {
-    this.props.logInUser(this.state.username, this.state.password)
-  }
-
-  handleUsernameUpdate = username => {
-    this.setState({username})
-  }
-
-  handlePasswordUpdate = password => {
-    this.setState({password})
+  toggleContacts = () => {
+    this.setState(prevState => ({showContacts: !prevState.showContacts}))
   }
 
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.error}>{this.props.err}</Text>
-        <TextInput
-          placeholder="username"
-          value={this.state.username}
-          onChangeText={this.handleUsernameUpdate}
-          autoCapitalize="none"
-        />
-        <TextInput
-          placeholder="password"
-          value={this.state.password}
-          onChangeText={this.handlePasswordUpdate}
-          secureTextEntry
-        />
-        <Button title="Press to Log In" onPress={this._login} />
+        <Button title="toggle contacts" onPress={this.toggleContacts} />
+        {this.state.showContacts && <ContactsList contacts={this.props.contacts} />}
       </View>
     )
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    flex: 1,
-  },
-  text: {
-    textAlign: 'center',
-  },
-  error: {
-    textAlign: 'center',
-    color: 'red',
-  },
-})
-
 const mapStateToProps = state => ({
-  err: state.user.loginErr,
-  token: state.user.token,
+  contacts: state.contacts,
 })
 
-export default connect(mapStateToProps, {logInUser})(LoginScreen)
+export default connect(mapStateToProps)(ContactListScreen)
 
 ```
-[:top: Top](#top)
-
-### after/simpleRedux/...
-#### after/simpleRedux/reducer.js
-Files ./after/simpleRedux/reducer.js and ./before/simpleRedux/reducer.js are identical
-
-#### after/simpleRedux/store2.js
-Files ./after/simpleRedux/store2.js and ./before/simpleRedux/store2.js are identical
-
-#### after/simpleRedux/store3.js
+[:top: Top](#top) 
+[before/pomodoro-timer/...](#beforepomodoro-timer) [after/pomodoro-timer/...](#afterpomodoro-timer)
+### before/pomodoro-timer/...
+#### before/pomodoro-timer/App.js
 ``` jsx
-const fetch = require('isomorphic-fetch')
+import React from 'react';
+import { Button, StyleSheet, Text, View } from 'react-native';
 
-const login = async (username, password) => {
-  const response = await fetch('http://localhost:8000', {
-    method: 'POST',
-    headers: {'content-type': 'application/json'},
-    body: JSON.stringify({username, password}),
-  })
+import {Countdown, TimeInput, TimerToggleButton} from './components'
+import {Timer, vibrate} from './utils'
 
-  if (response.ok) {
-    return true
+const DEFAULT_WORK_MINS = 25
+const DEFAULT_BREAK_MINS = 5
+
+const minToSec = mins => mins * 60
+const nextTimer = {work: 'break', break: 'work'}
+
+export default class App extends React.Component {
+  state = {
+    // in seconds
+    workTime: minToSec(DEFAULT_WORK_MINS),
+    breakTime: minToSec(DEFAULT_BREAK_MINS),
+    // in ms
+    timeRemaining: minToSec(DEFAULT_WORK_MINS) * 1000,
+    isRunning: false,
+    activeTimer: 'work',
   }
 
-  const errMessage = await response.text()
-  throw new Error(errMessage)
+  componentDidMount() {
+    this.timer = new Timer(this.state.timeRemaining, this.updateTimeRemaining, this.handleTimerEnd)
+    this.setState({isRunning: this.timer.isRunning})
+  }
+
+  componentWillUnmount() {
+    if (this.timer) this.timer.stop()
+  }
+
+  updateTime = target => (time, shouldStartTimer) => {
+    if (this.state.activeTimer === target) {
+      if (this.timer) this.timer.stop()
+      const timeRemaining = +time * 1000
+      this.timer = new Timer(timeRemaining, this.updateTimeRemaining, this.handleTimerEnd)
+      if (!shouldStartTimer) this.timer.stop()
+      this.setState({[`${target}Time`]: time, timeRemaining, isRunning: this.timer.isRunning})
+    } else {
+      this.setState({[`${target}Time`]: time, isRunning: this.timer.isRunning})
+    }
+  }
+
+  // hack: if an event is passed (ie is button press), stop timer
+  resetTimer = shouldStopTimer => {
+    const {activeTimer} = this.state
+    this.updateTime(activeTimer)(this.state[`${activeTimer}Time`], !shouldStopTimer)
+  }
+
+  updateTimeRemaining = timeRemaining => {
+    this.setState({timeRemaining})
+  }
+
+  toggleTimer = () => {
+    if (!this.timer) return
+    if (this.timer.isRunning) this.timer.stop()
+    else this.timer.start()
+
+    this.setState({isRunning: this.timer.isRunning})
+  }
+
+  handleTimerEnd = () => {
+    vibrate()
+    this.setState(prevState => ({activeTimer: nextTimer[prevState.activeTimer]}), this.resetTimer)
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <Text style={[styles.title, styles.center]}>{this.state.activeTimer.toUpperCase()} TIMER</Text>
+        <Countdown style={styles.center} timeRemaining={this.state.timeRemaining} onToggleTimer={this.toggleTimer} />
+        <View style={[styles.buttonGroup, styles.center]}>
+          <TimerToggleButton onToggle={this.toggleTimer} isRunning={this.state.isRunning} />
+          <Button title="Reset" onPress={this.resetTimer} />
+        </View>
+        <TimeInput
+          title="WORK TIME:"
+          onChange={this.updateTime('work')}
+          value={this.state.workTime}
+        />
+        <TimeInput
+          title="BREAK TIME:"
+          onChange={this.updateTime('break')}
+          value={this.state.breakTime}
+        />
+      </View>
+    );
+  }
 }
 
-// action types
-const UPDATE_USER = 'UPDATE_USER'
-const UPDATE_CONTACT = 'UPDATE_CONTACT'
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 150,
+    backgroundColor: '#fff',
+    alignItems: 'stretch',
+  },
+  center: {
+    alignSelf: 'center',
+  },
+  buttonGroup: {
+    flexDirection: 'row',
+  },
+  title: {
+    fontWeight: 'bold',
+    fontSize: 48,
+  },
+});
 
-class Store {
-  constructor(reducer, initialState) {
-    this.reducer = reducer
-    this.state = initialState
-  }
-
-  getState() {
-    return this.state
-  }
-
-  dispatch(action) {
-    if (typeof action === 'function') {
-      action(this.dispatch.bind(this))
-    } else {
-      console.log('received an action:', action.type)
-      this.state = this.reducer(this.state, action)
+```
+[:top: Top](#top) [before/pomodoro-timer/...](#beforepomodoro-timer)
+#### before/pomodoro-timer/app.json
+``` yaml
+{
+  "expo": {
+    "name": "pomodoro-timer",
+    "description": "Timer that tracks time working and break time.",
+    "slug": "pomodoro-timer",
+    "privacy": "public",
+    "sdkVersion": "25.0.0",
+    "platforms": ["ios", "android"],
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
     }
   }
 }
 
-const DEFAULT_STATE = {user: {}, contacts: []}
-
-const merge = (prev, next) => Object.assign({}, prev, next)
-
-const contactReducer = (state, action) => {
-  if (action.type === UPDATE_CONTACT) return [...state, action.payload]
-  return state
+```
+#### before/pomodoro-timer/package.json
+``` yaml
+{
+  "name": "jhhayashi-pomodoro-timer",
+  "version": "1.0.0",
+  "main": "./node_modules/expo/AppEntry.js",
+  "author": "Jordan Hayashi <jordan@jordanhayashi.com>",
+  "scripts": {
+    "prebuild": "rm -rf lib || true",
+    "build": "mkdir lib && babel --copy-files --out-dir lib/ --ignore node_modules,package.json,app.json,package-lock.json .",
+    "prepublish": "npm run build"
+  },
+  "dependencies": {
+    "expo": "^25.0.0",
+    "prop-types": "^15.6.0",
+    "react": "16.2.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-25.0.0.tar.gz"
+  },
+  "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-cli": "^6.26.0"
+  },
+  "files": [
+    "lib"
+  ]
 }
 
-const userReducer = (state, action) => {
-  switch (action.type) {
-    case UPDATE_USER:
-      return merge(state, action.payload)
-    case UPDATE_CONTACT:
-      return merge(state, {prevContact: action.payload})
-    case 'LOG_IN_SUCCESS':
-      return merge(state, {token: 'fakeToken'})
-    default:
-      return state
+```
+package.json for Snack, last updated, Jul 03, 2020
+``` yaml
+{
+  "dependencies": {
+    "react-native-paper": "3.6.0"
+  }
+}
+```
+
+#### before/pomodoro-timer/components/Countdown.js
+``` jsx
+import React from 'react'
+import {StyleSheet, Text} from 'react-native'
+import PropTypes from 'prop-types'
+
+const styles = StyleSheet.create({
+  text: {fontSize: 72},
+})
+
+const Countdown = props => {
+  const totalSecs = Math.round(props.timeRemaining / 1000)
+  const mins = Math.floor(totalSecs / 60)
+  const secs = totalSecs % 60
+  const paddedZero = secs < 10 ? '0' : ''
+  return <Text style={[styles.text, props.style]}>{mins}:{paddedZero}{secs}</Text>
+}
+
+Countdown.propTypes = {
+  onToggleTimer: PropTypes.func.isRequired,
+  // in ms
+  timeRemaining: PropTypes.number.isRequired,
+  style: PropTypes.number,
+}
+
+export default Countdown
+
+```
+[:top: Top](#top) [before/pomodoro-timer/...](#beforepomodoro-timer)
+#### before/pomodoro-timer/components/TimeInput.js
+``` jsx
+import React from 'react'
+import {StyleSheet, Text, TextInput, View} from 'react-native'
+import PropTypes from 'prop-types'
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    marginTop: 10,
+    marginHorizontal: 20,
+  },
+  controls: {
+    flexDirection: 'row',
+    marginLeft: 'auto',
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: 'black',
+    marginRight: 10,
+    paddingHorizontal: 5,
+    minWidth: 50,
+  },
+})
+
+class TimeInput extends React.Component {
+  static propTypes = {
+    onChange: PropTypes.func.isRequired,
+    value: PropTypes.number,
+  }
+
+  state = {
+    mins: Math.floor(this.props.value / 60),
+    secs: this.props.value % 60,
+  }
+
+  handleMinChange = minString => {
+    const mins = +minString
+    this.setState({mins})
+    this.props.onChange(mins * 60 + this.state.secs)
+  }
+
+  handleSecChange = secString => {
+    const secs = +secString
+    this.setState({secs})
+    this.props.onChange(this.state.mins * 60 + secs)
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        {this.props.title && <Text style={styles.bold}>{this.props.title}</Text>}
+        <View style={styles.controls}>
+          <Text>Mins: </Text>
+          <TextInput
+            defaultValue={`${this.state.mins}`}
+            style={styles.input}
+            keyboardType="numeric"
+            onChangeText={this.handleMinChange}
+          />
+          <Text>Secs: </Text>
+          <TextInput
+            defaultValue={`${this.state.secs}`}
+            style={styles.input}
+            keyboardType="numeric"
+            onChangeText={this.handleSecChange}
+          />
+        </View>
+      </View>
+    )
   }
 }
 
-const reducer = (state, action) => ({
-  user: userReducer(state.user, action),
-  contacts: contactReducer(state.contacts, action),
+export default TimeInput
+
+```
+[:top: Top](#top) [before/pomodoro-timer/...](#beforepomodoro-timer)
+#### before/pomodoro-timer/components/TimerToggleButton.js
+``` jsx
+import React from 'react'
+import {Button} from 'react-native'
+import PropTypes from 'prop-types'
+
+const TimerToggleButton = props => {
+  const title = props.isRunning ? 'Pause' : 'Start'
+  return <Button title={title} onPress={props.onToggle} />
+}
+
+TimerToggleButton.propTypes = {
+  onToggle: PropTypes.func.isRequired,
+  isRunning: PropTypes.bool.isRequired,
+}
+
+export default TimerToggleButton
+
+```
+#### before/pomodoro-timer/components/index.js
+``` jsx
+export Countdown from './Countdown'
+export TimeInput from './TimeInput'
+export TimerToggleButton from './TimerToggleButton'
+
+```
+[:top: Top](#top) [before/pomodoro-timer/...](#beforepomodoro-timer)
+#### before/pomodoro-timer/utils/Timer.js
+``` jsx
+export default class Timer {
+  constructor(duration, onTick, onEnd) {
+    this.duration = duration
+    this.onTick = onTick
+    this.onEnd = onEnd
+    this.endTime = Date.now() + duration
+    this.tick()
+  }
+
+  get timeRemaining() {
+    return this.endTime - Date.now()
+  }
+
+  get isRunning() {
+    return !!this.endTime
+  }
+
+  clearTick = () => {
+    clearTimeout(this.timeout)
+    this.timeout = null
+  }
+
+  tick = () => {
+    if (this.endTime < Date.now()) {
+      this.onTick(0)
+      this.onEnd()
+    } else {
+      this.onTick(this.timeRemaining)
+
+      // account for any delays or time drift
+      const nextTick = this.timeRemaining % 1000
+
+      this.timeout = setTimeout(this.tick, nextTick)
+    }
+  }
+
+  stop = () => {
+    if (!this.isRunning) return
+    this.clearTick()
+    this.duration = this.timeRemaining
+    this.endTime = null
+  }
+
+  start = () => {
+    if (this.isRunning) return
+    this.endTime = Date.now() + this.duration
+    this.tick()
+  }
+}
+
+```
+[:top: Top](#top) [before/pomodoro-timer/...](#beforepomodoro-timer)
+#### before/pomodoro-timer/utils/index.js
+``` jsx
+export Timer from './Timer'
+export vibrate from './vibrate'
+
+```
+#### before/pomodoro-timer/utils/vibrate.js
+``` jsx
+import {Vibration} from 'react-native'
+
+export default () => Vibration.vibrate([500, 500, 500])
+
+```
+[:top: Top](#top)  [before/contacts/...](#beforecontacts) [after/contacts/...](#aftercontacts)
+
+---
+### after/contacts/...
+#### after/contacts/App.js
+``` jsx
+import React from 'react'
+import {Provider} from 'react-redux'
+import {StyleSheet, View} from 'react-native'
+import {Constants} from 'expo'
+
+import {PersistGate} from 'redux-persist/integration/react' // eslint-disable-line
+
+// import ContactListScreen from './screens/ContactListScreen'
+import PureButtonScreen from './PureButtonScreen'
+import store from './redux/store' // eslint-disable-line
+
+const styles = StyleSheet.create({
+  app: {
+    flex: 1,
+    marginTop: Constants.statusBarHeight,
+  },
 })
 
+export default () => (
+  <Provider store={store}>
+    <View style={styles.app}>
+      <PureButtonScreen />
+    </View>
+  </Provider>
+)
+
+```
+[:top: Top](#top) [after/contacts/...](#aftercontacts)
+#### after/contacts/PureButton.js
+``` jsx
+import React from 'react'
+import {Button} from 'react-native'
+
+export default class PureButton extends React.PureComponent {
+  state = {
+    color: null,
+  }
+
+  componentDidUpdate() {
+    this.setState({color: 'red'}) // eslint-disable-line
+  }
+
+  render() {
+    return <Button {...this.props} color={this.state.color} />
+  }
+}
+
+```
+[:top: Top](#top) [after/contacts/...](#aftercontacts)
+#### after/contacts/PureButtonScreen.js
+``` jsx
+import React from 'react'
+import {StyleSheet, View, Text} from 'react-native'
+
+import PureButton from './PureButton'
+
+const styles = StyleSheet.create({
+  button: {
+    alignSelf: 'center',
+  },
+})
+
+export default class PureButtonScreen extends React.Component {
+  state = {
+    count: 0,
+  }
+
+  inc() {
+    this.setState(prevState => ({count: prevState.count + 1}))
+  }
+
+  render() {
+    return (
+      <View style={{flex: 1}}>
+        <Text>{this.state.count}</Text>
+        <PureButton title="increment count" style={styles.button} onPress={this.inc} />
+      </View>
+    )
+  }
+}
+
+```
+[:top: Top](#top) [after/contacts/...](#aftercontacts)
+#### after/contacts/Row.js
+``` jsx
+/* eslint-disable */
+
+import React from 'react'
+import {StyleSheet, Text, View} from 'react-native'
+import PropTypes from 'prop-types'
+
+const styles = StyleSheet.create({
+  row: {padding: 20},
+})
+
+class Row extends React.Component {
+
+  shouldComponentUpdate(nextProps) {
+    return nextProps.name !== this.props.name
+  }
+
+  render() {
+    const {props} = this
+    return (
+      <View style={styles.row}>
+        <Text>{props.name}</Text>
+        <Text>{props.phone}</Text>
+      </View>
+    )
+  }
+}
+
+Row.propTypes = {
+  name: PropTypes.string,
+  phone: PropTypes.string,
+}
+
+export default Row
+
+```
+[:top: Top](#top) [after/contacts/...](#aftercontacts)
+#### after/contacts/package.json
+Files ./after/contacts/package.json and ./before/contacts/package.json are identical
+#### after/contacts/redux/actions.js
+``` jsx
+import {login} from '../api'
+
+// action types
+export const UPDATE_USER = 'UPDATE_USER'
+export const UPDATE_CONTACT = 'UPDATE_CONTACT'
+export const LOG_IN_SENT = 'LOG_IN_SENT'
+export const LOG_IN_FULFILLED = 'LOG_IN_FULFILLED'
+export const LOG_IN_REJECTED = 'LOG_IN_REJECTED'
+
 // action creators
-const updateUser = update => ({
+export const updateUser = update => ({
   type: UPDATE_USER,
   payload: update,
 })
 
-const addContact = newContact => ({
+export const addContact = newContact => ({
   type: UPDATE_CONTACT,
   payload: newContact,
 })
 
 // async action creator
-const logInUser = (username, password) => dispatch => {
-  dispatch({type: 'LOG_IN_SENT'})
-  login(username, password)
-    .then(() => {
-      dispatch({type: 'LOG_IN_SUCCESS'})
-    })
-    .catch(err => {
-      dispatch({type: 'LOG_IN_REJECTED'})
-    })
+export const logInUser = (username, password) => async dispatch => {
+  dispatch({type: LOG_IN_SENT})
+  try {
+    const token = await login(username, password)
+    dispatch({type: LOG_IN_FULFILLED, payload: token})
+  } catch (err) {
+    dispatch({type: LOG_IN_REJECTED, payload: err.message})
+  }
 }
 
+```
+[:top: Top](#top) [after/contacts/...](#aftercontacts)
+#### after/contacts/redux/reducer.js
+``` jsx
+import {combineReducers} from 'redux'
 
-const store = new Store(reducer, DEFAULT_STATE)
+import contacts from '../contacts'
 
-store.dispatch(logInUser('username', 'password'))
+import {UPDATE_USER, UPDATE_CONTACT, LOG_IN_FULFILLED, LOG_IN_REJECTED} from './actions'
 
-  /*
-store.dispatch(logInUser())
-store.dispatch(updateUser({foo: 'foo'}))
-store.dispatch(updateUser({bar: 'bar'}))
-store.dispatch(updateUser({foo: 'baz'}))
+const merge = (prev, next) => Object.assign({}, prev, next)
 
-store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
-store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
-store.dispatch(addContact({name: 'david m', number: '5050505050'}))
-*/
+const contactReducer = (state = contacts, action) => {
+  if (action.type === UPDATE_CONTACT) return [...state, action.payload]
+  return state
+}
 
-console.log(store.getState())
+const userReducer = (state = {}, action) => {
+  switch (action.type) {
+    case UPDATE_USER:
+      return merge(state, action.payload)
+    case UPDATE_CONTACT:
+      return merge(state, {prevContact: action.payload})
+    case LOG_IN_FULFILLED:
+      return merge(state, {token: action.payload})
+    case LOG_IN_REJECTED:
+      return merge(state, {loginErr: action.payload})
+    default:
+      return state
+  }
+}
+
+const reducer = combineReducers({
+  user: userReducer,
+  contacts: contactReducer,
+})
+
+export default reducer
 
 ```
-[:top: Top](#top)
+[:top: Top](#top) [after/contacts/...](#aftercontacts)
+#### after/contacts/redux/store.js
+Files ./after/contacts/redux/store.js and ./before/contacts/redux/store.js are identical
+
+#### after/contacts/screens/ContactListScreen.js
+``` jsx
+/* eslint-disable react/prop-types */
+
+import React from 'react'
+import {Button, View, StyleSheet} from 'react-native'
+import {connect} from 'react-redux'
+
+import FlatListContacts from '../FlatListContacts'
+import ScrollViewContacts from '../ScrollViewContacts'
+
+// eslint-disable-next-line no-constant-condition
+const ContactsList = false ? FlatListContacts : ScrollViewContacts
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+})
+
+class ContactListScreen extends React.Component {
+  state = {
+    showContacts: true,
+  }
+
+  toggleContacts = () => {
+    this.setState(prevState => ({showContacts: !prevState.showContacts}))
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <Button title="toggle contacts" onPress={this.toggleContacts} />
+        {this.state.showContacts && <ContactsList contacts={this.props.contacts} />}
+      </View>
+    )
+  }
+}
+
+const mapStateToProps = state => ({
+  contacts: state.contacts,
+})
+
+export default connect(mapStateToProps)(ContactListScreen)
+
+```
+[:top: Top](#top) [after/contacts/...](#aftercontacts)
+[before/pomodoro-timer/...](#beforepomodoro-timer)  [after/pomodoro-timer/...](#afterpomodoro-timer)
+### after/pomodoro-timer/...
+#### after/pomodoro-timer/App.js
+``` jsx
+import React from 'react';
+import { Button, StyleSheet, Text, View } from 'react-native';
+
+import {Countdown, TimeInput, TimerToggleButton} from './components'
+import {Timer, vibrate} from './utils'
+import ProgressBar from './ProgressBarAnimated'
+
+const DEFAULT_WORK_MINS = 0.1
+const DEFAULT_BREAK_MINS = 0.1
+
+const minToSec = mins => mins * 60
+const nextTimer = {work: 'break', break: 'work'}
+
+export default class App extends React.Component {
+  state = {
+    // in seconds
+    workTime: minToSec(DEFAULT_WORK_MINS),
+    breakTime: minToSec(DEFAULT_BREAK_MINS),
+    // in ms
+    timeRemaining: minToSec(DEFAULT_WORK_MINS) * 1000,
+    isRunning: false,
+    activeTimer: 'work',
+  }
+
+  componentDidMount() {
+    this.timer = new Timer(this.state.timeRemaining, this.updateTimeRemaining, this.handleTimerEnd)
+    this.setState({isRunning: this.timer.isRunning})
+  }
+
+  componentWillUnmount() {
+    if (this.timer) this.timer.stop()
+  }
+
+  updateTime = target => (time, shouldStartTimer) => {
+    if (this.state.activeTimer === target) {
+      if (this.timer) this.timer.stop()
+      const timeRemaining = +time * 1000
+      this.timer = new Timer(timeRemaining, this.updateTimeRemaining, this.handleTimerEnd)
+      if (!shouldStartTimer) this.timer.stop()
+      this.setState({[`${target}Time`]: time, timeRemaining, isRunning: this.timer.isRunning})
+    } else {
+      this.setState({[`${target}Time`]: time, isRunning: this.timer.isRunning})
+    }
+  }
+
+  // hack: if an event is passed (ie is button press), stop timer
+  resetTimer = shouldStopTimer => {
+    const {activeTimer} = this.state
+    this.updateTime(activeTimer)(this.state[`${activeTimer}Time`], !shouldStopTimer)
+  }
+
+  updateTimeRemaining = timeRemaining => {
+    this.setState({timeRemaining})
+  }
+
+  toggleTimer = () => {
+    if (!this.timer) return
+    if (this.timer.isRunning) this.timer.stop()
+    else this.timer.start()
+
+    this.setState({isRunning: this.timer.isRunning})
+  }
+
+  handleTimerEnd = () => {
+    vibrate()
+    this.setState(prevState => ({activeTimer: nextTimer[prevState.activeTimer]}), this.resetTimer)
+  }
+
+  getTimeTotal = () => {
+    const {workTime, breakTime} = this.state
+    return (this.state.activeTimer === 'work' ? workTime : breakTime) * 1000
+  }
+
+  block() {
+    const doneTime = Date.now() + 200
+    while (Date.now() < doneTime) {}
+  }
+
+  render() {
+    if (Math.round(Math.random())) this.block()
+    return (
+      <View style={styles.container}>
+        <Text style={[styles.title, styles.center]}>{this.state.activeTimer.toUpperCase()} TIMER</Text>
+        <Countdown style={styles.center} timeRemaining={this.state.timeRemaining} onToggleTimer={this.toggleTimer} />
+        <ProgressBar
+          timeRemaining={this.state.timeRemaining}
+          timeTotal={this.getTimeTotal()}
+          isRunning={this.state.isRunning}
+        />
+        <View style={[styles.buttonGroup, styles.center]}>
+          <TimerToggleButton onToggle={this.toggleTimer} isRunning={this.state.isRunning} />
+          <Button title="Reset" onPress={this.resetTimer} />
+        </View>
+        <TimeInput
+          title="WORK TIME:"
+          onChange={this.updateTime('work')}
+          value={this.state.workTime}
+        />
+        <TimeInput
+          title="BREAK TIME:"
+          onChange={this.updateTime('break')}
+          value={this.state.breakTime}
+        />
+      </View>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 150,
+    backgroundColor: '#fff',
+    alignItems: 'stretch',
+  },
+  center: {
+    alignSelf: 'center',
+  },
+  buttonGroup: {
+    flexDirection: 'row',
+  },
+  title: {
+    fontWeight: 'bold',
+    fontSize: 48,
+  },
+});
+
+```
+[:top: Top](#top)  [after/pomodoro-timer/...](#afterpomodoro-timer)
+#### after/pomodoro-timer/ProgressBar.js
+``` jsx
+import React from 'react'
+import {Dimensions, StyleSheet, View} from 'react-native'
+import PropTypes from 'prop-types'
+
+const styles = StyleSheet.create({
+  progress: {
+    backgroundColor: 'blue',
+    height: 10,
+  },
+})
+
+const ProgressBar = props => {
+  const {width} = Dimensions.get('window')
+  const percent = 1 - (props.timeRemaining / props.timeTotal)
+  return (
+    <View style={[styles.progress, {width: percent * width}]} />
+  )
+}
+
+ProgressBar.propTypes = {
+  timeRemaining: PropTypes.number,
+  timeTotal: PropTypes.number,
+  isRunning: PropTypes.bool,
+}
+
+export default ProgressBar
+
+```
+[:top: Top](#top)  [after/pomodoro-timer/...](#afterpomodoro-timer)
+#### after/pomodoro-timer/ProgressBarAnimated.js
+``` jsx
+import React from 'react'
+import {Animated, Dimensions, Easing, StyleSheet, View} from 'react-native'
+import PropTypes from 'prop-types'
+
+const styles = StyleSheet.create({
+  progress: {
+    backgroundColor: 'blue',
+    height: 10,
+    width: 2,
+  },
+})
+
+class ProgressBar extends React.Component {
+  state = {
+    percent: new Animated.Value(0),
+  }
+
+  componentDidMount() {
+    this.startAnimation()
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.timeRemaining > this.props.timeRemaining) {
+      this.setState({percent: new Animated.Value(0)}, this.startAnimation)
+    }
+  }
+
+  startAnimation = () => {
+    this.animation = Animated.timing(
+      this.state.percent,
+      {
+        toValue: 100,
+        duration: this.props.timeRemaining,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      },
+    )
+
+    this.animation.start()
+  }
+
+  render() {
+    const {percent} = this.state
+    const {width} = Dimensions.get('window')
+    return (
+      <Animated.View
+        style={[
+          styles.progress,
+          {transform: [{scaleX: percent.interpolate({
+            inputRange: [0, 100],
+            outputRange: [0, width],
+          })}]},
+        ]}
+      />
+    )
+  }
+}
+
+ProgressBar.propTypes = {
+  timeRemaining: PropTypes.number,
+  timeTotal: PropTypes.number,
+  isRunning: PropTypes.bool,
+}
+
+export default ProgressBar
+
+```
+[:top: Top](#top)  [after/pomodoro-timer/...](#afterpomodoro-timer)
+#### after/pomodoro-timer/package.json
+Files ./after/pomodoro-timer/package.json and ./before/pomodoro-timer/package.json are identical
+#### after/pomodoro-timer/components/Countdown.js
+Files ./after/pomodoro-timer/components/Countdown.js and ./before/pomodoro-timer/components/Countdown.js are identical
+#### after/pomodoro-timer/components/TimeInput.js
+Files ./after/pomodoro-timer/components/TimeInput.js and ./before/pomodoro-timer/components/TimeInput.js are identical
+#### after/pomodoro-timer/components/TimerToggleButton.js
+Files ./after/pomodoro-timer/components/TimerToggleButton.js and ./before/pomodoro-timer/components/TimerToggleButton.js are identical
+#### after/pomodoro-timer/components/index.js
+Files ./after/pomodoro-timer/components/index.js and ./before/pomodoro-timer/components/index.js are identical
+
+#### after/pomodoro-timer/utils/Timer.js
+``` jsx
+const TICK_DURATION = 1000 / 60
+
+export default class Timer {
+  constructor(duration, onTick, onEnd) {
+    this.duration = duration
+    this.onTick = onTick
+    this.onEnd = onEnd
+    this.endTime = Date.now() + duration
+    this.tick()
+  }
+
+  get timeRemaining() {
+    return this.endTime - Date.now()
+  }
+
+  get isRunning() {
+    return !!this.endTime
+  }
+
+  clearTick = () => {
+    clearTimeout(this.timeout)
+    this.timeout = null
+  }
+
+  tick = () => {
+    if (this.endTime < Date.now()) {
+      this.onTick(0)
+      this.onEnd()
+    } else {
+      this.onTick(this.timeRemaining)
+
+      // account for any delays or time drift
+      const nextTick = this.timeRemaining % TICK_DURATION
+
+      this.timeout = setTimeout(this.tick, nextTick)
+    }
+  }
+
+  stop = () => {
+    if (!this.isRunning) return
+    this.clearTick()
+    this.duration = this.timeRemaining
+    this.endTime = null
+  }
+
+  start = () => {
+    if (this.isRunning) return
+    this.endTime = Date.now() + this.duration
+    this.tick()
+  }
+}
+
+```
+#### after/pomodoro-timer/utils/index.js
+Files ./after/pomodoro-timer/utils/index.js and ./before/pomodoro-timer/utils/index.js are identical
+#### after/pomodoro-timer/utils/vibrate.js
+Files ./after/pomodoro-timer/utils/vibrate.js and ./before/pomodoro-timer/utils/vibrate.js are identical
+
+[:top: Top](#top)  [after/pomodoro-timer/...](#afterpomodoro-timer)
 
 ---
 myNote
 ---
 
-#### my expo.io/ snacks: https://expo.io/snacks/@awesome2/. 
-#### Expo Cli, Contacts
-``` console
-        $ cd ..
-        $ expo init
-        $ cd Jun24
-        Jun24 $ npm install react-navigation@2.0.0 --save
-        Jun24 $ npm install prop-types, redux
-        Jun24 $ npm install react-redux@5.0.7 --save
-        Jun24 $ npm install redux-thunk
-       
-        Jun24 $ npm install redux-persist
-        Jun24 $ npm run web
-```
-
-#### authServer
-Terminal - LEFT
-``` console
-            simpleRedux $ ..  
-            ...
-            authServer $ npm install
-            authServer $ npm start
-            authServer $ exit (if error due to background is running other)
-            authServer $ npm start
-            > authserver@1.0.0 start /Users/twng/cs50m/Jun24/authServer
-            > node index
-            Listening at http://localhost:8000
-```
-Terminal - Right
-``` console
-            simpleRedux $ npm install isomorphic-fetch.   
-            ...
-            simpleRedux $ node store3.js
-            received an action: LOG_IN_SENT
-            { user: {}, contacts: [] }
-            received an action: LOG_IN_SUCCESS
-```
-[:top: Top](#top)
-
-#### markdown.md
-:joy: markdownGuide https://www.markdownguide.org/basic-syntax/     
-:sunny: https://www.markdownguide.org/extended-syntax/
-
-:+1: emoji short code: https://gist.github.com/rxaviers/7360908
-``` markdown
-        table
-        |---|
-```
-
-#### terminal, compare files
-``` terminal
-    ~/cs50m/src10/ $  diff -qsr ./after/ ./before/
-      -q, --brief                   report only when files differ
-      -s, --report-identical-files  report when two files are the same
-      -r, --recursive               recursively compare any subdirectories found
-```
-
-#### eslint prettier
-```
-            $ npm i -D eslint prettier typescript eslint-config-kensho
-            $ vim .eslintrc.yml
-                extends: kensho
-            $ npx eslint file.js
-            ...
-            $ npx eslint file.js --fix
-```
-
 ---
-#### Git branch 11_AsyncRedux_Tools
-```
+[:top: Top](#top)
+ 
+#### Git branch 12_Performance
+``` console
     Ts-MacBook-Pro:cs50m twng$ cat .gitignore
-    .DS_Store
-    /Jun24
-    .gitignore
+        /Jun24                                                                                     
+        .DS_Store
+        .gitignore
     Ts-MacBook-Pro:cs50m twng$ git branch -v
     Ts-MacBook-Pro:cs50m twng$ git add .    
     Ts-MacBook-Pro:cs50m twng$ git status
     Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push -u origin 11_AsyncRedux_Tools
+    Ts-MacBook-Pro:cs50m twng$ git push -u origin 12_Performance
 ```
-checked on github, https://github.com/alvinng222/cs50m/tree/11_AsyncRedux_Tools
+checked on github, https://github.com/alvinng222/cs50m/tree/12_Performance
 
 [:top: Top](#top)
 
 --- 
 to master branch: [CS50M](https://github.com/alvinng222/cs50m/tree/master)  
-back to previous: [10_Redux](https://github.com/alvinng222/cs50m/tree/10_Redux)   
-continue to next: [12_Performance](https://github.com/alvinng222/cs50m/tree/12_Performance)
+back to previous:  [11_AsyncRedux_Tools](https://github.com/alvinng222/cs50m/tree/11_AsyncRedux_Tools).   
+continue to next:  [13_Deploying_Testing](https://github.com/alvinng222/cs50m/tree/13_Deploying_Testing).
 
 ---
