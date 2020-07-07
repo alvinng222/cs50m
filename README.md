@@ -1,1795 +1,966 @@
-Lecture 10: Async Redux, Tools
+Lecture 12: Deploying, Testing
 ===
 [top]: topOfThePage
-lecture: http://video.cs50.net/mobile/2018/spring/lectures/10
 
-Slides: http://cdn.cs50.net/mobile/2018/spring/lectures/10/lecture10.pdf
-* [Review: react-redux](#review-react-redux)
-* [Supporting Async Requests](#supporting-async-requests)
-* [Redux Middleware](#redux-middleware)
-* [Persisting State](#persisting-state)
-* [redux-persist](#redux-persist)
-* [Container vs Presentational Components](#container-vs-presentational-components)
-* [Do I need Redux?](#do-i-need-redux)
-* [JavaScript Tools](#javascript-tools)
-* [ESLint](#eslint)
-* [ESLint: Setup](#eslint-setup)
-* [ESLint: Running](#eslint-running)
-* [Prettier](#prettier)
+lecture: http://video.cs50.net/mobile/2018/spring/lectures/12
 
-[Source Code](#source-code)  
-files: src10.zip
+slides: http://cdn.cs50.net/mobile/2018/spring/lectures/12/lecture12.pdf
 
-[**before/...**](#before)
-  AddContactForm.js
-  [App.js](#beforeappjs)
-  contacts.js
-  Row.js
-  SectionListContacts.js
-  [api.js](#beforeapijs)
-  [package.json](#beforepackagejson)   
+- [Deploying](#deploying)
+- [Deploying, cont.](#deploying-cont)
+- [Testing](#testing)
+- [Test Pyramid](#test-pyramid)
+- [Unit Tests](#unit-tests)
+- [Jest](#jest)
+- [Jest: Testing Redux Actions](#jest-testing-redux-actions)
+- [Jest: Testing Async Redux Actions](#jest-testing-async-redux-actions)
+- [Integration Tests](#integration-tests)
+- [Code Coverage](#code-coverage)
+- [End-To-End Tests](#end-to-end-tests)
+- Thanks!
+
+
+[Source Code](#source-code)
+files: src12.zip
+
+[before/...](#before)
+AddContactForm.js
+App.js
+FlatListContacts.js
+Row.js
+ScrollViewContacts.js
+SectionListContacts.js
+api.js
+contacts.js
+[package.json](#beforepackagejson)   
 before/authServer/...
-      README.md
-      [index.js](#beforeauthserverindexjs)
-      package.json  
-[before/redux/...](#beforeredux)
-      [actions.js](#beforereduxactionsjs)
-      [reducer.js](#beforereduxreducerjs)
-      [store.js](#beforereduxstorejs)  
-[before/screens/...](#beforescreens)
-      [AddContactScreen.js](#beforescreensaddcontactscreenjs)
-      ContactDetailsScreen.js
-      [ContactListScreen.js](#beforescreenscontactlistscreenjs)
-      [LoginScreen.js](#beforescreensloginScreenjs)
-      SettingScreen.js  
-[before/simpleRedux/...](#beforesimpleredux)
-      reducer.js
-      store.js
-      [store2.js](#beforesimplereduxstore2js)
+    README.md
+    index.js
+    package.json   
+before/redux/...
+    [actions.js](#beforereduxactionsjs)
+    [reducer.js](#beforereduxreducerjs)
+    [store.js](#beforereduxstorejs)   
+before/screens/...
+    AddContactScreen.js
+    ContactDetailsScreen.js
+    ContactListScreen.js
+    LoginScreen.js
+    SettingsScreen.js   
+before/simpleRedux/...
+    reducer.js
+    store.js
+    store2.js
+    store3.js   
 
-[**after/...**](#after)
-  AddContactForm.js
-  [App.js](#afterappjs)
-  contacts.js
-  Row.js
-  SectionListContacts.js
-  [api.js](#afterapijs)
-  [package.json](#afterpackagejson)   
+[after/...](#after)
+AddContactForm.js
+App.js
+FlatListContacts.js
+Row.js
+ScrollViewContacts.js
+SectionListContacts.js
+api.js
+contacts.js
+[package.json](#afterpackagejson)   
 after/authServer/...
-      README.md
-      [index.js](#afterauthserverindexjs)
-      package.json  
-[after/redux/...](#afterredux)
-      [actions.js](#afterreduxactionsjs)
-      [reducer.js](#afterreduxreducerjs)
-      [store.js](#afterreduxstorejs)  
-[after/screens/...](#afterscreens)
-      AddContactScreen.js
-      ContactDetailsScreen.js
-      ContactListScreen.js
-      [LoginScreen.js](#afterscreensloginscreenjs)
-      SettingsScreen.js  
-[after/simpleRedux/...](#aftersimpleredux)
-      reducer.js
-      store.js
-      store2.js
-      [store3.js](#aftersimplereduxstore3js)
-`$ ls -1`
+    README.md
+    index.js
+    package.json   
+after/components/...
+    [MyButton.js](#aftercomponentsmybuttonjs)
+    [MyButton.test.js](#aftercomponentsmybuttontestjs)    
+after/redux/...
+    [actions.js](#afterreduxactionsjs)
+    [actions.test.js](#afterreduxactionstestjs)
+    [reducer.js](#afterreduxreducerjs)
+    [reducer.test.js](#afterreduxreducertestjs)
+    store.js   
+after/screens/...
+    AddContactScreen.js
+    ContactDetailsScreen.js
+    ContactListScreen.js
+    LoginScreen.js
+    SettingsScreen.js   
+after/simpleRedux/...
+    reducer.js
+    store.js
+    store2.js
+    store3.js   
+after/testing/...
+    [sum.js](#aftertestingsumjs)
+    [sum.test.js](#aftertestingsumtestjs)
 
 [**myNote**](#mynote)
 
+---
 [:top: Top](#top)
+### Previous Lecture [12_Performance](https://github.com/alvinng222/cs50m/tree/12_Performance)
+- Performance Trade-Offs
+- React Native Perf Monitor
+- Chrome Performance Profiler
+- Common Inefficiencies
+    - Rerendering too often
+    - Unnecessarily changing props
+    - Unnecessary logic
+- Animated
+
+### Deploying
+- Deploy to the appropriate store by building the app and
+uploading it to the store
+- Set the correct metadata in app.json
+    - https://docs.expo.io/versions/latest/workflow/configuration
+- Build the app using exp (command-line alternative to the
+XDE)
+    - Install with `npm install --global exp`
+    - Build with `exp build:ios` or `exp build:android`
+    - Expo will upload the build to s3
+    - Run `exp build:status` and paste the url in a browser to download
+
+Before you upload to the store, you need to set the correct metadata in app.json.
+Then you build using the command-line exp. 
+Because the XDE does not allow you to build the app within that GUI.
+
+### Deploying, cont.
+- Upload to the appropriate store
+    - https://docs.expo.io/versions/latest/distribution/building-standalone-apps
+    - https://docs.expo.io/versions/latest/distribution/app-stores
+- Deploy new JS by republishing from the XDE or exp
+    - Rebuild app and resubmit to store to change app metadata
+
+### Testing
+- The term “testing” generally refers to automated testing
+- As an application grows in size, manual testing gets more
+difficult
+    - More complexity means more points of failure
+- Adding a test suite ensures that you catch bugs before
+they get shipped
+- How do we know which parts of our app to test?
+
+### Test Pyramid
+- Methodology for determining test scale/granularity
+- Unit tests
+    - Test an individual unit of code (function/class/method)
+- Integration/Service tests
+    - Test the integration of multiple pieces of code working together,
+independent of the UI
+- UI/End-to-end tests
+    - Test a feature thoroughly including the UI, network calls, etc.
+
+### Unit Tests
+- Test an individual unit of code (function/class/method)
+- Very granular and easy to tell what is breaking
+- The most basic test is a function that notifies you when
+behavior is unexpected
+- Testing frameworks give you additional benefits
+    - Run all tests instead of failing on first error
+    - Pretty output
+    - Automatically watch for changes
+    - Mocked functions
+
+[:top: Top](#top)
+#### console.assert
+The most basic test is a function that notifies you when
+behavior is unexpected
+
+.01 testing/sum.js > no result is good
+``` jsx
+function sum(x, y) {
+  return x + y
+}
+
+console.assert(sum(1,1) === 2, 'Error summing 1 and 1')
+// ~/cs50m/myLearning/src4/before/testing/ $ node sum.js
+// ~/cs50m/myLearning/src4/before/testing/ $
+```
+.02 sum.js, if error
+``` jsx
+/* eslint-disable no-console */
+function sum(x, y) {
+  return x + y
+}
+
+console.assert(sum(1,1) === 3, 'Error summing 1 and 1')
+// ~/cs50m/myLearning/src4/before/testing/ $ node sum.js
+// Assertion failed: Error summing 1 and 1
+```
+.03 sum.js more checks
+``` jsx
+/* eslint-disable no-console */
+function sum(x, y) {
+  return x + y
+}
+
+console.assert(sum(1,1) === 2, 'Error summing 1 and 1')
+console.assert(sum(0,0) === 0, 'Error summing 0 and 0')
+console.assert(sum(20,30) === 50, 'Error summing 20 and 30')
+// ~/cs50m/myLearning/src4/before/testing/ $ node sum.js
+// ~/cs50m/myLearning/src4/before/testing/ $
+```
+.04 sum.js, split files to sum.test.js. For `module.export` Same way of doing export default in ES6 for node
+``` jsx
+/* eslint-disable no-console */
+function sum(x, y) {
+  return x + y
+}
+
+module.exports = sum // just for node
+```
+.04b sum.**test.js**, for `require` same way of import in ES6 for node.
+``` jsx
+const sum = require('./sum.js')
+
+console.assert(sum(1,1) === 2, 'Error summing 1 and 1')
+console.assert(sum(0,0) === 0, 'Error summing 0 and 0')
+console.assert(sum(20,30) === 50, 'Error summing 20 and 30')
+
+//Ts-MacBook-Pro:testing twng$ node sum.test.js
+//Ts-MacBook-Pro:testing twng$ 
+```
+[:top: Top](#top)
+
+### Jest
+- “Delightful JavaScript Testing”
+- A testing framework by Facebook
+- Install with `npm install --save-dev jest`
+- Run with `npx jest` or by adding script to package.json
+    - Will automatically find and run any files that end in `.test.js`(or any
+other regex expression that you specify)
+
+:point_right: after install expo minimum, and install all components. But *not* copy contacts files, not require to run Expo.
+
+.05 installing jest  
+`~/cs50m/myLearning/src4/before/ $ npm i -D jest`
+[14:05]
+
+
+.06 ~/cs50m/myLearning/src4/before/package.json adding jest to script 
+``` json
+,
+  "scripts": {
+    "test": "jest"
+  }
+}
+
+```
+Terminal
+``` console
+Ts-MacBook-Pro:Jul06 twng$ npm i -D jest
+...
+Ts-MacBook-Pro:Jul06 twng$ cd testing
+Ts-MacBook-Pro:testing twng$ npx jest
+ FAIL  ./sum.test.js
+  ● Test suite failed to run
+
+    Your test suite must contain at least one test.
+
+      at onResult (node_modules/@jest/core/build/TestScheduler.js:173:18)
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        6.56 s
+Ran all test suites.
+```
+
+.07 `~/cs50m/myLearning/src4/before/ $ npx jest` or  
+.08 `~/cs50m/myLearning/src4/before/ $ npm run test` or short hand  
+.08b `~/cs50m/myLearning/src4/before/ $ npm test` or shorted hand  
+.08c `~/cs50m/myLearning/src4/before/ $ npm t`
+
+[0:15:27] Rather than using console.assert, let's go ahead and use Jest.
+We just replaced the console.assert ...
+
+.09 sum.test.js skipped all 3 tests. > missing argument.
+``` jsx
+const sum = require('./sum.js')
+
+test('sums 1 and 1')
+test('sums 0 and 0')
+test('sums 20 and 30')
+
+// ~/cs50m/myLearning/src4/before/ $ npm t
+```
+.10 sum.test.js
+``` jsx
+/* global test, expect */
+
+const sum = require('./sum.js')
+
+test('sums 1 and 1', () => {
+  expect(sum(1, 1)).toBe(2)
+}) // .10
+
+test('sums 0 and 0', () => {
+  expect(sum(0, 0)).toBe(0)
+}) //.10b
+
+test('sums 20 and 30', () => {
+  expect(sum(20, 30)).toBe(50)
+}) //.10b
+```
+Terminals
+``` console
+Ts-MacBook-Pro:Jul06 twng$ npm test
+
+> @ test /Users/twng/cs50m/JUl06
+> jest
+
+ PASS  testing/sum.test.js
+  ✓ sums 1 and 1 (2 ms)
+  ✓ sums 0 and 0
+  ✓ sums 20 and 30
+  ✓ sums 20 and 22 (1 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       4 passed, 4 total
+Snapshots:   0 total
+Time:        7.49 s
+Ran all test suites.
+```
+#### npm test -- --watch
+.11 add script to watch all flies   
+Terminal left `$ npm test -- --watch`   
+Terminal right edit the `sum.test.js`, the terminal will update automatically
+
+.12 sum.test.js auto test with result
+``` jsx
+test('sums 20 and 22', () => {
+  expect(sum(20, 22)).toBe(42)
+}) //.12
+```
+.13 package.json, without git i used watchAll
+``` jsx
+  },
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
+  }
+}
+```
+#### npm run test:watch
+.13b `~/cs50m/myLearning/src4/before/ $ npm run test:watch`
+``` console
+         PASS  testing/sum.test.js
+          ✓ sums 1 and 1 (2 ms)
+          ✓ sums 0 and 0 (1 ms)
+          ✓ sums 20 and 30
+          ✓ sums 20 and 22
+
+        Test Suites: 1 passed, 1 total
+        Tests:       4 passed, 4 total
+        Snapshots:   0 total
+        Time:        2.291 s
+        Ran all test suites.
+
+        Watch Usage
+         › Press f to run only failed tests.
+         › Press o to only run tests related to changed files.
+         › Press p to filter by a filename regex pattern.
+         › Press t to filter by a test name regex pattern.
+         › Press q to quit watch mode.
+         › Press Enter to trigger a test run.
+
+```
+[:top: Top](#top) [22.10]
 
 ---
-### Previous Lecture [10_Redux](https://github.com/alvinng222/cs50m/tree/10_Redux)  
-- Scaling Complexity
-- Flux
-- Redux
-- simpleRedux/
-- Reducers
-- Store
-- Actions
-- react-redux
+### Jest: Testing Redux Actions
+- We can replace our functions with Jest’s `expect()`,
+`toBe()`, and `toEqual()`
+- We can use snapshots to compare the output of a function
+to the previous output of the function
+    - We get notified if the output changes
+    - We don’t need to rewrite tests if the change was intended
+- Which should we use?
+    - Use `toBe()` for primitives
+    - Use `toEqual()` for objects that shouldn’t change
+    - Use `snapshots` for objects that may change
 
----
-### Review: react-redux
-- React bindings for redux
-  - `<Provider />`
-  - `connect()`
-- Provider gives children access to our redux store
-- connect() helps us subscribe to any subset of our store
-and bind our action creators
+:point_right: Just copy all necessary files of contacts only, not run Expo.
 
-for instance `ContactListScreen.js`  
-.01 ContactListScreen.js
+.14 new redux/actions.test.js, add in actions `import * as actions`
 ``` jsx
-...
-const getPropsFromState = state => ({
-  contacts: state.contacts,
+import * as actions from './actions'
+
+test('updateUser returns an action', () => {
+  expect(actions.updateUser({name: 'test name'})).toBe({                        
+    type: actions.UPDATE_USER, 
+    payload: {name: 'test name'},
+  })  
 })
-
-// connect(getPropsFromState, bindDispatchToActions, ContactListScreen)
-// connect(getPropsFromState)(ContactListScreen)
-
-export default connect(getPropsFromState)(ContactListScreen)
 ```
-.02 AddContactScreen.js
-``` jsx
-...
-export default connect(null, {addContact: addContact})(AddContactScreen)
-```
-[:top: Top](#top)
-
----
-### Supporting Async Requests
-- Where do we want to add this support? How do we
-change our API?
-  - Reducers
-  - Store
-  - Actions
-  - Action creators
-- We need to change more than just the action creators
-- Store.dispatch() needs to accept other types
-- Our addition is unideal, since we had to change our redux
-implementation
-
-[:top: Top](#top)
-[17:00]
-
-cp store2.js store3.js
-``` terminal
-        simpleRedux $ node store3.js
-        {
-          user: {
-            foo: 'baz',
-            bar: 'bar',
-            prevContact: { name: 'david m', number: '5050505050' }
-          },
-          contacts: [ 
-            { name: 'jordan h', number: '1234567890' },
-            { name: 'jordan h', number: '1234567890' },
-            { name: 'david m', number: '5050505050' }
-          ]
-        }
-```
-.03 simpleRedux/store3.js it donest do anything.
-``` jsx
-// async action creator
-const logInUser = () => {
-  return {type: 'LOG_IN_SUCCESS'}
-} //.03
-
-const store = new Store(reducer, DEFAULT_STATE); 
-store.dispatch(logInUser()) // .03
-```
-.04 store3.js this donest work either
-``` jsx
-// async action creator
-const logInUser = () => {
-  fetch().then(() => ({type: 'LOG_IN_SUCCESS'}))
-  return 
-} //.03 .04
-```
-.05 store3.js, work as normal
-``` jsx
-// async action creator
-const logInUser = () => dispatch => {
-  fetch().then(() => ({type: 'LOG_IN_SUCCESS'}))
-  return 
-} //.03 .04 .05
-
-logInUser() // returns dispatch => {} .05
-```
-.06 store3.js as usual
-``` jsx
-// async action creator
-const logInUser = () => dispatch => {
-  dispatch({type: 'LOG_IN_SENT'})
-  /*
-  fetch().then(() => ({type: 'LOG_IN_SUCCESS'}))
-  return
-  */
-} //.03 .04 .05 .06
-```
-.07 store3.js starting to resemble an asynchronous action. > as usual
-``` jsx
-// async action creator
-const logInUser = () => dispatch => {
-  dispatch({type: 'LOG_IN_SENT'})
-  fetch().then(() => {
-    dispatch({type: 'LOG_IN_SUCCESS'})
-  }).catch(err => {
-    dispatch({type: 'LOG_IN_REJECTED'})
-  }) 
-} //.03 .04 .05 .06 .07
-```
-.08 store.js > error
-``` jsx
-    dispatch(action) {
-      if (typeof action === 'function') {
-        action(this.dispatch.bind(this)) 
-      } else {
-        this.state = this.reducer(this.state, action)
-      }
-    } // .08
-```
-[25:38] check if server acctually running, see myNote [authServer](#authserver)
 ``` console
-            authServer $ npm start  
+Ts-MacBook-Pro:Jul06 twng$ npm test
+
+> @ test /Users/twng/cs50m/JUl06
+> jest
+
+ PASS  testing/sum.test.js (5.663 s)
+ FAIL  before/redux/actions.test.js
+  ● updateUser returns an action
+
+    expect(received).toBe(expected) // Object.is equality
+
+    If it should pass with deep equality, replace "toBe" with "toStrictEqual"
+
+    Expected: {"payload": {"name": "test name"}, "type": "UPDATE_USER"}
+    ...
 ```
-[:top: Top](#top)
-
-.09 simpleRedux/store3.js, copied from api.js..  working [26:15]
-```jsx
-const login = async (username, password) => {
-  const response = await fetch('http://localhost:8000', {
-    method: 'POST',
-    headers: {'content-type': 'application/json'},
-    body: JSON.stringify({username, password}),
-  })
-
-  if (response.ok) {
-    return true
-  }
-
-  const errMessage = await response.text()
-  throw new Error(errMessage)
-} // from api.js // .09
-
-// action types
-const UPDATE_USER = 'UPDATE_USER'
-const UPDATE_CONTACT = 'UPDATE_CONTACT'
-
-class Store {
-  constructor(reducer, initialState) {
-    this.reducer = reducer
-    this.state = initialState
-  }
-
-  getState() {
-    return this.state
-  }
-
-    dispatch(action) {
-      if (typeof action === 'function') {
-        action(this.dispatch.bind(this))
-      } else {
-        console.log('received an action:', action.type)
-        this.state = this.reducer(this.state, action)
-      }
-    } // .08 .09
-}
-
-const DEFAULT_STATE = {user: {}, contacts: []}
-
-const merge = (prev, next) => Object.assign({}, prev, next)
-
-const contactReducer = (state, action) => {
-  if (action.type === UPDATE_CONTACT) return [...state, action.payload]
-  return state
-}
-
-const userReducer = (state, action) => {
-  if (action.type === UPDATE_USER) return merge(state, action.payload)
-  if (action.type === UPDATE_CONTACT) return merge(state, {prevContact: action.payload})
-  return state
-}
-
-const reducer = (state, action) => ({
-  user: userReducer(state.user, action),
-  contacts: contactReducer(state.contacts, action),
-})
-
-// action creators
-const updateUser = update => ({
-  type: UPDATE_USER,
-  payload: update,
-})
-
-const addContact = newContact => ({
-  type: UPDATE_CONTACT,
-  payload: newContact,
-})
-
-// async action creator
-const logInUser = (username, password) => dispatch => {
-  dispatch({type: 'LOG_IN_SENT'})
-  login(username, password)
-    .then(() => {
-      dispatch({type: 'LOG_IN_SUCCESS'})
-    })
-    .catch(err => {
-      dispatch({type: 'LOG_IN_REJECTED'})
-    })
-} //.03 .04 .05 .06 .07 .09
-
-const store = new Store(reducer, DEFAULT_STATE)
-
-store.dispatch(logInUser('username', 'password')) // .09
-/* .09
-logInUser() // returns dispatch => {} .05
-store.dispatch(updateUser({foo: 'foo'}))
-store.dispatch(updateUser({bar: 'bar'}))
-store.dispatch(updateUser({foo: 'baz'}))
-
-store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
-store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
-store.dispatch(addContact({name: 'david m', number: '5050505050'}))
-*/
-console.log(store.getState())
+update the correct checking code, chance `toEqual` from `toBe`:
+``` jsx
+  expect(actions.updateUser({name: 'test name'})).toEqual({ 
+  ...
 ```
-[29:10] shown LOG_IN_REJECTED, because node does not have any concept of 'fetch'.
-Fetch was acctually part of browser API.
+$ npm test
 ``` console
-            simpleRedux $ node store3.js
-            received an action: LOG_IN_SENT
-            { user: {}, contacts: [] }
-            received an action: LOG_IN_REJECTED
-```
-[:top: Top](#top)
+...
+ PASS  testing/sum.test.js
+ PASS  before/redux/actions.test.js (8.788 s)
 
-isomorphic-fetch is a package for implement fetch that can use on node JS enviroment.
+Test Suites: 2 passed, 2 total
+Tests:       5 passed, 5 total
+Snapshots:   0 total
+Time:        18.676 s
+Ran all test suites.
+```
+Add a few more tests ...
+#### toMatchSnapshot
+``` jsx
+import * as actions from './actions'
+
+test('updateUser returns an action', () => {
+  expect(actions.updateUser({name: 'test name'})).toMatchSnapshot()
+}) 
+```
 ``` console
-      simpleRedux $ npm install isomorphic-fetch.   
-```
+Ts-MacBook-Pro:Jul06 twng$ npm test
 
-.10 store3.js, node version of import
+> @ test /Users/twng/cs50m/JUl06
+> jest
+
+ PASS  testing/sum.test.js (6.101 s)
+ PASS  before/redux/actions.test.js (9.844 s)
+ › 1 snapshot written.
+
+Snapshot Summary
+ › 1 snapshot written from 1 test suite.
+
+Test Suites: 2 passed, 2 total
+Tests:       5 passed, 5 total
+Snapshots:   1 written, 1 total
+Time:        19.67 s
+Ran all test suites.
+Ts-MacBook-Pro:Jul06 twng$ 
+```
+[0:31:19] And now let's change it to see if the snapshot--   
+action.js, maybe add debug flag
 ``` jsx
-const fetch = require('isomorphic-fetch') // node version of import .10
-
-export const login = async (username, password) => {
-...
-console.log(store.getState());
-/*
-// will respone:
-received an action: LOG_IN_SENT
-{user: {}, contacts: [] }
-received an action: LOG_IN_SUCCESS
-*/
-```
-[30:22] should see that Log-in success. See myNote [authServer](#authserver)
-
-.11 store3.js use **switch**
-``` jsx
-const userReducer = (state, action) => {
-  switch (action.type) {
-    case UPDATE_USER:
-      return merge(state, action.payload)
-    case UPDATE_CONTACT:
-      return merge(state, {prevContact: action.payload})
-    case 'LOG_IN_SUCCESS':
-      return merge(state, {token: 'fakeToken'})
-    default:
-      return state
-  } // .11
-}
-```
-[:top: Top](#top)
-[33.11]
-
----
-### Redux Middleware
-- This allows us to extend redux without having to touch the
-implementation
-- Any function with this prototype can be middleware
-  - `({getState, dispatch}) => next => action => void`
-- We can reimplement our feature as middleware
-- https://github.com/gaearon/redux-thunk
-  - “A thunk is a function that wraps an expression to delay its evaluation”
-
-copied files from **src10/before/*.* to Snack**, update JSON 
-from 10_Redux
-
-.11 package.json
-``` jsx
-{
-  "dependencies": {
-    "redux": "4.0.5",
-    "react-redux": "5.0.7",
-    "react-navigation": "2.0.0",
-    "react-native-paper": "3.6.0",
-    "react-native-vector-icons": "6.6.0",
-    "react-native-vector-icons/Ionicons": "6.6.0"
-  }
-}
-```
-
-*middleware* is a chain by which can just keep passing the action down the chain, and modify how we want, like eg thunk, log.
-
-.12  redux/store.js Snack, no error with _applyMiddle**w**are_ :+1:
-``` jsx
-import { createStore, applyMiddleware } from 'redux'; //.12
-import {addContact} from './actions' 
-import reducer from './reducer' 
-
-const thunkMiddleWare = store => next => action => {
-  if (typeof action === 'function') {
-    action(store.dispatch)
-  } else {
-    next(action)
-  }
-} //.12
-
-// const store = createStore(reducer); 
-const store = createStore(reducer, applyMiddleware(thunkMiddleWare)) //.12b
-
-
-/*
-store.dispatch(updateUser({foo: 'foo'})); 
-store.dispatch(updateUser({bar: 'bar'}))
-store.dispatch(updateUser({foo: 'baz'}))
-*/
-
-store.dispatch(addContact({name: 'Jorhan', phone:'1234567890'})) 
-store.dispatch(addContact({name: 'Jorhan', phone:'1234567890'})) 
-store.dispatch(addContact({name: 'David M', phone:'50505050505'})) 
-
-console.log(store.getState());
-
-export default store
-```
-[44:50]
-
-``` console
-            Jun24 $ npm install redux-thunk
-```
-
-.13 redux/store.js Snack, no error with _applyMiddle**w**are_ :+1:
-``` jsx
-import { createStore, applyMiddleware } from 'redux'; //.12
-import thunk from 'redux-thunk' //.13
-import {addContact} from './actions' 
-import reducer from './reducer' 
-
-/*
-const thunkMiddleWare = store => next => action => {
-  if (typeof action === 'function') {
-    action(store.dispatch)
-  } else {
-    next(action)
-  }
-} //.12
-*/
-
-const store = createStore(reducer, applyMiddleware(thunk)); //.13
-
-/*
-...
-```
-[45:12] re-add login screen to application, that removed last time.
-
-.14 App.js, Login bug: **Failed to fetch**  :disappointed: . :tired_face: . :exclamation: 
-``` jsx
-...
-  render() {
-    return (
-      <Provider store={store}>
-      <AppNavigator />
-      </Provider>
-    )
-  } //.14 was <MainTabs /> which work without Login
-}
-```
-now the screen:
-```
-      username
-      password
-                    PRESS TO LOG IN
-```
-So let's now start to use Redux here, rather than using the logic directly on this class.
-
-.15 redux/actions.js 
-``` jsx
-import {login} from '../api' // .16
-
-// action types
-export const UPDATE_USER = 'UPDATE_USER'
-export const UPDATE_CONTACT = 'UPDATE_CONTACT'
-export const LOG_IN_SENT = 'LOG_IN_SENT' //.15
-export const LOG_IN_FULFILLED = 'LOG_IN_FULFILLED' //.15
-export const LOG_IN_REJECTED = 'LOG_IN_REJECTED' //.15
-
 // action creators
 export const updateUser = update => ({
   type: UPDATE_USER,
   payload: update,
-})
-
-export const addContact = newContact => ({
-  type: UPDATE_CONTACT,
-  payload: newContact,
-})
-
-// async action creator
-export const logInUser = (username, password) => dispatch => {
-  dispatch({type: LOG_IN_SENT})
-  login(username, password)
-    .then(() => {
-      dispatch({type: LOG_IN_FULFILLED})
-    })
-    .catch(err => {
-      dispatch({type: LOG_IN_REJECTED})
-    })
-} // .15b from after/simpleRedux/store3.js
+  debug: false,
+})    
 ```
-.15d screens/LoginScreen.js
-``` jsx
-import React from 'react'
-import {Button, View, StyleSheet, Text, TextInput} from 'react-native'
-import {connect} from 'react-redux' //.15c
-
-import {logInUser} from '../redux/actions' //.15c
-// .15c import {login} from '../api'
-
-class LoginScreen extends React.Component { //.15d
-  state = {
-    username: '',
-    password: '',
-  }
-
-  _login = async () => {
-    try {
-      this.props.logInUser(this.state.username, this.state.password) //.15c
-      //.15e const success = await login(this.state.username, this.state.password)
-      this.props.navigation.navigate('Main')
-    } catch (err) {
-      const errMessage = err.message
-      this.setState({err: errMessage})
-    }
-  }
-  
+``` console
+Ts-MacBook-Pro:Jul06 twng$ npm test
 ...
+ PASS  testing/sum.test.js
+ FAIL  before/redux/actions.test.js (8.153 s)
+  ● updateUser returns an action
 
-export default connect(null, {logInUser})(LoginScreen)//.15d [53:45]
+    expect(received).toMatchSnapshot()
+
+    Snapshot name: `updateUser returns an action 1`
+...    
+Snapshot Summary
+ › 1 snapshot failed from 1 test suite. Inspect your code changes or run `npm test -- -u` to update them.
+
 ```
-login fialed.. 
-able to login, even without username.
-
-lecture shown able to username: username, & password: password
-
-.17 reducer.js
-``` jsx
-import {combineReducers} from 'redux'
-
-import {UPDATE_USER, UPDATE_CONTACT, LOG_IN_SENT, LOG_IN_FULFILLED, LOG_IN_REJECTED} from './actions' //.17
-
-const merge = (prev, next) => Object.assign({}, prev, next)
-
-const contactReducer = (state = [], action) => {
-  if (action.type === UPDATE_CONTACT) return [...state, action.payload]
-  return state
-}
-
-const userReducer = (state = {}, action) => {
-  switch (action.type) {
-    case UPDATE_USER:
-      return merge(state, action.payload)
-    case UPDATE_CONTACT:
-      return merge(state, {prevContact: action.payload})
-    case LOG_IN_FULFILLED:
-      return merge(state, {token: action.payload})
-    case LOG_IN_REJECTED:
-      return merge(state, {loginErr: action.payload})
-    default:
-      return state
-  } //.17
-}
-
-const reducer = combineReducers({
-  user: userReducer,
-  contacts: contactReducer,
-})
-
-export default reducer
+[0:32:38] And so how do we let Jest know, hey, we meant for that to happen?
+Update your snapshot.
+#### npm test -- -u
+``` console
+Ts-MacBook-Pro:testing twng$ npm test -- -u
+...
+Snapshot Summary
+ › 1 snapshot updated from 1 test suite.
 ```
-.18 actions.js
+[0:33:05] And so let's go ahead and revert our change.
 ``` jsx
-// async action creator
-export const logInUser = (username, password) => dispatch => {
-  dispatch({type: LOG_IN_SENT})
-  login(username, password)
-    .then(token => {
-      dispatch({type: LOG_IN_FULFILLED, payload: token}) //.18
-    })
-    .catch(err => {
-      dispatch({type: LOG_IN_REJECTED, payload: err.message}) //.18
-    })
-} // .15b from after/simpleRedux/store3.js
-```
-.19 authServer/index.js. Do note was **`return res.status(200).send()`** :exclamation: [1:00:10]
-``` jsx
-  if (!username || !password) return res.status(400).send('Missing username or password')
-  // in practice, this is potentially revealing too much information.
-  // an attacker can probe the server to find all of the usernames.
-  if (!users[username]) return res.status(403).send('User does not exist')
-  if (users[username] !== password) return res.status(403).send('Incorrect password')
-  //return res.status(200).send()
-  return res.json({token: 'thisIsARealToken'}) //.19
-  //.19 return res.status(200).send() 
+// action creators
+export const updateUser = update => ({
+  type: UPDATE_USER,
+  payload: update,
+  //debug: false,                                                               
 })
 ```
-.20 api.js
+``` console
+Ts-MacBook-Pro:testing twng$ npm test
+...
+ › 1 snapshot failed.
+...
+Ts-MacBook-Pro:testing twng$ npm t -- -u
+Ts-MacBook-Pro:testing twng$ npm t
+```
+[0:33:46] So now let's add a few more tests just to make sure everything's working as expected.   
+actions.test.js
 ``` jsx
-/*
-  if (response.ok) {
-    const json = await response.json() //.20
-    return json.token //.20
-  } */
+import * as actions from './actions'
 
-    if (response.ok) {
-    const {token} = await response.json() //.20a
-    return token //.20a
-  }
-````
-.21 actions.js
+test('updateUser returns an action', () => {
+  expect(actions.updateUser({name: 'test name'})).toMatchSnapshot()
+})
+
+test('updateUser returns an action when passed empty object', () => {
+  expect(actions.updateUser({})).toMatchSnapshot()
+})
+
+test('updateUser returns an action when passed empty name', () => {
+  expect(actions.updateUser({name: ''})).toMatchSnapshot()
+})
+```
+``` console
+Snapshot Summary
+ › 2 snapshots written from 1 test suite.
+```
+[0:34:53] And maybe there's a better way to go ahead and group them together.   
+actions.test.js 
+``` jsx
+import * as actions from './actions'
+
+describe('updateUser returns actions', () => {
+  it('returns an action', () => {
+    expect(actions.updateUser({name: 'test name'})).toMatchSnapshot()
+  })
+
+  it('handles empty object', () => {
+    expect(actions.updateUser({})).toMatchSnapshot()
+  })
+
+  it('handles empty name', () => {
+    expect(actions.updateUser({name: ''})).toMatchSnapshot()
+  })
+})
+```
+#### npm test -- -u
+update snapshot
+``` console
+Ts-MacBook-Pro:Jul06 twng$ npm test
+...
+Ts-MacBook-Pro:Jul06 twng$ npm test -- -u
+...
+Snapshot Summary
+ › 3 snapshots removed from 1 test suite.
+   ↳ before/redux/actions.test.js
+       • updateUser returns an action 1
+       • updateUser returns an action when passed empty name 1
+       • updateUser returns an action when passed empty object 1
+       ...
+Ts-MacBook-Pro:Jul06 twng$ npm test
+ PASS  before/redux/actions.test.js
+ PASS  testing/sum.test.js
+```
+
+### Jest: Testing Async Redux Actions
+- Async functions add multiple difficulties
+    - We have to wait for the result before testing against the result
+    - Our tests may rely on imported libs
+    - Our tests may rely on external services
+- If we return a Promise, Jest will wait for it to resolve
+    - Jest also supports `async/await`
+- Jest supports mocking functions
+- Dependency injection
+    - Pass functions on which other functions rely as arguments
+    - Allows us to mock functions that rely on external services
+
+[0:38:10] So what happens if we want to test this async action that we wrote?
+#### Jest supports mocking functions
+actions.test.js, > see that LOG_IN_SENT
+``` jsx
+})
+
+describe('logInUser returns actions',() => {
+  it('dispatches LOG_IN_SENT', async () => {
+    const mockDispatch = jest.fn()
+    await actions.logInUser('', '')(mockDispatch)
+    // mockDispatch.mock.calls all the args that the mock fn was invoked on
+    console.log(mockDispatch.mock.calls)
+  })
+})
+```
+[0:48:26] We see that login was sent, which is great.   
+$ npm test
+``` console
+...
+ PASS  before/redux/actions.test.js (23.534s)
+  ● Console
+
+    console.log
+      [
+        [ { type: 'LOG_IN_SENT' } ],
+        [ { type: 'LOG_IN_REJECTED', payload: 'fetch is not defined' } ]
+      ]
+
+      at _callee$ (before/redux/actions.test.js:22:13)
+...
+```
+So rather than console.logging the mockDispatch.mock.calls,
+we can actually expect it to be some value.   
+[0:50:33] Well, we should probably use that .toEqual.
+``` jsx
+describe('logInUser returns actions',() => {
+  it('dispatches LOG_IN_SENT', async () => {
+    const mockDispatch = jest.fn()
+    await actions.logInUser('', '')(mockDispatch)
+    // mockDispatch.mock.calls all the args that the mock fn was invoked on
+    //console.log(mockDispatch.mock.calls)
+    expect(mockDispatch.mock.calls[0][0]).toEqual({type: actions.LOG_IN_SENT})
+  })  
+})
+```
+And now we see that those do, in fact, passed.
+``` console
+Ts-MacBook-Pro:Jul06 twng$ npm test
+
+> @ test /Users/twng/cs50m/JUl06
+> jest
+
+ PASS  testing/sum.test.js
+ PASS  before/redux/actions.test.js
+
+Test Suites: 2 passed, 2 total
+Tests:       8 passed, 8 total
+Snapshots:   3 passed, 3 total
+Time:        4.572 s
+Ran all test suites.
+```
+[:top: Top](#top) 
+
+#### Dependency injection
+[0:52:07] Well, it allows us to mock the functions that rely on external services, which
+is pretty nifty.
+So rather than using login here, we can make
+this [? pure ?] by taking the login function
+as an argument in our logInUser.
+
+actions.js, add `loginFn = login`, & changed to `await loginFn(`
 ``` jsx
 // async action creator
-export const logInUser = (username, password) => async dispatch => {
+export const logInUser = (username, password, loginFn = login) => async dispatch => {
   dispatch({type: LOG_IN_SENT})
   try {
-    const token = await login(username, password)
-    dispatch({type: LOG_IN_FULFILLED, payload: token}) //.18
+    const token = await loginFn(username, password)
+    dispatch({type: LOG_IN_FULFILLED, payload: token})
   } catch (err) {
-    dispatch({type: LOG_IN_REJECTED, payload: err.message}) //.18
+    dispatch({type: LOG_IN_REJECTED, payload: err.message})
   }
-}// .15b from after/simpleRedux/store3.js //.21
+}   
 ```
-.22 LoginScreen.js > unable to login, also no error message
+actions.test.js
 ``` jsx
-import PropTypes from 'prop-types' //.22
-
-import {logInUser} from '../redux/actions' //.15c
-
-//import {login} from '../api'
-
-class LoginScreen extends React.Component { //.15d
-  static propTypes = {
-    err: PropTypes.string,
-    token: PropTypes.string,
-    logInUser: PropTypes.func,
-  } //.22
-
-  state = {
-    username: '',
-    password: '',
-  }
-
-  _login = async () => {
-      this.props.logInUser(this.state.username, this.state.password) 
-  } //.22
-/* delete
-  _login = async () => {
-    try {
-      this.props.logInUser(this.state.username, this.state.password) 
-      this.props.navigation.navigate('Main')
-    } catch (err) {
-      const errMessage = err.message
-      this.setState({err: errMessage})
+...
+describe('logInUser returns actions',() => {
+  it('dispatches LOG_IN_SENT', async () => {
+    ...
+  })
+    
+  it('dispatches LOG_IN_FULFILLED with correct creds', async () => {
+    const mockDispatch = jest.fn()
+    const mockLogin = (username, password) => {
+      if (username === 'u' && password === 'p') {
+        return 'thisIsATestToken'
+      }
+      throw new Error('incorrect creds')
     }
-  }
-*/ //.22  
-...
 
-const mapStateToProps = state => ({
-  err: state.user.loginErr,
-  token: state.user.token,
-}) //.22
+    await actions.logInUser('u', 'p', mockLogin)(mockDispatch)
 
-export default connect(mapStateToProps, {logInUser})(LoginScreen)//.15d [53:45] .22b
+    expect(mockDispatch.mock.calls[1][0]).toEqual({type: actions.LOG_IN_FULFILLED, payload: 'thisIsATestToken'})
+    
+    expect(mockDispatch.mock.calls[1]).toMatchSnapshot()
+  })
+
+})                                                                              
 ```
-Lecture: if wrong username to alert 'Missing username or password'
-and update the error message correctly. And if we refresh with the correct username and password combo, nothing actually happens.
-
-.22c LoginScreen.js > Failed to fetch. > fail to go to main screen.
-``` jsx
-... // .22c
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.error}>{this.props.err}</Text>
-...
-```
-add some sort of listener
-that says, hey, if we get a new token, then maybe we
-**should navigate to our main screen.**
-
-.23 loginScreen.js > Failed to fetch
-``` jsx
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.token) {
-      this.props.navigation.navigate('Main')
-    }
-  } //.23
-
-  _login = async () => {
-```
-If closed the App, and we logout again, need to login, unideal.   
-So how might we go ahead and store the state of our app
-
-[:top: Top](#top)
-
----
-### Persisting State
-- Our app can now be a pure function of the redux store
-- If we can persist the store, we can reload the app into the
-current state
-- React Native provides AsyncStorage
-  - “Use an abstraction on top of AsyncStorage instead of using it directly
-for anything more than light usage since it operates globally.”
-
----
-### redux-persist
-- Abstracts out the storage of the store into AsyncStorage
-- Gives us persistStore, persistReducer, PersistGate
-  - Automatically stores the state at every change
-  - Automatically rehydrates the store when the app is re-opened
-  - Will display loading screen while waiting for store to rehydrate
-- https://github.com/rt2zz/redux-persist
-
-`screens $ npm install redux-persist` 
-
-.24 store.js
-``` jsx
-import { createStore, applyMiddleware } from 'redux'; //.12
-import thunk from 'redux-thunk' //.13
-import { persistStore, persistReducer } from 'redux-persist' //.24
-import storage from 'redux-persist/lib/storage' //.24
-
-import {addContact} from './actions' 
-import reducer from './reducer' 
-
-const persistConfig = {
-  key: 'root',
-  storage,
-} //.24
-
-const persistedReducer = persistReducer(persistConfig, reducer) //.24
-
-export const store = createStore(persistedReducer, applyMiddleware(thunk)); //.13 .24
-export const persistor = persistStore(store) //.24
-
-```
-.25 App.js > no error
-``` jsx
-import { PersistGate } from 'redux-persist/integration/react' //.25
-...
-import {store, persistor} from './redux/store' //.25
-...
-  render() {
-    return (
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <AppNavigator />
-        </PersistGate>
-      </Provider>
-    )
-  } //.14 was <MainTabs /> which work without Login //.25
-```
-:disappointed: .> still unable to login.   
-[:top: Top](#top)
-
----
-### Container vs Presentational Components
-- As an application grows in size and complexity, not all
-components need to be aware of application state
-- Container components are aware of redux state
-- Presentational components are only aware of their props
-* https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0
-
----
-### Do I need Redux?
-- Redux helps apps scale, but does add complexity
-- Sometimes, the complexity overhead isn’t worth it
-- Do as much as you can with local component state, then
-add redux if you hit pain points
-  - Forgetting to pass a prop
-  - Directly managing deeply nested state
-  - Duplicated information in state
-  - Not updating all dependent props
-  - Components with large number of props
-  - Uncertainty where a piece of data is managed
-
-[:top: Top](#top)
-
----
-### JavaScript Tools
-- NPM
-- Babel
-- @std/esm
-- Chrome devtools
-- React/Redux devtools
-- ESLint
-- Prettier
-- Flow/TypeScript
-
-Babel - which allows us to write JavaScript as if it has all of the language
-features that we need and then transpile down to JavaScript
-that all browsers will understand.
-
-@std/esm - And what that allows us to do is use our import statements
-and our export statements in Node.
-
-Flow/TypeScript - Those are both things that allow us to statically check
-the types of all of our functions.
-And so it helps us eliminate bugs where maybe we
-changed the function prototype somewhere but forgot to update
-wherever we use those functions.
-
-[:top: Top](#top)
-
----
-### ESLint
-- “A fully pluggable tool for identifying and reporting on
-patterns in JavaScript”
-- Allows us to enforce code style rules and statically
-analyze our code to ensure it complies with the rules
-  - Ensure style consistency across a codebase
-  *https://github.com/eslint/eslint
-
-[1:32:23] May be there is hundred of people using the same code base, and everybody write Javascript slightly different,
-we can use Eslint to yell at our developers.
-
-### ESLint: Setup
-- Install
-  - Per project: `npm install --save-dev eslint`
-  - Globally: `npm install -g eslint`
-- Create your own config
-  - Per project: `./node_modules/.bin/eslint --init`
-  - Globally: `eslint init`
-- Or extend an existing config
-  - https://github.com/airbnb/javascript
-  - https://github.com/kensho/eslint-config-kensho
-
-
-To install in our project.    
-ExpoCli > see [Working eslint](#working-eslint) below.  
+$ npm test [1:05:14]
 ``` console
-Jun24 twng$ npm install -D eslint
-Jun24 twng$ ./node_modules/.bin/eslint --init
-✔ How would you like to use ESLint? · problems
-✔ What type of modules does your project use? · esm
-✔ Which framework does your project use? · react
-✔ Does your project use TypeScript? · Yes
-✔ Where does your code run? · browser
-✔ What format do you want your config file to be in? · YAML
-The config that you've selected requires the following dependencies:
-eslint-plugin-react@latest @typescript-eslint/eslint-plugin@latest @typescript-eslint/parser@latest
-✔ Would you like to install them now with npm? · Yes
-Installing eslint-plugin-react@latest, @typescript-eslint/eslint-plugin@latest, @typescript-eslint/parser@latest
-+ eslint-plugin-react@7.20.1
-+ @typescript-eslint/eslint-plugin@3.4.0
-+ @typescript-eslint/parser@3.4.0
-Successfully created .eslintrc.yml file
+...
+Test Suites: 2 passed, 2 total
+Tests:       9 passed, 9 total
+Snapshots:   1 written, 3 passed, 4 total
+Time:        16.134 s
+Ran all test suites.
 ```
-
+moved mockLogin and test LOG_IN_REJECTED.  see [after/redux/actions.test.js](#afterreduxactionstestjs)
 ``` jsx
-Jun24 twng$ ls -a
-Jun24 twng$ vim .eslintrc.yml
-  1 env:
-  2   browser: true
-  3   es2020: true
-  4 extends:
-  5   - 'eslint:recommended'
-  6   - 'plugin:react/recommended'
-  7   - 'plugin:@typescript-eslint/recommended'
-  8 parser: '@typescript-eslint/parser'
-  9 parserOptions:
- 10   ecmaFeatures:
- 11     jsx: true
- 12   ecmaVersion: 11
- 13   sourceType: module
- 14 plugins:
- 15   - react
- 16   - '@typescript-eslint'
- 17 rules: {}
-```
-can run on any file, > but error. > see [Working eslint](#working-eslint) below.
-``` console
-Jun24 twng$ ./node_modules/.bin/eslint api.js
-Warning: React version not specified ....
-```
-**install Kenso config**
-``` console
-Jun24 twng$ npm install -D eslint-config-kensho
-```
-
-.eslintrc.yml delete the whole file and replace with
-``` jsx
-extends: kensho
-```
-**npx** is a short cut for ./node_modules/.bin/eslint
-``` terminal
-$ npx eslint api.js
-```
-Error: Failed to load plugin '@typescript-eslint' ... >  see [Working eslint](#working-eslint) below. 
+...
+describe('logInUser returns actions',() => {
+  const errMessage = 'incorrect creds'
+  const fakeToken = 'thisIsATestToken'
+  const mockLogin = (username, password) => {
+...
+  })
   
-### ESLint: Running
-- Run on a file/directory
-  - Per project: `./node_modules/.bin/eslint <path>`
-  - Globally: `eslint <path>`
-- Lint whole project by adding as an NPM script
-- Most text editors have an integration
+  it('dispatches LOG_IN_FULFILLED with correct creds', async () => {
+    const mockDispatch = jest.fn()
+    await actions.logInUser('u', 'p', mockLogin)(mockDispatch)
 
-[:top: Top](#top)
+    expect(mockDispatch.mock.calls[1][0]).toEqual({type: actions.LOG_IN_FULFILLED, payload: 'thisIsATestToken'})
+    expect(mockDispatch.mock.calls[1]).toMatchSnapshot()
+  })  
+  
+  it('dispatches LOG_IN_REJECTED with incorrect creds', async () => {
+    const mockDispatch = jest.fn()
+    await actions.logInUser('', '', mockLogin)(mockDispatch)
 
----
-### Prettier
-- “Prettier is an opinionated code formatter”
-- Prettier will rewrite your files to adhere to a specified code
-style
-- It can integrate with ESLint
-  - Specify an eslint config and pass --fix to eslint to have prettier
-auto-fix improper styling
-* https://github.com/prettier/prettier
-
-``` terminal
-$ npm install -D prettier
-$ npx eslint api.js
+    expect(mockDispatch.mock.calls[1][0]).toEqual({type: actions.LOG_IN_REJECTED, payload: errMessage})
+    expect(mockDispatch.mock.calls[1]).toMatchSnapshot()
+  })
+})  
 ```
-#### Working eslint
- https://github.com/kensho-technologies/eslint-config-kensho   
-**`$ npm i -D eslint prettier typescript eslint-config-kensho`** :+1: 
+$ npm test
 ``` console
-Jun24 $ npm i -D eslint prettier typescript eslint-config-kensho
-+ eslint-config-kensho@17.0.2
-+ eslint@7.3.1
-+ prettier@2.0.5
-+ typescript@3.9.5
 ...
-Jun24 $ vim .eslintrc.yml
-    extends: kensho
-
-Jun24 $ npx eslint api.js
-
-Jun24/api.js
-   1:24  error  Replace `contact` with `(contact)`                            prettier/prettier
-  25:1   error  Delete `··`                                                   prettier/prettier
-  26:43  error  Expected exception block, space or tab after '//' in comment  spaced-comment
-  27:18  error  Expected exception block, space or tab after '//' in comment  spaced-comment
-
-✖ 4 problems (4 errors, 0 warnings)
-  4 errors and 0 warnings potentially fixable with the `--fix` option.
-Jun24 $ npx eslint api.js --fix
+Test Suites: 2 passed, 2 total
+Tests:       10 passed, 10 total
+Snapshots:   1 written, 4 passed, 5 total
+Time:        12.273 s
+Ran all test suites.
 ```
+[:top: Top](#top) 
+[1:08:40]
 
-.26 api.js to add code for test
+#### npx jest --verbose
+[1:13:05] if you run Jest with a flag called verbose,
+that's what triggers all of the tests to be enumerated.
+And if we run with that --verbose flag, we then see all of the groupings
+that we dictated in our test files.
+
+``` console
+Ts-MacBook-Pro:Jul06 twng$ npx jest --verbose
+ PASS  testing/sum.test.js
+  ✓ sums 1 and 1 (4 ms)
+  ✓ sums 0 and 0
+  ✓ sums 20 and 30
+  ✓ sums 20 and 22
+
+ PASS  before/redux/actions.test.js
+  updateUser returns actions
+    ✓ returns an action (9 ms)
+    ✓ handles empty object
+    ✓ handles empty name (1 ms)
+  logInUser returns actions
+    ✓ dispatches LOG_IN_SENT (3 ms)
+    ✓ dispatches LOG_IN_FULFILLED with correct creds (2 ms)
+    ✓ dispatches LOG_IN_REJECTED with incorrect creds (1 ms)
+
+Test Suites: 2 passed, 2 total
+Tests:       10 passed, 10 total
+Snapshots:   5 passed, 5 total
+Time:        2.577 s, estimated 4 s
+Ran all test suites.
+```
+And so if we wanted to show that entire enumeration of all the tests every time
 ``` jsx
-  ...
-  throw new Error(errMessage)
+,
+  "scripts": {
+    "test": "jest --verbose",
+    "test:watch": "jest --watch --verbose"
+  }
+```
+#### npm test
+#### npm run test:watch
+[:top: Top](#top) 
+
+[1:14:47] So let's test our Redux reducers.
+
+reducer.js
+``` jsx
+import {UPDATE_USER, UPDATE_CONTACT, LOG_IN_FULFILLED, LOG_IN_REJECTED} from './actions'
+...
+```
+reducer.test.js
+``` jsx
+import reducer from './reducer'
+import * as actions from './actions'
+
+const DEFAULT_STATE = { 
+  user: {}, 
+  contacts: [], 
 }
 
-export const poorlyFormatted = (usedVar, unusedVar) => { return usedVar}
+describe('contact reducer', () => {
+  it('successfully adds new user', () => {
+    expect(reducer(DEFAULT_STATE, actions.addContact({
+      name: 'test user',
+      phone: '1234567890',
+    }))).toMatchSnapshot()
+  })  
+})     
 ```
-can automatic fixed the file, using **npx eslint api.js --fix**
-``` terminal
-Jun24 $ npx eslint api.js --fix
-
-Jun24/api.js
-  34:42  error  'unusedVar' is defined but never used  no-unused-vars
-
-✖ 1 problem (1 error, 0 warnings)
-```
-
-:+1: - Lint whole project by adding as an NPM script
-
-Example, the reason of it server work,
-``` terminal
-$ cd authServer
-authServer$ npm start
-authServer$ vim package.json
-```
- because package.json got this
-``` js
-  "scripts": {
-    "start": "node index"
-  },
-```
-It defined a script called `start` that just runs that index file.
-
-we can also in 
-``` terminal
-$ cd ..
-$ vim package.js
-```
-we can change  
-package.json
-``` json
-  "scripts": {
-    "lint": "eslint api.js simpleRedux/"
-  },
-```
-**npm run lint**.   
-And now this will automatically lint all of the files that we want for us. For this example we lint api.js and simpleRedux/
+$ npm test
 ``` console
-Ts-MacBook-Pro:Jun24 twng$ npm run
-Scripts available in my_nm via `npm run-script`:
-  lint
-    eslint api.js simpleRedux/
-Ts-MacBook-Pro:Jun24 twng$ npm run lint
+...
+ PASS  before/redux/reducer.test.js
+  contact reducer
+    ✓ successfully adds new user (6 ms)
 
-> @ lint /Users/twng/cs50m/Jun24
-> eslint api.js simpleRedux/
-...
-...
-/Users/twng/cs50m/Jun24/simpleRedux/store3.js
-   36:7   warning  Unexpected console statement                                      no-console
-   44:31  error    Use an object spread instead of `Object.assign` eg: `{ ...foo }`  prefer-object-spread
-   70:7   error    'updateUser' is assigned a value but never used                   no-unused-vars
-   70:20  error    Replace `update` with `(update)`                                  prettier/prettier
-   75:7   error    'addContact' is assigned a value but never used                   no-unused-vars
-   75:20  error    Replace `newContact` with `(newContact)`                          prettier/prettier
-   81:43  error    Replace `dispatch` with `(dispatch)`                              prettier/prettier
-   87:12  error    Replace `err` with `(err)`                                        prettier/prettier
-   87:12  error    'err' is defined but never used                                   no-unused-vars
-   90:2   error    Delete `⏎`                                                        prettier/prettier
-   97:1   error    Delete `··`                                                       prettier/prettier
-  108:1   warning  Unexpected console statement                                      no-console
-...
-...
+ › 1 snapshot written.
+Snapshot Summary
+ › 1 snapshot written from 1 test suite.
+
+Test Suites: 3 passed, 3 total
+Tests:       11 passed, 11 total
+Snapshots:   1 written, 5 passed, 6 total
+Time:        3.022 s
+Ran all test suites.
 ```
-[:top: Top](#top)
+[1:20:19] So let's test user, exclamation point.   
+reducer.test.js
+``` jsx
+      name: 'test user!',
+```
+``` console
+    -       "name": "test user",
+    +       "name": "test user!",
+...
 
+› 1 snapshot failed.
+Snapshot Summary
+ › 1 snapshot failed from 1 test suite.
+```
+reducer.test.js, add in more test, as [after/redux/reducer.test.js](#afterreduxreducertestjs)
+``` jsx
+      name: 'test user',
+... 
+})
+
+describe('user reducer', () => {
+  it('successfully updates user', () => {
+    expect(reducer(DEFAULT_STATE, actions.updateUser({
+      name: 'test user',
+    }))).toMatchSnapshot()                                                                      
+  })
+})
+```
+$ npm test
+``` console
+...
+ PASS  before/redux/reducer.test.js
+  contact reducer
+    ✓ successfully adds new user (5 ms)
+  user reducer
+    ✓ successfully updates user (1 ms)
+...
+Test Suites: 3 passed, 3 total
+Tests:       12 passed, 12 total
+Snapshots:   1 written, 6 passed, 7 total
+```
+[:top: Top](#top) 
+[1:22:40]
+### Integration Tests
+- We can use Jest’s snapshot testing to test components
+- `react-test-renderer`allows us to render components
+outside the context of an app
+    - https://reactjs.org/docs/test-renderer.html
+- jest-expo has all the configuration you need
+    - https://github.com/expo/jest-expo
+
+we use the snapshot feature to test the output of React component
+
+https://docs.expo.io/guides/testing-with-jest/   
+To install jest-expo as a development dependency run: `yarn add jest-expo --dev` or `npm i jest-expo --save-dev`.
+Then we need to add/update package.json to include:
+
+! recd **error** ... skipped this installation.
+
+[:top: Top](#top) 
+
+### Code Coverage
+- Metric for tracking how well-tested an application is
+    - Statements: How many statements in the program have been executed?
+    - Branches: How many of the possible code paths have been executed?
+    - Functions: How many of the defined function been executed?
+    - Lines: How many of the lines have been executed?
+- Get coverage report by passing `--coverage` to jest
+
+#### npm t -- --coverage
+``` console
+Ts-MacBook-Pro:Jul06 twng$ npm t -- --coverage
+...
+--------------|---------|----------|---------|---------|-------------------
+File          | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+--------------|---------|----------|---------|---------|-------------------
+All files     |   74.47 |    66.67 |      75 |      75 |                   
+ before       |   33.33 |        0 |      25 |   38.46 |                   
+  api.js      |   33.33 |        0 |      25 |   38.46 | 7-9,19-25         
+ before/redux |   93.33 |       80 |     100 |      92 |                   
+  actions.js  |     100 |      100 |     100 |     100 |                   
+  reducer.js  |   85.71 |    77.78 |     100 |   83.33 | 19-21             
+ testing      |     100 |      100 |     100 |     100 |                   
+  sum.js      |     100 |      100 |     100 |     100 |                   
+--------------|---------|----------|---------|---------|-------------------
+Test Suites: 3 passed, 3 total
+Tests:       12 passed, 12 total
+Snapshots:   7 passed, 7 total
+```
+[:top: Top](#top) 
+
+### End-To-End Tests
+- There is currently no easy way to run automated e2e tests
+in react native
+- There is an awesome work-in-progress by Wix called
+Detox
+    - https://github.com/wix/detox
+    - https://github.com/expo/with-detox-tests
+    - Lacks Android support
+
+### Thanks!
+
+---
 ---
 Source Code
 ---
-
+[:top: Top](#top) 
+[before/...](#before)
+[after/...](#after) 
 ### before/...
 
-#### before/App.js
-``` jsx
-import React from 'react'
-import {
-  createStackNavigator,
-  createSwitchNavigator,
-  createBottomTabNavigator,
-} from 'react-navigation'
-import Ionicons from 'react-native-vector-icons/Ionicons'
-import {Provider} from 'react-redux'
-
-import AddContactScreen from './screens/AddContactScreen'
-import SettingsScreen from './screens/SettingsScreen'
-import ContactListScreen from './screens/ContactListScreen'
-import ContactDetailsScreen from './screens/ContactDetailsScreen'
-import LoginScreen from './screens/LoginScreen'
-import {fetchUsers} from './api'
-import contacts from './contacts'
-import store from './redux/store'
-
-const MainStack = createStackNavigator(
-  {
-    ContactList: ContactListScreen,
-    ContactDetails: ContactDetailsScreen,
-    AddContact: AddContactScreen,
-  },
-  {
-    initialRouteName: 'ContactList',
-    navigationOptions: {
-      headerTintColor: '#a41034',
-      headerStyle: {
-        backgroundColor: '#fff',
-      },
-    },
-  }
-)
-
-MainStack.navigationOptions = {
-  tabBarIcon: ({focused, tintColor}) => (
-    <Ionicons name={`ios-contacts${focused ? '' : '-outline'}`} size={25} color={tintColor} />
-  ),
-}
-
-const MainTabs = createBottomTabNavigator(
-  {
-    Contacts: MainStack,
-    Settings: SettingsScreen,
-  },
-  {
-    tabBarOptions: {
-      activeTintColor: '#a41034',
-    },
-  }
-)
-
-const AppNavigator = createSwitchNavigator({
-  Login: LoginScreen,
-  Main: MainTabs,
-})
-
-export default class App extends React.Component {
-  state = {
-    contacts,
-  }
-
-  /*
-  componentDidMount() {
-    this.getUsers()
-  }
-
-  getUsers = async () => {
-    const results = await fetchUsers()
-    this.setState({contacts: results})
-  }
-  */
-
-  addContact = newContact => {
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, newContact],
-    }))
-  }
-
-  render() {
-    return (
-      <Provider store={store}>
-        <MainTabs />
-      </Provider>
-    )
-  }
-}
-
-```
-[:top: Top](#top)
-
-
-#### before/api.js
-``` js
-const processContact = contact => ({
-  name: `${contact.name.first} ${contact.name.last}`,
-  phone: contact.phone,
-})
-
-export const fetchUsers = async () => {
-  const response = await fetch('https://randomuser.me/api/?results=50&nat=us')
-  const {results} = await response.json()
-  return results.map(processContact)
-}
-
-export const login = async (username, password) => {
-  const response = await fetch('http://localhost:8000', {
-    method: 'POST',
-    headers: {'content-type': 'application/json'},
-    body: JSON.stringify({username, password}),
-  })
-
-  if (response.ok) {
-    return true
-  }
-
-  const errMessage = await response.text()
-  throw new Error(errMessage)
-}
-
-```
-
 #### before/package.json
-updated from [10_Redux](https://github.com/alvinng222/cs50m/tree/10_Redux#afterpackagejson)
-``` js
+``` yaml
 {
-  "dependencies": {
-    "react-navigation": "2.0.0",
-    "react-native-paper": "3.6.0",
-    "react-native-vector-icons": "6.6.0",
-    "react-native-vector-icons/Ionicons": "6.6.0",
-    "redux": "4.0.5",
-    "react-redux": "5.0.7"
-  }
-}
-```  
-[:top: Top](#top)
-
-### before/authServer/...
-#### before/authServer/index.js
-Last update Jun 30, 2020.  .19 was before lecture.
-``` jsx
-const express = require('express')
-const bodyParser = require('body-parser')
-
-const PORT = process.env.PORT || 8000
-
-// usernames are keys and passwords are values
-const users = {
-  username: 'password',
-}
-
-const app = express()
-app.use(bodyParser.json())
-
-app.post('*', (req, res) => {
-  const {username, password} = req.body
-
-  if (!username || !password) return res.status(400).send('Missing username or password')
-  // in practice, this is potentially revealing too much information.
-  // an attacker can probe the server to find all of the usernames.
-  if (!users[username]) return res.status(403).send('User does not exist')
-  if (users[username] !== password) return res.status(403).send('Incorrect password')
-  return res.status(200).send() // .19
-  // return res.json({token: 'thisIsAToken'})
-})
-
-// catch 404
-app.use((req, res, next) => {
-  const err = new Error('Not Found')
-  err.status = 404
-  next(err)
-})
-
-app.use((err, req, res, next) => res.status(err.status || 500).send(err.message || 'There was a problem'))
-
-const server = app.listen(PORT)
-console.log(`Listening at http://localhost:${PORT}`)
-
-```
-
-#### before/authServer/package.json  
-``` js
-{
-  "name": "authserver",
-  "version": "1.0.0",
-  "description": "Simple auth server for a demo",
-  "main": "index.js",
+  "main": "node_modules/expo/AppEntry.js",
+  "private": true,
   "scripts": {
-    "start": "node index"
-  },
-  "author": "Jordan Hayashi",
-  "license": "ISC",
-  "dependencies": {
-    "body-parser": "^1.18.2",
-    "express": "^4.16.3"
-  }
-}
-
-```
-[:top: Top](#top)
-
-### before/redux/...
-#### before/redux/actions.js
-``` jsx
-// action types
-export const UPDATE_USER = 'UPDATE_USER'
-export const UPDATE_CONTACT = 'UPDATE_CONTACT'
-
-// action creators
-export const updateUser = update => ({
-  type: UPDATE_USER,
-  payload: update,
-})
-
-export const addContact = newContact => ({
-  type: UPDATE_CONTACT,
-  payload: newContact,
-})
-
-```
-#### before/redux/reducer.js
-``` jsx
-import {combineReducers} from 'redux'
-
-import {UPDATE_USER, UPDATE_CONTACT} from './actions'
-
-const merge = (prev, next) => Object.assign({}, prev, next)
-
-const contactReducer = (state = [], action) => {
-  if (action.type === UPDATE_CONTACT) return [...state, action.payload]
-  return state
-}
-
-const userReducer = (state = {}, action) => {
-  switch (action.type) {
-    case UPDATE_USER:
-      return merge(state, action.payload)
-    case UPDATE_CONTACT:
-      return merge(state, {prevContact: action.payload})
-    default:
-      return state
-  }
-}
-
-const reducer = combineReducers({
-  user: userReducer,
-  contacts: contactReducer,
-})
-
-export default reducer
-
-```
-#### before/redux/store.js  
-``` jsx
-import {createStore} from 'redux'
-
-import {addContact} from './actions'
-import reducer from './reducer'
-
-const store = createStore(reducer)
-
-/*
-store.dispatch(updateUser({foo: 'foo'}))
-store.dispatch(updateUser({bar: 'bar'}))
-store.dispatch(updateUser({foo: 'baz'}))
-*/
-
-store.dispatch(addContact({name: 'jordan h', phone: '1234567890'}))
-store.dispatch(addContact({name: 'jordan h', phone: '1234567890'}))
-store.dispatch(addContact({name: 'david m', phone: '5050505050'}))
-
-console.log(store.getState())
-
-export default store
-
-```
-[:top: Top](#top)
-
-### before/screens/...
-#### before/screens/AddContactScreen.js
-``` jsx
-import React from 'react'
-import AddContactForm from '../AddContactForm'
-import {connect} from 'react-redux'
-
-import {addContact} from '../redux/actions'
-
-class AddContactScreen extends React.Component {
-  static navigationOptions = {
-    headerTitle: 'New Contact',
-  }
-
-  handleSubmit = formState => {
-    this.props.addContact({name: formState.name, phone: formState.phone})
-    this.props.navigation.navigate('ContactList')
-  }
-
-  render() {
-    return <AddContactForm onSubmit={this.handleSubmit} />
-  }
-}
-
-export default connect(null, {addContact: addContact})(AddContactScreen)
-
-```
-[:top: Top](#top)
-
-#### before/screens/ContactListScreen.js
-``` jsx
-import React from 'react'
-import {Button, View, StyleSheet} from 'react-native'
-import {connect} from 'react-redux'
-
-import SectionListContacts from '../SectionListContacts'
-
-class ContactListScreen extends React.Component {
-  static navigationOptions = ({navigation}) => ({
-    headerTitle: 'Contacts',
-    headerRight: (
-      <Button title="Add" onPress={() => navigation.navigate('AddContact')} color="#a41034" />
-    ),
-  })
-
-  state = {
-    showContacts: true,
-  }
-
-  toggleContacts = () => {
-    this.setState(prevState => ({showContacts: !prevState.showContacts}))
-  }
-
-  handleSelectContact = contact => {
-    this.props.navigation.push('ContactDetails', contact)
-  }
-
-  render() {
-    return (
-      <View style={styles.container}>
-        <Button title="toggle contacts" onPress={this.toggleContacts} />
-        {this.state.showContacts && (
-          <SectionListContacts
-            contacts={this.props.contacts}
-            onSelectContact={this.handleSelectContact}
-          />
-        )}
-      </View>
-    )
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-})
-
-const mapStateToProps = state => ({
-  contacts: state.contacts,
-})
-
-export default connect(mapStateToProps)(ContactListScreen)
-
-```
-#### before/screens/LoginScreen.js 
-``` jsx
-import React from 'react'
-import {Button, View, StyleSheet, Text, TextInput} from 'react-native'
-
-import {login} from '../api'
-
-export default class LoginScreen extends React.Component {
-  state = {
-    username: '',
-    password: '',
-  }
-
-  _login = async () => {
-    try {
-      const success = await login(this.state.username, this.state.password)
-      this.props.navigation.navigate('Main')
-    } catch (err) {
-      const errMessage = err.message
-      this.setState({err: errMessage})
-    }
-  }
-
-  handleUsernameUpdate = username => {
-    this.setState({username})
-  }
-
-  handlePasswordUpdate = password => {
-    this.setState({password})
-  }
-
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.error}>{this.state.err}</Text>
-        <TextInput
-          placeholder="username"
-          value={this.state.username}
-          onChangeText={this.handleUsernameUpdate}
-          autoCapitalize="none"
-        />
-        <TextInput
-          placeholder="password"
-          value={this.state.password}
-          onChangeText={this.handlePasswordUpdate}
-          secureTextEntry
-        />
-        <Button title="Press to Log In" onPress={this._login} />
-      </View>
-    )
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    flex: 1,
-  },
-  text: {
-    textAlign: 'center',
-  },
-  error: {
-    textAlign: 'center',
-    color: 'red',
-  },
-})
-
-```
-[:top: Top](#top)
-
-### before/simpleRedux/...
-#### before/simpleRedux/reducer.js
-``` jsx
-const merge = (prev, next) => Object.assign({}, prev, next)
-
-const reducer = (state, update) => merge(state, update)
-
-let state = {}
-state = reducer(state, {foo: 'foo'})
-state = reducer(state, {bar: 'bar'})
-state = reducer(state, {foo: 'baz'})
-
-console.log(state)
-
-```
-
-#### before/simpleRedux/store2.js
-``` jsx
-// action types
-const UPDATE_USER = 'UPDATE_USER'
-const UPDATE_CONTACT = 'UPDATE_CONTACT'
-
-class Store {
-  constructor(reducer, initialState) {
-    this.reducer = reducer
-    this.state = initialState
-  }
-
-  getState() {
-    return this.state
-  }
-
-  dispatch(update) {
-    this.state = this.reducer(this.state, update)
-  }
-}
-
-const DEFAULT_STATE = {user: {}, contacts: []}
-
-const merge = (prev, next) => Object.assign({}, prev, next)
-
-const contactReducer = (state, action) => {
-  if (action.type === UPDATE_CONTACT) return [...state, action.payload]
-  return state
-}
-
-const userReducer = (state, action) => {
-  if (action.type === UPDATE_USER) return merge(state, action.payload)
-  if (action.type === UPDATE_CONTACT) return merge(state, {prevContact: action.payload})
-  return state
-}
-
-const reducer = (state, action) => ({
-  user: userReducer(state.user, action),
-  contacts: contactReducer(state.contacts, action),
-})
-
-// action creators
-const updateUser = update => ({
-  type: UPDATE_USER,
-  payload: update,
-})
-
-const addContact = newContact => ({
-  type: UPDATE_CONTACT,
-  payload: newContact,
-})
-
-const store = new Store(reducer, DEFAULT_STATE)
-store.dispatch(updateUser({foo: 'foo'}))
-store.dispatch(updateUser({bar: 'bar'}))
-store.dispatch(updateUser({foo: 'baz'}))
-
-store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
-store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
-store.dispatch(addContact({name: 'david m', number: '5050505050'}))
-
-console.log(store.getState())
-
-```
-[:top: Top](#top)
-
----
-### after/...
-
-#### after/App.js
-``` jsx
-import React from 'react'
-import {
-  createStackNavigator,
-  createSwitchNavigator,
-  createBottomTabNavigator,
-} from 'react-navigation'
-import Ionicons from 'react-native-vector-icons/Ionicons'
-import {Provider} from 'react-redux'
-import { PersistGate } from 'redux-persist/integration/react'
-
-import AddContactScreen from './screens/AddContactScreen'
-import SettingsScreen from './screens/SettingsScreen'
-import ContactListScreen from './screens/ContactListScreen'
-import ContactDetailsScreen from './screens/ContactDetailsScreen'
-import LoginScreen from './screens/LoginScreen'
-import {fetchUsers} from './api'
-import contacts from './contacts'
-import {store, persistor} from './redux/store'
-
-const MainStack = createStackNavigator(
-  {
-    ContactList: ContactListScreen,
-    ContactDetails: ContactDetailsScreen,
-    AddContact: AddContactScreen,
-  },
-  {
-    initialRouteName: 'ContactList',
-    navigationOptions: {
-      headerTintColor: '#a41034',
-      headerStyle: {
-        backgroundColor: '#fff',
-      },
-    },
-  }
-)
-
-MainStack.navigationOptions = {
-  tabBarIcon: ({focused, tintColor}) => (
-    <Ionicons name={`ios-contacts${focused ? '' : '-outline'}`} size={25} color={tintColor} />
-  ),
-}
-
-const MainTabs = createBottomTabNavigator(
-  {
-    Contacts: MainStack,
-    Settings: SettingsScreen,
-  },
-  {
-    tabBarOptions: {
-      activeTintColor: '#a41034',
-    },
-  }
-)
-
-const AppNavigator = createSwitchNavigator({
-  Login: LoginScreen,
-  Main: MainTabs,
-})
-
-export default class App extends React.Component {
-  state = {
-    contacts,
-  }
-
-  /*
-  componentDidMount() {
-    this.getUsers()
-  }
-
-  getUsers = async () => {
-    const results = await fetchUsers()
-    this.setState({contacts: results})
-  }
-  */
-
-  addContact = newContact => {
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, newContact],
-    }))
-  }
-
-  render() {
-    return (
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <AppNavigator />
-        </PersistGate>
-      </Provider>
-    )
-  }
-}
-
-```
-[:top: Top](#top)
-
-#### after/api.js
-``` jsx
-const processContact = contact => ({
-  name: `${contact.name.first} ${contact.name.last}`,
-  phone: contact.phone,
-})
-
-export const fetchUsers = async () => {
-  const response = await fetch('https://randomuser.me/api/?results=50&nat=us')
-  const {results} = await response.json()
-  return results.map(processContact)
-}
-
-export const login = async (username, password) => {
-  const response = await fetch('http://localhost:8000', {
-    method: 'POST',
-    headers: {'content-type': 'application/json'},
-    body: JSON.stringify({username, password}),
-  })
-
-  if (response.ok) {
-    const {token} = await response.json()
-    return token
-  }
-
-  const errMessage = await response.text()
-  throw new Error(errMessage)
-}
-
-export const poorlyFormatted = usedVar => usedVar
-
-```
-[:top: Top](#top)
-
-#### after/package.json
-Expo Cli, last updated Jun 30, 2020
-``` jsx
-{
-  "main": "index.js",
-  "scripts": {
-    "android": "react-native run-android",
-    "ios": "react-native run-ios",
-    "web": "expo start --web",
-    "start": "react-native start",
-    "test": "jest",
-    "lint": "eslint api.js simpleRedux/"
+    "lint": "eslint api.js screens/"
   },
   "dependencies": {
-    "expo": "~37.0.3",
-    "expo-splash-screen": "^0.2.3",
-    "expo-updates": "~0.2.0",
+    "expo": "^25.0.0",
     "isomorphic-fetch": "^2.2.1",
-    "prop-types": "^15.7.2",
-    "react": "~16.9.0",
-    "react-dom": "~16.9.0",
-    "react-native": "~0.61.5",
-    "react-native-gesture-handler": "~1.6.0",
-    "react-native-reanimated": "~1.7.0",
-    "react-native-screens": "~2.2.0",
-    "react-native-unimodules": "~0.9.0",
-    "react-native-web": "~0.11.7",
-    "react-navigation": "^2.0.0",
+    "prop-types": "^15.6.1",
+    "react": "16.2.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-25.0.0.tar.gz",
+    "react-native-vector-icons": "^4.5.0",
+    "react-navigation": "2.0.0-beta.5",
     "react-redux": "^5.0.7",
-    "redux": "^4.0.5",
-    "redux-persist": "^6.0.0",
-    "redux-thunk": "^2.3.0"
+    "redux": "^3.7.2",
+    "redux-persist": "^5.9.1",
+    "redux-thunk": "^2.2.0"
   },
   "devDependencies": {
-    "@babel/core": "~7.9.0",
-    "@typescript-eslint/eslint-plugin": "^3.4.0",
-    "@typescript-eslint/parser": "^3.4.0",
-    "babel-jest": "~25.2.6",
-    "eslint": "^7.3.1",
-    "eslint-config-kensho": "^17.0.2",
-    "eslint-plugin-react": "^7.20.1",
-    "jest": "~25.2.6",
-    "prettier": "^2.0.5",
-    "react-test-renderer": "~16.9.0",
-    "typescript": "^3.9.5"
-  },
-  "jest": {
-    "preset": "react-native"
-  },
-  "private": true
+    "eslint": "^4.19.1",
+    "eslint-config-kensho": "^4.0.1",
+    "eslint-plugin-react": "^7.7.0",
+    "prettier": "^1.12.0"
+  }
 }
 
 ```
-[:top: Top](#top)
-### after/authServer/...
-
-#### after/authServer/index.js
-``` jsx
-const express = require('express')
-const bodyParser = require('body-parser')
-
-const PORT = process.env.PORT || 8000
-
-// usernames are keys and passwords are values
-const users = {
-  username: 'password',
-}
-
-const app = express()
-app.use(bodyParser.json())
-
-app.post('*', (req, res) => {
-  const {username, password} = req.body
-
-  if (!username || !password) return res.status(400).send('Missing username or password')
-  // in practice, this is potentially revealing too much information.
-  // an attacker can probe the server to find all of the usernames.
-  if (!users[username]) return res.status(403).send('User does not exist')
-  if (users[username] !== password) return res.status(403).send('Incorrect password')
-  return res.json({token: 'thisIsARealToken'})
-})
-
-// catch 404
-app.use((req, res, next) => {
-  const err = new Error('Not Found')
-  err.status = 404
-  next(err)
-})
-
-app.use((err, req, res, next) => res.status(err.status || 500).send(err.message || 'There was a problem'))
-
-const server = app.listen(PORT)
-console.log(`Listening at http://localhost:${PORT}`)
-
-```
-[:top: Top](#top)
-
-#### after/authServer/package.json 
-Files ./after/authServer/package.json and ./before/authServer/package.json are identical
-
-### after/redux/...
-#### after/redux/actions.js
+[:top: Top](#top) 
+### before/redux/...
+#### before/redux/actions.js
 ``` jsx
 import {login} from '../api'
 
@@ -1823,9 +994,7 @@ export const logInUser = (username, password) => async dispatch => {
 }
 
 ```
-[:top: Top](#top)
-
-#### after/redux/reducer.js
+#### before/redux/reducer.js
 ``` jsx
 import {combineReducers} from 'redux'
 
@@ -1861,9 +1030,7 @@ const reducer = combineReducers({
 export default reducer
 
 ```
-[:top: Top](#top)
-
-#### after/redux/store.js
+#### before/redux/store.js  
 ``` jsx
 import {createStore, applyMiddleware} from 'redux'
 import thunk from 'redux-thunk'
@@ -1906,311 +1073,352 @@ console.log(store.getState())
 */
 
 ```
-[:top: Top](#top)
-### after/screens/...
-#### after/screens/AddContactScreen.js
-Files ./after/screens/AddContactScreen.js and ./before/screens/AddContactScreen.js are identical
+[:top: Top](#top) 
+[before/...](#before)
+[after/...](#after)
 
-#### after/screens/ContactListScreen.js
-Files ./after/screens/ContactListScreen.js and ./before/screens/ContactListScreen.js are identical
+---
+### after/...
+#### after/package.json
+last updated: Jul07,'20. Skipped Integration, and remove `jest-expo'
+``` yaml
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject",
+    "test": "jest --verbose",
+    "test:watch": "jest --watch --verbose"
+  },
+  "dependencies": {
+    "expo": "~38.0.8",
+    "expo-status-bar": "^1.0.2",
+    "prop-types": "^15.7.2",
+    "react": "~16.11.0",
+    "react-dom": "~16.11.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.1.tar.gz",
+    "react-native-vector-icons": "^7.0.0",
+    "react-native-web": "~0.11.7",
+    "react-navigation": "^2.0.0",
+    "react-redux": "^5.0.7",
+    "redux": "^4.0.5",
+    "redux-persist": "^6.0.0",
+    "redux-thunk": "^2.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "jest": "^26.1.0"
+  },
+  "private": true
+}
+```
 
-#### after/screens/LoginScreen.js
+[:top: Top](#top) 
+[before/...](#before)
+[after/...](#after)
+#### after/components/MyButton.js
 ``` jsx
 import React from 'react'
-import {Button, View, StyleSheet, Text, TextInput} from 'react-native'
-import {connect} from 'react-redux'
+import {Button} from 'react-native'
 import PropTypes from 'prop-types'
 
-import {logInUser} from '../redux/actions'
+const MyButton = props => <Button title="test" onPress={() => {}} color={props.color || 'green'} />
 
-class LoginScreen extends React.Component {
-  static propTypes = {
-    err: PropTypes.string,
-    token: PropTypes.string,
-    logInUser: PropTypes.func,
-  }
-
-  state = {
-    username: '',
-    password: '',
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.token) {
-      this.props.navigation.navigate('Main')
-    }
-  }
-
-  _login = async () => {
-    this.props.logInUser(this.state.username, this.state.password)
-  }
-
-  handleUsernameUpdate = username => {
-    this.setState({username})
-  }
-
-  handlePasswordUpdate = password => {
-    this.setState({password})
-  }
-
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.error}>{this.props.err}</Text>
-        <TextInput
-          placeholder="username"
-          value={this.state.username}
-          onChangeText={this.handleUsernameUpdate}
-          autoCapitalize="none"
-        />
-        <TextInput
-          placeholder="password"
-          value={this.state.password}
-          onChangeText={this.handlePasswordUpdate}
-          secureTextEntry
-        />
-        <Button title="Press to Log In" onPress={this._login} />
-      </View>
-    )
-  }
+MyButton.propTypes = {
+  color: PropTypes.string,
 }
 
-const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    flex: 1,
-  },
-  text: {
-    textAlign: 'center',
-  },
-  error: {
-    textAlign: 'center',
-    color: 'red',
-  },
-})
-
-const mapStateToProps = state => ({
-  err: state.user.loginErr,
-  token: state.user.token,
-})
-
-export default connect(mapStateToProps, {logInUser})(LoginScreen)
+export default MyButton
 
 ```
-[:top: Top](#top)
-
-### after/simpleRedux/...
-#### after/simpleRedux/reducer.js
-Files ./after/simpleRedux/reducer.js and ./before/simpleRedux/reducer.js are identical
-
-#### after/simpleRedux/store2.js
-Files ./after/simpleRedux/store2.js and ./before/simpleRedux/store2.js are identical
-
-#### after/simpleRedux/store3.js
+[:top: Top](#top) 
+[before/...](#before)
+[after/...](#after)
+#### after/components/MyButton.test.js
 ``` jsx
-const fetch = require('isomorphic-fetch')
+/* eslint-disable */
 
-const login = async (username, password) => {
-  const response = await fetch('http://localhost:8000', {
-    method: 'POST',
-    headers: {'content-type': 'application/json'},
-    body: JSON.stringify({username, password}),
+import React from 'react'
+import {Button} from 'react-native'
+import renderer from 'react-test-renderer'
+
+import MyButton from './MyButton'
+
+const getUnderlyingButton = testInstance => testInstance.root.findByType(Button)
+
+describe('MyButton', () => {
+  it('renders', () => {
+    const button = renderer.create(<MyButton />).toJSON()
+    expect(button).toMatchSnapshot()
   })
 
-  if (response.ok) {
-    return true
-  }
+  it('correctly overrides default color', () => {
+    const color = 'red'
+    const button = getUnderlyingButton(renderer.create(<MyButton color={color} />))
+    expect(button.props.color).toBe(color)
 
-  const errMessage = await response.text()
-  throw new Error(errMessage)
-}
-
-// action types
-const UPDATE_USER = 'UPDATE_USER'
-const UPDATE_CONTACT = 'UPDATE_CONTACT'
-
-class Store {
-  constructor(reducer, initialState) {
-    this.reducer = reducer
-    this.state = initialState
-  }
-
-  getState() {
-    return this.state
-  }
-
-  dispatch(action) {
-    if (typeof action === 'function') {
-      action(this.dispatch.bind(this))
-    } else {
-      console.log('received an action:', action.type)
-      this.state = this.reducer(this.state, action)
-    }
-  }
-}
-
-const DEFAULT_STATE = {user: {}, contacts: []}
-
-const merge = (prev, next) => Object.assign({}, prev, next)
-
-const contactReducer = (state, action) => {
-  if (action.type === UPDATE_CONTACT) return [...state, action.payload]
-  return state
-}
-
-const userReducer = (state, action) => {
-  switch (action.type) {
-    case UPDATE_USER:
-      return merge(state, action.payload)
-    case UPDATE_CONTACT:
-      return merge(state, {prevContact: action.payload})
-    case 'LOG_IN_SUCCESS':
-      return merge(state, {token: 'fakeToken'})
-    default:
-      return state
-  }
-}
-
-const reducer = (state, action) => ({
-  user: userReducer(state.user, action),
-  contacts: contactReducer(state.contacts, action),
+    const color2 = 'blue'
+    const button2 = getUnderlyingButton(renderer.create(<MyButton color={color2} />))
+    expect(button2.props.color).toBe(color2)
+  })
 })
 
+```
+[:top: Top](#top) 
+[before/...](#before)
+[after/...](#after)
+#### after/redux/actions.js
+``` jsx
+import {login} from '../api'
+
+// action types
+export const UPDATE_USER = 'UPDATE_USER'
+export const UPDATE_CONTACT = 'UPDATE_CONTACT'
+export const LOG_IN_SENT = 'LOG_IN_SENT'
+export const LOG_IN_FULFILLED = 'LOG_IN_FULFILLED'
+export const LOG_IN_REJECTED = 'LOG_IN_REJECTED'
+
 // action creators
-const updateUser = update => ({
+export const updateUser = update => ({
   type: UPDATE_USER,
   payload: update,
 })
 
-const addContact = newContact => ({
+export const addContact = newContact => ({
   type: UPDATE_CONTACT,
   payload: newContact,
 })
 
 // async action creator
-const logInUser = (username, password) => dispatch => {
-  dispatch({type: 'LOG_IN_SENT'})
-  login(username, password)
-    .then(() => {
-      dispatch({type: 'LOG_IN_SUCCESS'})
-    })
-    .catch(err => {
-      dispatch({type: 'LOG_IN_REJECTED'})
-    })
+export const logInUser = (username, password, loginFn = login) => async dispatch => {
+  dispatch({type: LOG_IN_SENT})
+  try {
+    const token = await loginFn(username, password)
+    dispatch({type: LOG_IN_FULFILLED, payload: token})
+  } catch (err) {
+    dispatch({type: LOG_IN_REJECTED, payload: err.message})
+  }
 }
 
+```
+[:top: Top](#top) 
+[before/...](#before)
+[after/...](#after)
+#### after/redux/actions.test.js
+``` jsx
+/* global jest, expect, describe, it */
+/* eslint-disable */
 
-const store = new Store(reducer, DEFAULT_STATE)
+import * as actions from './actions'
 
-store.dispatch(logInUser('username', 'password'))
+describe('updateUser returns actions', () => {
+  it('returns an action', () => {
+    expect(actions.updateUser({name: 'test name'})).toMatchSnapshot()
+  })
 
-  /*
-store.dispatch(logInUser())
-store.dispatch(updateUser({foo: 'foo'}))
-store.dispatch(updateUser({bar: 'bar'}))
-store.dispatch(updateUser({foo: 'baz'}))
+  it('handles empty object', () => {
+    expect(actions.updateUser({})).toMatchSnapshot()
+  })
 
-store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
-store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
-store.dispatch(addContact({name: 'david m', number: '5050505050'}))
-*/
+  it('handles empty name', () => {
+    expect(actions.updateUser({name: ''})).toMatchSnapshot()
+  })
+})
 
-console.log(store.getState())
+describe('logInUser returns actions', () => {
+  const errMessage = 'incorrect creds'
+  const fakeToken = 'thisIsATestToken'
+  const mockLogin = (username, password) => {
+    if (username === 'u' && password === 'p') {
+      return fakeToken
+    }
+    throw new Error(errMessage)
+  }
+
+  it('dispatches LOG_IN_SENT', async () => {
+    const mockDispatch = jest.fn()
+    await actions.logInUser('', '')(mockDispatch)
+    // mockDispatch.mock.calls all the args that the mock fn was invoked on
+    expect(mockDispatch.mock.calls[0][0]).toEqual({type: actions.LOG_IN_SENT})
+  })
+
+  it('dispatches LOG_IN_FULFILLED with correct creds', async () => {
+    const mockDispatch = jest.fn()
+    await actions.logInUser('u', 'p', mockLogin)(mockDispatch)
+
+    expect(mockDispatch.mock.calls[1][0]).toEqual({type: actions.LOG_IN_FULFILLED, payload: fakeToken})
+    expect(mockDispatch.mock.calls[1]).toMatchSnapshot()
+  })
+
+  it('dispatches LOG_IN_REJECTED with incorrect creds', async () => {
+    const mockDispatch = jest.fn()
+    await actions.logInUser('', '', mockLogin)(mockDispatch)
+
+    expect(mockDispatch.mock.calls[1][0]).toEqual({type: actions.LOG_IN_REJECTED, payload: errMessage})
+    expect(mockDispatch.mock.calls[1]).toMatchSnapshot()
+  })
+})
 
 ```
-[:top: Top](#top)
+[:top: Top](#top) 
+[before/...](#before)
+[after/...](#after)
+#### after/redux/reducer.js
+``` jsx
+import {combineReducers} from 'redux'
+
+import {UPDATE_USER, UPDATE_CONTACT, LOG_IN_FULFILLED, LOG_IN_REJECTED} from './actions'
+
+const merge = (prev, next) => Object.assign({}, prev, next)
+
+const contactReducer = (state = [], action) => {
+  if (action.type === UPDATE_CONTACT) return [...state, action.payload]
+  return state
+}
+
+const userReducer = (state = {}, action) => {
+  switch (action.type) {
+    case UPDATE_USER:
+      return merge(state, action.payload)
+    case UPDATE_CONTACT:
+      return merge(state, {prevContact: action.payload})
+    case LOG_IN_FULFILLED:
+      return merge(state, {token: action.payload})
+    case LOG_IN_REJECTED:
+      return merge(state, {loginErr: action.payload})
+    default:
+      return state
+  }
+}
+
+const reducer = combineReducers({
+  user: userReducer,
+  contacts: contactReducer,
+})
+
+export default reducer
+
+```
+[:top: Top](#top) 
+[before/...](#before)
+[after/...](#after)
+#### after/redux/reducer.test.js
+``` jsx
+/* eslint-disable */
+
+import reducer from './reducer'
+import * as actions from './actions'
+
+const DEFAULT_STATE = {
+  user: {},
+  contacts: [],
+}
+
+describe('contact reducer', () => {
+  it('successfully adds new user', () => {
+    expect(reducer(DEFAULT_STATE, actions.addContact({
+      name: 'test user',
+      phone: '1234567890',
+    }))).toMatchSnapshot()
+  })
+})
+
+describe('user reducer', () => {
+  it('successfully updates user', () => {
+    expect(reducer(DEFAULT_STATE, actions.updateUser({
+      name: 'test user',
+    }))).toMatchSnapshot()
+  })
+})
+
+```
+
+#### after/redux/store.js
+Files ./after/redux/store.js and ./before/redux/store.js are identical
+
+[:top: Top](#top) 
+[before/...](#before)
+[after/...](#after)
+#### after/testing/sum.js
+``` jsx
+/* eslint-disable no-console */
+
+function sum(x, y) {
+  return x + y
+}
+
+module.exports = sum
+
+```
+#### after/testing/sum.test.js
+``` jsx
+/* global test, expect */
+
+const sum = require('./sum.js')
+
+test('sums 1 and 1', () => {
+  expect(sum(1, 1)).toBe(2)
+})
+
+test('sums 0 and 0', () => {
+  expect(sum(0, 0)).toBe(0)
+})
+
+test('sums 20 and 30', () => {
+  expect(sum(20, 30)).toBe(50)
+})
+
+test('sums 20 and 22', () => {
+  expect(sum(20, 22)).toBe(42)
+})
+
+```
+[:top: Top](#top) 
+[before/...](#before)
+[after/...](#after)
+
 
 ---
 myNote
 ---
-
 #### my expo.io/ snacks: https://expo.io/snacks/@awesome2/. 
-#### Expo Cli, Contacts
+
+#### console.assert
+The most basic test is a function that notifies you when
+behavior is unexpected
+``` jsx
+/* eslint-disable no-console */
+function sum(x, y) {
+  return x + y
+}
+
+module.exports = sum // just for node
+```
+.04b sum.**test.js**, for `require` same way of import in ES6 for node.
+``` jsx
+const sum = require('./sum.js')
+
+console.assert(sum(1,1) === 2, 'Error summing 1 and 1')
+console.assert(sum(0,0) === 0, 'Error summing 0 and 0')
+console.assert(sum(20,30) === 50, 'Error summing 20 and 30')
+
+// ~/cs50m/myLearning/src4/before/testing/ $ node sum.test.js
+// ~/cs50m/myLearning/src4/before/testing/ $ 
+```
+#### vim
+open all files
 ``` console
-        $ cd ..
-        $ expo init
-        $ cd Jun24
-        Jun24 $ npm install react-navigation@2.0.0 --save
-        Jun24 $ npm install prop-types, redux
-        Jun24 $ npm install react-redux@5.0.7 --save
-        Jun24 $ npm install redux-thunk
-       
-        Jun24 $ npm install redux-persist
-        Jun24 $ npm run web
+Ts-MacBook-Pro:redux twng$ vim -o actions.*
 ```
 
-#### authServer
-Terminal - LEFT
-``` console
-            simpleRedux $ ..  
-            ...
-            authServer $ npm install
-            authServer $ npm start
-            authServer $ exit (if error due to background is running other)
-            authServer $ npm start
-            > authserver@1.0.0 start /Users/twng/cs50m/Jun24/authServer
-            > node index
-            Listening at http://localhost:8000
-```
-Terminal - Right
-``` console
-            simpleRedux $ npm install isomorphic-fetch.   
-            ...
-            simpleRedux $ node store3.js
-            received an action: LOG_IN_SENT
-            { user: {}, contacts: [] }
-            received an action: LOG_IN_SUCCESS
-```
+
 [:top: Top](#top)
-
-#### markdown.md
-:joy: markdownGuide https://www.markdownguide.org/basic-syntax/     
-:sunny: https://www.markdownguide.org/extended-syntax/
-
-:+1: emoji short code: https://gist.github.com/rxaviers/7360908
-``` markdown
-        table
-        |---|
-```
-
-#### terminal, compare files
-``` terminal
-    ~/cs50m/src10/ $  diff -qsr ./after/ ./before/
-      -q, --brief                   report only when files differ
-      -s, --report-identical-files  report when two files are the same
-      -r, --recursive               recursively compare any subdirectories found
-```
-
-#### eslint prettier
-```
-            $ npm i -D eslint prettier typescript eslint-config-kensho
-            $ vim .eslintrc.yml
-                extends: kensho
-            $ npx eslint file.js
-            ...
-            $ npx eslint file.js --fix
-```
 
 ---
-#### Git branch 11_AsyncRedux_Tools
-```
-    Ts-MacBook-Pro:cs50m twng$ cat .gitignore
-    .DS_Store
-    /Jun24
-    .gitignore
-    Ts-MacBook-Pro:cs50m twng$ git branch -v
-    Ts-MacBook-Pro:cs50m twng$ git add .    
-    Ts-MacBook-Pro:cs50m twng$ git status
-    Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push -u origin 11_AsyncRedux_Tools
-```
-checked on github, https://github.com/alvinng222/cs50m/tree/11_AsyncRedux_Tools
-
-[:top: Top](#top)
-
---- 
 to master branch: [CS50M](https://github.com/alvinng222/cs50m/tree/master)  
-back to previous: [10_Redux](https://github.com/alvinng222/cs50m/tree/10_Redux)   
-continue to next: [12_Performance](https://github.com/alvinng222/cs50m/tree/12_Performance)
+back to previous: [12_Performance](https://github.com/alvinng222/cs50m/tree/12_Performance).  
 
 ---
