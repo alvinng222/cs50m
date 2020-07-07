@@ -17,33 +17,27 @@ contacts.js
 package-lock.json
 package.json
 assets/icon.png
-assets/splash.png
-
+assets/splash.png   
 before/authServer/...
     README.md
     index.js
     package-lock.json
-    package.json
-
+    package.json   
 before/redux/...
     actions.js
     reducer.js
-    store.js
-
+    store.js   
 before/screens/...
     AddContactScreen.js
     ContactDetailsScreen.js
     ContactListScreen.js
     LoginScreen.js
-    SettingsScreen.js
-
+    SettingsScreen.js   
 before/simpleRedux/...
     reducer.js
     store.js
     store2.js
     store3.js
-
-
 
 [after/...](#after)
 `~/cs50m/src12/after/ $ ls -1`
@@ -59,40 +53,34 @@ contacts.js
 package-lock.json
 package.json
 assets/icon.png
-assets/splash.png
-
+assets/splash.png   
 after/authServer/...
     README.md
     index.js
     package-lock.json
-    package.json
-
+    package.json   
 after/components/...
     MyButton.js
     MyButton.test.js
-    __snapshots__/MyButton.test.js.snap
-
+    __ snapshots__/MyButton.test.js.snap   
 after/redux/...
-    __snapshots__/
+    __ snapshots__/
     actions.js
     actions.test.js
     reducer.js
     reducer.test.js
-    store.js
-  
+    store.js   
 after/screens/...
     AddContactScreen.js
     ContactDetailsScreen.js
     ContactListScreen.js
     LoginScreen.js
-    SettingsScreen.js
-
+    SettingsScreen.js   
 after/simpleRedux/...
     reducer.js
     store.js
     store2.js
-    store3.js
-
+    store3.js   
 after/testing/...
     sum.js
     sum.test.js
@@ -501,7 +489,7 @@ export const poorlyFormatted = usedVar => usedVar
 
 ```
 #### before/app.json
-``` js
+``` yaml
 {
   "expo": {
     "name": "list-examples",
@@ -528,7 +516,7 @@ export const poorlyFormatted = usedVar => usedVar
 #### before/package-lock.json
 large file
 #### before/package.json
-``` js
+``` yaml
 {
   "main": "node_modules/expo/AppEntry.js",
   "private": true,
@@ -621,7 +609,7 @@ console.log(`Listening at http://localhost:${PORT}`)
 #### before/authServer/package-lock.json
 large file
 #### before/authServer/package.json  
-``` js
+``` yaml
 {
   "name": "authserver",
   "version": "1.0.0",
@@ -1227,38 +1215,38 @@ console.log(store.getState())
 ---
 ### after/...
 
-#### AddContactForm.js
+#### after/AddContactForm.js
 Files ./after/AddContactForm.js and ./before/AddContactForm.js are identical
 
-#### App.js
+#### after/App.js
 Files ./after/App.js and ./before/App.js are identical
 
-#### FlatListContacts.js
+#### after/FlatListContacts.js
 Files ./after/FlatListContacts.js and ./before/FlatListContacts.js are identical
 
-#### Row.js
+#### after/Row.js
 Files ./after/Row.js and ./before/Row.js are identical
 
-#### ScrollViewContacts.js
+#### after/ScrollViewContacts.js
 Files ./after/ScrollViewContacts.js and ./before/ScrollViewContacts.js are identical
 
-#### SectionListContacts.js
+#### after/SectionListContacts.js
 Files ./after/SectionListContacts.js and ./before/SectionListContacts.js are identical
 
-#### api.js
+#### after/api.js
 Files ./after/api.js and ./before/api.js are identical
 
-#### app.json
+#### after/app.json
 Files ./after/app.json and ./before/app.json are identical
 
-#### contacts.js
+#### after/contacts.js
 Files ./after/contacts.js and ./before/contacts.js are identical
 
-#### package-lock.json
+#### after/package-lock.json
 large file
 
-#### package.json
-``` jsx
+#### after/package.json
+``` yaml
 {
   "main": "node_modules/expo/AppEntry.js",
   "private": true,
@@ -1763,20 +1751,92 @@ test('sums 20 and 22', () => {
 myNote
 ---
 
-go to top of the page
-```markdown
-[top]: topOfThePage
-[Go to top of the page](#top)
-```
-
----
-``` terminal
+``` console
 ~/cs50m/src10/ $  diff -qsr ./after/ ./before/
   -q, --brief                   report only when files differ
   -s, --report-identical-files  report when two files are the same
   -r, --recursive                 recursively compare any subdirectories found
 ```
-
+#### Expo Cli
+``` console
+        $ expo init Jul06
+        ? Choose a template: expo-template-blank
+        $ cd Jul06
+        Jul06 $ ls -a
+        .			.gitignore		babel.config.js
+        ..			App.js			node_modules
+        .expo-shared		app.json		package-lock.json
+        .git			assets			package.json
+        Jul06 $ cat package.json
+``` 
+package.json before install other components. Dated: Jul 2020
+``` yaml
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject"
+  },
+  "dependencies": {
+    "expo": "~38.0.8",
+    "expo-status-bar": "^1.0.2",
+    "react": "~16.11.0",
+    "react-dom": "~16.11.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.1.tar.gz",
+    "react-native-web": "~0.11.7"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "babel-preset-expo": "~8.1.0"
+  },
+  "private": true
+}
+```
+``` console
+        Jul06 $ npm install react-navigation@2.0.0 --save
+        Jul06 $ npm install react-redux@5.0.7 --save
+        Jul06 $ npm install --save react-native-vector-icons
+        Jul06 $ npm install prop-types redux-thunk redux redux-persist
+        Jul02 $ npm run web
+        Jul06 $ npm i -D jest
+```
+#### package.json
+before jest. Dated: Jul 2020
+``` yaml
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject"
+  },
+  "dependencies": {
+    "expo": "~38.0.8",
+    "expo-status-bar": "^1.0.2",
+    "prop-types": "^15.7.2",
+    "react": "~16.11.0",
+    "react-dom": "~16.11.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.1.tar.gz",
+    "react-native-vector-icons": "^7.0.0",
+    "react-native-web": "~0.11.7",
+    "react-navigation": "^2.0.0",
+    "react-redux": "^5.0.7",
+    "redux": "^4.0.5",
+    "redux-persist": "^6.0.0",
+    "redux-thunk": "^2.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "babel-preset-expo": "~8.1.0"
+  },
+  "private": true
+}
+```
 
 ---
 [:top: Top](#top)

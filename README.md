@@ -28,3 +28,6 @@ CS50's MobileApp Development with React Native
 [:top: Top](#top)
 
 ---
+[**myNote**](mynote.md)
+
+---

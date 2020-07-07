@@ -1,0 +1,15 @@
+/Jul06
+/Jul02
+/Jun24
+.DS_Store
+.gitignore.swp
+/after
+/after/.babelrc
+/after/.watchmanconfig
+/before
+/before/.babelrc
+/before/.watchmanconfig
+/assets
+/node_modules
+package-lock.json
+
