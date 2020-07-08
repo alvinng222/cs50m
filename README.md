@@ -1,4 +1,4 @@
-Lists, User Input
+Lecture 4: Lists, User Input
 ===
 [top]: topOfThePage
 
@@ -13,13 +13,10 @@ slide: http://cdn.cs50.net/mobile/2018/spring/lectures/4/lecture4.pdf
 - [User Input](#user-input)
 
 [**Source Code**](#source-code)
-files: src4.zip
-
-~/cs50m/src4/before/ $ ls -1.      
+files: src4.zip    
 before/...
   [App.js](#beforeappjs)
-  [contacts.js](#beforecontactsjs)
-.    
+  [contacts.js](#beforecontactsjs)    
 after/...
   [AddContactForm.js](#afteraddcontactformjs)
   [App.js](#afterappjs)
@@ -893,6 +890,16 @@ AddContactForm.js	ContactsList.js		babel.config.js
 App.js			Row.js			contacts.js
 ```
 ---
+##### revision
+[after/AddContactForm.js](#afteraddcontactformjs)  
+AddContactForm.js, add styles, removed PropTypes, add placeholder=...
+
+[after/SectionListContacts.js](#aftersectionlistcontactsjs)   
+**ContactsList.js** rename to SectionListContacts.js, add PropTypes
+
+[after/App.js](#afterappjs)  
+ SectionListContacts  was ContactsList
+
 [:top: Top](#top)
 
 ---
@@ -1184,23 +1191,19 @@ SectionListContacts.propTypes = {
 export default SectionListContacts
 ```
 ---
-
-[:top: Top](#top)
 ####  after/contacts.js
 Files ./after/contacts.js and ./before/acontacts.js are identical
 ``` jsx
 ...
 // create an array of length NUM_CONTACTS and add keys
 ```
----
-
 
 [:top: Top](#top)
 
 ---
 myNote
 ---
-### my expo.io/ snacks: https://expo.io/snacks/@awesome2/. 
+#### my expo.io/ snacks: https://expo.io/snacks/@awesome2/. 
 
 If using **Snack**, replace
 ``` jsx
@@ -1332,34 +1335,9 @@ export default Array.from(contacts).map(addKeys)
 
 ---
 
-#### Git branch: 05_ListsUserInput
-```
-    Ts-MacBook-Pro:cs50m twng$ git branch -v
-    Ts-MacBook-Pro:cs50m twng$ git status
-      On branch master
-    Ts-MacBook-Pro:cs50m twng$ git branch 05_ListsUserInput
-    Ts-MacBook-Pro:cs50m twng$ git checkout 05_ListsUserInput
-    Ts-MacBook-Pro:cs50m twng$ git status
-      On branch 05_ListsUserInput
-    Ts-MacBook-Pro:cs50m twng$ cat .gitignore
-    /exercise
-    .DS_Store
-    .gitignore  
-```
-Git commit & push
-```
-    Ts-MacBook-Pro:cs50m twng$ ls
-      <files.js>
-    Ts-MacBook-Pro:cs50m twng$ git add .    
-    Ts-MacBook-Pro:cs50m twng$ git status
-    Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push origin -u 05_ListsUserInput
-checked on github,
-```
-
 #### expo cli
-```
-Ts-MacBook-Pro:cs50m twng$ expo init exercise
+``` console
+$ expo init exercise
 To run your project, navigate to the directory and run one of the following npm commands.
 
 - cd exercise
@@ -1367,21 +1345,10 @@ To run your project, navigate to the directory and run one of the following npm 
 - npm run android
 - npm run ios
 - npm run web
-Ts-MacBook-Pro:cs50m twng$ 
-Ts-MacBook-Pro:cs50m twng$ cd exercise
-Ts-MacBook-Pro:exercise twng$ npm run web
+$ cd exercise
+exercise $ npm run web
 ```
 expo's console on screen of DEVICE 
-
----
-#### vim
-see https://github.com/alvinng222/cs50-mobile/blob/master/vimtutor.md
-
-go to top of the page
-```markdown
-[top]: topOfThePage
-[Go to top of the page](#top)
-```
 
 [:top: Top](#top)
 
