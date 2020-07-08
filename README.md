@@ -37,6 +37,8 @@ Source Code: was files src3.zip
 
 [Writing React Native](#Writing-React-Native)
 
+[Project 1: Pomodoro Timer](https://github.com/alvinng222/cs50m/tree/project1)
+
 [**myNote**](#mynote)
 
 ---
@@ -1043,72 +1045,6 @@ Ts-MacBook-Pro:igw twng$ expo --version
 
 ### my expo.io/ snacks: https://expo.io/snacks/@awesome2/.        
 
-#### Git branch 04_ReactNative
-.gitignore
-```
-    Ts-MacBook-Pro:cs50m twng$ git status
-    On branch master
-    Ts-MacBook-Pro:cs50m twng$ vim .gitignore
-    Ts-MacBook-Pro:cs50m twng$ cat .gitignore
-    .DS_Store
-    /expo-app
-    .gitignore
-```
-```
-    Ts-MacBook-Pro:cs50m twng$ git branch 04_ReactNative
-    Ts-MacBook-Pro:cs50m twng$ git checkout 04_ReactNative
-    Ts-MacBook-Pro:cs50m twng$ git branch -v
-    Ts-MacBook-Pro:cs50m twng$ ls
-      <files.js>
-    Ts-MacBook-Pro:cs50m twng$ git add .    
-    Ts-MacBook-Pro:cs50m twng$ git status
-    Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push -u origin 04_ReactNative
-```
-checked on github, 
-
-[:top: Top](#top)
-
---
-#### vim
-see https://github.com/alvinng222/cs50-mobile/blob/master/vimtutor.md
-```
-Cursor movement
-    gg - go to the first line of the document
-    <num>G - go to the <num>/last line of the document
-    zz - center cursor on screen
-
-    e - jump forwards to the end of a word
-    b - jump backwards to the start of a word
-
-my take for vi
-    i - to insert
-    Esc - to quit insert
-
-    u - to undo
-    use visual mode (v) to delete, than copy,
-    dd - to delete
-    p - to put or copy
-    
-    vs <file> - to vertical split for another file
-    w - to saved
-    ctrl-W ctrl-W - to switch window
-```
-#### vim set-up
-$ vim ~/.vimrc
-```
-set number
-syntax on
-set tabstop=4
-set shiftwidth=2
-set softtabstop=2
-set autoindent
-set expandtab
-```
-ref: https://linuxhint.com/configure_vim_vimrc/
-
----
-:+1: emoji short code: https://gist.github.com/rxaviers/7360908
 
 [:top: Top](#top)
 
