@@ -831,6 +831,28 @@ newPerson.greet.call(person)  // Hi, Global
     Hi, Global
     ~/cs50m/src1/ $ 
 ```
+mynote: to demonstrate `this` affected by global var
+``` jsx
+this.name = 'Global'
+
+const person = { 
+  name: 'Jordan',
+  greet: function() { console.log('Hi, ' + this.name) }
+}
+
+person.greet() // Hi, Jordan
+
+
+const newPerson = { 
+  name: 'Jordan',
+  // arrow notation binds `this` lexically
+  greet: () => console.log('Hi, ' + this.name)
+}
+
+newPerson.greet() // Hi, Global
+```
+
+
 ---
 
 
@@ -880,35 +902,6 @@ With Parameters:
 hello = (val) => "Hello " + val;
 ```
 
-#### Git branch 02_JS_ES6
-```
-    Ts-MacBook-Pro:cs50m twng$ git status
-      On branch master
-    Ts-MacBook-Pro:cs50m twng$ git branch 02_JS_ES6
-    Ts-MacBook-Pro:cs50m twng$ git checkout 02_JS_ES6
-    Ts-MacBook-Pro:cs50m twng$ git branch
-    Ts-MacBook-Pro:cs50m twng$ ls
-      <files.js>
-    Ts-MacBook-Pro:cs50m twng$ git add .    
-    Ts-MacBook-Pro:cs50m twng$ git status
-    Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push origin 02_JS_ES6
-```
-checked on github, 
-
---
-vim, see https://github.com/alvinng222/cs50-mobile/blob/master/vimtutor.md
-
-:joy: markdownGuide https://www.markdownguide.org/basic-syntax/     
-:sunny: https://www.markdownguide.org/extended-syntax/
-
-:+1: emoji short code: https://gist.github.com/rxaviers/7360908
-
-go to top of the page
-```markdown
-[top]: topOfThePage
-[Go to top of the page](#top)
-```
 [:top: Top](#top)
 
 --- 
