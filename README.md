@@ -33,7 +33,7 @@ after/...
     SectionListContacts.js
     contacts.js
 
-**exercises 5**: https://github.com/alvinng222/cs50m/tree/exercises5
+**exercises 5**: https://github.com/alvinng222/cs50m/tree/exercises-5
 
 [**myNote**](#mynote)
 
