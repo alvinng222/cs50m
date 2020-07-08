@@ -519,25 +519,24 @@ const Slide = slide => (
 #### [codesandbox.io](https://new.codesandbox.io/) 
 <https://codesandbox.io/s/blissful-black-uf7ng>
 
-index.js default in lecture
+index.js of SandBox
 ``` jsx
 import React from 'react';
 import { render } from 'react-dom';
-import Hello from '.Hello'; // to be remove, so is <Hello ..
+import Hello from '.Hello'; // to be remove.
 
-const styles = {
+const styles = { 
   fontFamily: 'sans-serif',
   textAlign: 'center',
 };
 
 const App = () => (
   <div style={styles}>
-    <Hello name="CodeSandbox" />
-    <h2>Start editing to see some magic happen {'\u2728'}</h2>
+    <h2>{props.count}</h2>
   </div>
 );
 
-render(<App />, document.getElementById('root'));
+render(<App count={1} />, document.getElementById('root'))
 ```
 
 index.js in codesandbox - 2
@@ -607,6 +606,8 @@ setInterval(
 
 rather than having app be a function that takes props and returns something,   
 actually writing a class for app.
+`React.component`, that base class, goes ahead and attached the props. [43:58]   
+`React.component` automatically take the props, and attached it to that instances of the class.
 ``` jsx
 import React from 'react';
 import { render } from 'react-dom';
@@ -764,36 +765,11 @@ todoApp.js
 [35:50].  
 implement in all React,   
 strategy to create a few functions, doing in a very imperative way:
-#### todoApp0.js
-``` js
-const list = document.getElementById('todo-list')
-const itemCountSpan = document.getElementById('item-count')
-const uncheckedCountSpan = document.getElementById('unchecked-count')
 
-//  <li>
-//    <input type="checkbox" />
-//    <button>delete</button>
-//    <span>text</span>
-//  </li>
+Reference to [project 0: TODO App](https://github.com/alvinng222/cs50m/tree/project0)
 
-function newTodo() {
-  // get text
-  // create li
-  // create input checkbox
-  // create button
-  // create span
-  // update counts
-}
-
-function deleteTodo() {
-  // find the todo to delete
-  // delete
-  // update the counts
-}
-```
-
-to abstrat out the creating of the to do itself
 #### todoApp1.js
+to abstrat out the creating of the to do itself
 ``` js
 const list = document.getElementById('todo-list')
 const itemCountSpan = document.getElementById('item-count')
@@ -1171,32 +1147,18 @@ toggle via using map
         <div>Todo count: {this.state.todos.length}</div>
         <div>Unchecked todo count: {this.state.todos.filter(todo => !todo.checked).length}</div>
 ```
+can add data to try:
+```
+       todos: [
+        {id: 0, text: "ABC", checked: false},
+        {id: 1, text: "DEF", checked: false},
+       ],
+```
+
 ---
 myNote
 ---
 
-### Git branch 03_ReactPropsState
-```
-    Ts-MacBook-Pro:cs50m twng$ git status
-      On branch master
-    Ts-MacBook-Pro:cs50m twng$ git checkout 03_ReactPropsState
-    Ts-MacBook-Pro:cs50m twng$ git branch
-    Ts-MacBook-Pro:cs50m twng$ ls
-      <files.js>
-    Ts-MacBook-Pro:cs50m twng$ git add .    
-    Ts-MacBook-Pro:cs50m twng$ git status
-    Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push origin 03_ReactPropsState
-checked on github,
-```
---
-vim, see https://github.com/alvinng222/cs50-mobile/blob/master/vimtutor.md
-
-go to top of the page
-```markdown
-[top]: topOfThePage
-[Go to top of the page](#top)
-```
 
 [:top: Top](#top)
 
