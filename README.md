@@ -25,6 +25,7 @@ after/...
   [ScrollViewContacts.js](#afterscrollviewcontactsjs)
   [SectionListContacts.js](#aftersectionlistcontactsjs)
   contacts.js
+  [package.json](#afterpackagejson)
 
 [**exercises 4**](https://github.com/alvinng222/cs50m/tree/exercises-4)  
 
@@ -79,7 +80,7 @@ length: NUM_CONTACTS, shorthand for create an empty array of length and number,
 
 see [Array.from()](#arrayfrom)
 
-**App.js** from [before/App.js](#beforeappjs)
+**App.js** from [before/App.js](#beforeappjs), see [myNote](#mynote) for latest update.
 ```jsx
 import * as React from 'react'; // * was diff
 import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -889,7 +890,7 @@ Ts-MacBook-Pro:exercise twng$ ls *.js
 AddContactForm.js	ContactsList.js		babel.config.js
 App.js			Row.js			contacts.js
 ```
----
+
 ##### revision
 [after/AddContactForm.js](#afteraddcontactformjs)  
 AddContactForm.js, add styles, removed PropTypes, add placeholder=...
@@ -1200,19 +1201,58 @@ Files ./after/contacts.js and ./before/acontacts.js are identical
 
 [:top: Top](#top)
 
+#### after/package.json
+Expo-Cli bare template. Last updated: Jul09,'20
+``` yaml
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject"
+  },
+  "dependencies": {
+    "expo": "~38.0.8",
+    "expo-status-bar": "^1.0.2",
+    "react": "~16.11.0",
+    "react-dom": "~16.11.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
+    "react-native-web": "~0.11.7"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "babel-preset-expo": "~8.1.0"
+  },
+  "private": true
+}
+
+```
+
 ---
 myNote
 ---
 #### my expo.io/ snacks: https://expo.io/snacks/@awesome2/. 
 
-If using **Snack**, replace
-``` jsx
-import {Constants} from 'expo'
-```
-with
+**App.js**, & **AddContactForm.js**
+If using **Snack**
 ```jsx
-import Constants from 'expo-constants';
+import Constants from 'expo-constants'; //import {Constants} from 'expo'
 ```
+If use **ExpoCli** @ 38.0.8, for code [after/...](/after)   
+``` jsx
+import Constants from 'expo-constants'; //import {Constants} from 'expo' 
+```
+##### Issues resolved:
+Issues: `VirtualizedList: missing keys for items, make sure to specify a key or id property on each item or provide a custom keyExtractor.,`
+
+Jul09,'20, did a Expo init as **bare** template, see [package.json](#afterpackagejson).      
+Web: ok; 
+Andriod phone: ok;
+iPhone: ok;
+
+
 
 #### arrow notation
 ``` jsx
