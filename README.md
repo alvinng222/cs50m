@@ -32,6 +32,7 @@ after/...
     [Row.js](#afterrowjs)
     SectionListContacts.js
     contacts.js
+    [package.json](#afterpackagejson)
 
 **exercises 5**: https://github.com/alvinng222/cs50m/tree/exercises-5
 
@@ -508,7 +509,7 @@ Row.propTypes = {
 
 export default Row
 ```
-installing prop-types - to illustrate **npm install** 
+installing prop-types - to illustrate **npm install**  > I didnt install, App running fine
 ```
 Ts-MacBook-Pro:exercise twng$ npm install prop-types
 ```
@@ -923,13 +924,41 @@ Files ./after/contacts.js and ./before/acontacts.js are identical
 
 [:top: Top](#top)
 
+#### after/package.json
+ExpoCli. last updated: Jul10,'20
+``` yaml
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject"
+  },
+  "dependencies": {
+    "expo": "~38.0.8",
+    "expo-status-bar": "^1.0.2",
+    "react": "~16.11.0",
+    "react-dom": "~16.11.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
+    "react-native-web": "~0.11.7"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "babel-preset-expo": "~8.1.0"
+  },
+  "private": true
+}
+
+```
+
 ---
 myNote
 ---
 ### Debugging
 ##### Chrome Developer Tool
 myNote: on the web simulator, > source > create BreakPoint to pause, step > check at *Scope Local*.
-
 
 ##### console debug 
 on `Run in Web browser` check from the chrome console.  :+1:
@@ -958,9 +987,22 @@ Chrome: mylog_app:
 ```
 [:top: Top](#top)
 
+### App running
+for code [after/...](/after)
+**App.js**, & **AddContactForm.js**   
+If using **Snack**
+```jsx
+import Constants from 'expo-constants'; //import {Constants} from 'expo'
+```
+If use **ExpoCli** @ 38.0.8 
+``` jsx
+import Constants from 'expo-constants'; //import {Constants} from 'expo' 
+```
+
 ##### issues on:   
-` VirtualizedList: missing keys for items, make sure to specify a key or id property on each item ...`.   
-resolved. but `Warning: Encountered two children with the same key`
+`VirtualizedList: missing keys for items, make sure to specify a key or id property on each item ...`.   
+resolved by:
+[AddContactForm.js](#beforeaddcontactformjs)
 ``` jsx
     handleSubmit = (key) => {
       if (+this.state.phone >= 0 && this.state.phone.length === 10 && this.state.name.length >= 3) {
@@ -974,21 +1016,13 @@ resolved. but `Warning: Encountered two children with the same key`
       this.props.onSubmit({ key: key, ...this.state})
     } // my
 ```
-atleast the device not showing of yellow warning.
+Last workable,Jul09,'20     
+did a Expo init as **bare** template, see [package.json](#afterpackagejson).       
+Web: ok; 
+Andriod phone: ok;
+iPhone: ok;
 
-#### Git branch 06_UserInputDebugging
-```
-    Ts-MacBook-Pro:cs50m twng$ cat .gitignore
-    .DS_Store
-    /expo-app
-    .gitignore
-    Ts-MacBook-Pro:cs50m twng$ git branch -v
-    Ts-MacBook-Pro:cs50m twng$ git add .    
-    Ts-MacBook-Pro:cs50m twng$ git status
-    Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push -u origin 06_UserInputDebugging
-```
-checked on github, https://github.com/alvinng222/cs50m/tree/06_UserInputDebugging
+AddContactForm.js, remarked `//console.log(this.state)` console output during adding contact.
 
 [:top: Top](#top)
 
