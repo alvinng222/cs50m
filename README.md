@@ -45,16 +45,16 @@ file: src6.zip
   contacts.js
 
 [**after/...**](#after)
-  package.json
+  [package.json](#afterpackagejson)
   AddContactForm.js
   App.js
   Row.js
   SectionListContacts.js
   contacts.js   
-  after/examples/...
+  [after/examples/...](#afterexamples)
     0-Switch.js
     1-Stack.js   
-  after/screens/...
+  [after/screens/...](#afterscreens)
     AddContactScreen.js
     ContactDetailsScreen.js
     ContactListScreen.js
@@ -1864,18 +1864,32 @@ export default Array.from({ length: NUM_CONTACTS }, createContact).map(addKeys);
 ---
 ### after/...
 ####  after/package.json
-``` js
+Expo-Cli, last updated: Jul10,'20
+``` yaml
 {
   "main": "node_modules/expo/AppEntry.js",
-  "private": true,
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject"
+  },
   "dependencies": {
-    "expo": "^25.0.0",
-    "prop-types": "^15.6.1",
-    "react": "16.2.0",
-    "react-native": "https://github.com/expo/react-native/archive/sdk-25.0.0.tar.gz",
-    "react-native-vector-icons": "^4.5.0",
-    "react-navigation": "2.0.0-beta.5"
-  }
+    "expo": "~38.0.8",
+    "expo-status-bar": "^1.0.2",
+    "react": "~16.11.0",
+    "react-dom": "~16.11.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
+    "react-native-vector-icons": "^7.0.0",
+    "react-native-web": "~0.11.7",
+    "react-navigation": "^2.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "babel-preset-expo": "~8.1.0"
+  },
+  "private": true
 }
 
 ```
@@ -2060,7 +2074,7 @@ const NUM_CONTACTS = 3;
 ```
 
 [:top: Top](#top)
-
+### after/examples/...
 ####  after/examples/0-Switch.js
 ``` jsx
 import React from 'react';
@@ -2236,7 +2250,7 @@ const MyNavigator = createStackNavigator(
 
 ```
 [:top: Top](#top)
-
+### after/screens/...
 ####  after/screens/AddContactScreen.js
 ``` jsx
 import React from 'react';
@@ -2436,7 +2450,24 @@ const styles = StyleSheet.create({
 ---
 myNote
 ---
+### App running
+Shown list of random contacts, shown `Icons`. 
+Able to `Toggle Contacts`, `Add` contact.    
+Clicked on the list, lead to next page of name and phone, and `Go To Random Contact`.
 
+Code used from [after/...](/after), start from   
+**ExpoCli** init to *bare* template,   
+install of components:
+``` jsx
+$ npm install react-navigation@2.0.0 --save
+$ npm install react-native-vector-icons --save
+$ npm run web
+```
+Last workable,Jul10,'20, see [package.json](#afterpackagejson).       
+Web: ok; 
+iPhone: ok;
+
+---
 concole.log revised on AddContactForm.js
 ``` jsx
   validateForm = () => {
@@ -2598,22 +2629,6 @@ Snack/07_Navigation  package.json
 }
 ```
 ---
-[:top: Top](#top)
-
-#### Git branch 07_Navigation
-```
-    Ts-MacBook-Pro:cs50m twng$ cat .gitignore
-    .DS_Store
-    /expo-app
-    .gitignore
-    Ts-MacBook-Pro:cs50m twng$ git branch -v
-    Ts-MacBook-Pro:cs50m twng$ git add .    
-    Ts-MacBook-Pro:cs50m twng$ git status
-    Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push -u origin 07_Navigation
-```
-checked on github, https://github.com/alvinng222/cs50m/tree/07_Navigation
-
 [:top: Top](#top)
 
 --- 
