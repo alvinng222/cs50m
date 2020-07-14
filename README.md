@@ -40,9 +40,9 @@ before/screens/...
   [package.json](#afterpackagejson) 
 after/...
     [authServer](#afterauthserverreadmemd)/README.md
-    authServer/index.js
+    [authServer/index.js](#afterauthserverindexjs)
     authServer/package-lock.json
-    authServer/package.json   
+    [authServer/package.json](#afterauthserverpackagejson)   
 after/screens/...
     AddContactScreen.js
     ContactDetailsScreen.js
@@ -93,8 +93,9 @@ lets say copy their `https://randomuser.me/api/?results=5000`
 and copy and pass on new tab, will get a bunch of this stuff called JSON.
 Or in other words, JavaScript Object Notation.
 
+``` yaml
 {"results":[{"gender":"female","name":{"title":"Mrs","first":"Isabella","last":"Thomsen"},"location":{"street":{"number":5813,"name":"Søndergårds Haver"},"city":"Assens", ...
- 
+``` 
 And if we scroll down, we'll see 5,000 other randomlygenerated users.
 
 If we only wanted females, we can do gender=female.
@@ -124,7 +125,7 @@ And so fetch is a function that comes in all browsers,
 
 Google Chorme console,
 Going to do fetch that URL, enter, and I see this thing promise pending.
-```
+``` console
 fetch('https://randomuser.me/api/?nat=gb')
   > Promise {<pending>}
 ```
@@ -138,7 +139,7 @@ fetch('https://randomuser.me/api/?nat=gb')
 
 ---
 *.then(response => console.log(response))*
-```
+``` console
 fetch('https://randomuser.me/api/?nat=gb').then(response => console.log(response))
   > Promise {<pending>}
   v Response {type: "cors", url: "https://randomuser.me/api/?nat=gb", redirected: false, status: 200, ok: true, …}
@@ -151,7 +152,7 @@ We see body, bodyUsed false, headers, and in it
 are any headers, ok true, redirected false, status 200, type basic, URL.
 
 #### response.json()
-```
+``` console
 fetch('https://randomuser.me/api/?nat=gb').then(response => response.json()).then(result => console.log(result))
   > Promise {<pending>} 
   > {results: Array(1), info: {…}}
@@ -163,7 +164,7 @@ fetch('https://randomuser.me/api/?nat=gb').then(response => response.json()).the
 ```
 #### fetch more results
 checked with documentation, we can have results = 50. will be use at .01
-```
+``` console
 fetch('https://randomuser.me/api/?results=50&nat=gb').then(response => response.json()).then(result => console.log(result))
   > Promise {<pending>}
   v {results: Array(50), info: {…}}
@@ -186,7 +187,7 @@ another async function or Promise
 
 ---
 at chrome console, which is same as previous fetch(...). shift-Enter for new line during edting.
-``` jsx
+``` console
 > async function fetchUsers() {
     const response = await fetch('https://randomuser.me/api/?results=50&nat=gb')
     const result = await response.json()
@@ -224,11 +225,11 @@ installed source code [/before](/before)
 ##### for Expo Cli
 react-navigation@2.0.0
 ```
-$ npm install react-navigation@2.0.0 --save
+      $ npm install react-navigation@2.0.0 --save
 ```
 ##### for Snack   
 .01 package.json, changed json, 
-``` json
+``` yaml
 {
   "dependencies": {
     "react-native-paper": "3.6.0",
@@ -364,15 +365,15 @@ check on the ./authServer/README.md for this server that provide username: `user
 Use this server as api.
 
 .05 to install this server `authServer`. if we visit this `http://localhost:8000`, we can see it run. [47:53]
-```
-$ authServer $  ls
-README.md	index.js	package.json
-$ authServer $  cat README.md
-$ authServer $ npm install
-$ authServer $ npm start
-$ authServer $ exit (if error due to background is running other)
-$ authServer $ npm start
-Listening at http://localhost:8000
+``` console
+        $ authServer $  ls
+        README.md	index.js	package.json
+        $ authServer $  cat README.md
+        $ authServer $ npm install
+        $ authServer $ npm start
+        $ authServer $ exit (if error due to background is running other)
+        $ authServer $ npm start
+        Listening at http://localhost:8000
 ```
 
 - GET
@@ -389,7 +390,7 @@ eaxmples of passing parameters using ? & & :
   - If POSTing JSON, must have content-type: application/json header and body must be JSON string
 
 to send a post request to our API, in Chrome's console [56:43]
-```
+``` console
 console.clear()
 fetch('http://localhost:8000')
   > VM202:1 GET http://localhost:8000/ 404 (Not Found)
@@ -398,7 +399,7 @@ fetch('http://localhost:8000', {method: 'POST'})
   > VM368:1 POST http://localhost:8000/ 400 (Bad Request)
 ```
 click on the Network > `localhost` > 
-```
+``` console
 v General
     Request URL: http://localhost:8000/
     Request Method: POST
@@ -473,10 +474,13 @@ const styles = StyleSheet.create({
   } // .06 .07
 ```
 
-#### Error shown from my console: 
-Access to fetch at 'http://localhost:8000/' from origin 'http://localhost:19006' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
-
-
+Error shown from my console:
+`... has been blocked by CORS policy: Response ... `   
+Issues resolved: See [myNote]((#mynote))  
+``` console
+> LoginScreen.js:11 POST http://localhost:8000/ 400 (Bad Request)
+> Response {type: "opaque", url: "", redirected: false, status: 0, ok: false, …}
+```
 
 [:top: Top](#top)
 ### HTTP Response Codes
@@ -496,7 +500,8 @@ Click on the LocalHost > Header show status Code: 404.
 `if (response.ok)` is similar to    
 `if (response.status === 400 || response.status === 401 || response.status === 402 || response.status === 403)`  
 
-.08 loginscreen.js [1:22:40] > it dont work! Failed to load resource: net::ERR_FAILED
+.08 loginscreen.js [1:22:40] > it dont work! Failed to load resource: net::ERR_FAILED.   
+Issues resolved: See [myNote]((#mynote))  
 ``` jsx
 import React from 'react'
 import {Button, View, StyleSheet, Text, TextInput} from 'react-native' //.06 .08b
@@ -638,7 +643,8 @@ import {login} from '../api'
   handleUsernameUpdate = username => {
   ...
 ```
-Still unable to login on Web, and device !!
+Still unable to login on Web, and device !!    
+Issues resolved: See [myNote]((#mynote)) 
 
 
 ---
@@ -968,18 +974,33 @@ export const login = async (username, password) => {
 ```
 
 #### after/package.json
-``` json
+Last update on Expo-Cli, Jul14,'20 
+``` yaml
 {
   "main": "node_modules/expo/AppEntry.js",
-  "private": true,
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject"
+  },
   "dependencies": {
-    "expo": "^25.0.0",
-    "prop-types": "^15.6.1",
-    "react": "16.2.0",
-    "react-native": "https://github.com/expo/react-native/archive/sdk-25.0.0.tar.gz",
-    "react-native-vector-icons": "^4.5.0",
-    "react-navigation": "2.0.0-beta.5"
-  }
+    "expo": "~38.0.8",
+    "expo-status-bar": "^1.0.2",
+    "prop-types": "^15.7.2",
+    "react": "~16.11.0",
+    "react-dom": "~16.11.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
+    "react-native-vector-icons": "^7.0.0",
+    "react-native-web": "~0.11.7",
+    "react-navigation": "^2.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "babel-preset-expo": "~8.1.0"
+  },
+  "private": true
 }
 
 ```
@@ -1002,10 +1023,11 @@ You can optionally declare a `PORT` env variable to override the default port:
 - Visit [http://localhost:12345](http://localhost:12345)
 ```
 #### after/authServer/index.js
+Last update on Expo-Cli, Jul14,'20 
 ``` jsx
 const express = require('express')
 const bodyParser = require('body-parser')
-
+const cors = require('cors')
 const PORT = process.env.PORT || 8000
 
 // usernames are keys and passwords are values
@@ -1015,7 +1037,7 @@ const users = {
 
 const app = express()
 app.use(bodyParser.json())
-
+app.use(cors());
 app.post('*', (req, res) => {
   const {username, password} = req.body
 
@@ -1043,6 +1065,7 @@ console.log(`Listening at http://localhost:${PORT}`)
 [:top: Top](#top)
 
 #### after/authServer/package.json
+Last update on Expo-Cli, Jul14,'20 
 ``` json
 {
   "name": "authserver",
@@ -1055,11 +1078,11 @@ console.log(`Listening at http://localhost:${PORT}`)
   "author": "Jordan Hayashi",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.18.2",
-    "express": "^4.16.3"
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1"
   }
 }
-
 ```
 [:top: Top](#top)
 
@@ -1136,17 +1159,61 @@ const styles = StyleSheet.create({
 ---
 myNote
 ---
-### my expo.io/ snacks: https://expo.io/snacks/@awesome2/. 
 
-:joy: https://www.markdownguide.org/basic-syntax/     
-:sunny: https://www.markdownguide.org/extended-syntax/
+### App running
+was Issues: .07 LoginScreen.js [1:05:00]
 
-### on Expo Cli 
-react-navigation@2.0.0
+Code used run on ExpoCli, from [after/...](#after),   
+Based on [after/package.json](#afterpackagejson)
+##### install cors
+``` console
+        $ npm update
+        $ npm install react-navigation@2.0.0 --save
+        $ npm install prop-types
+        $ cd authServer
+        authServer $ npm update
+        authServer $ npm install cors --save
+        authServer $ vim index.js
+        $ npm run web
 ```
-$ npm install react-navigation@2.0.0 --save
-```
+[autherServer/index.js](#afterauthserverindexjs), add `app.use(cors());`
+``` jsx
+const express = require('express')                                              
+const bodyParser = require('body-parser')
+const cors = require('cors');
+const PORT = process.env.PORT || 8000
 
+// usernames are keys and passwords are values
+const users = { 
+  username: 'password',
+}
+
+const app = express()
+app.use(cors());
+app.use(bodyParser.json())
+...
+```
+Last workable,Jul14,'20, see [after/package.json](#afterpackagejson), [after/authServer/package.json](#afterauthserverpackagejson).   
+Web: ok; Andriod & iPhone: `Net request failed`;
+
+ref on server:   
+https://www.npmjs.com/package/cors    
+https://www.npmjs.com/package/body-parser   
+http://expressjs.com/en/resources/middleware/body-parser.html   
+https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#Who_should_read_this_article
+
+[:top: Top](#top)
+
+after/screens/LoginScreen.js, To temporary without password
+``` jsx
+  _login = () => {
+    this.props.navigation.navigate('Main')
+  }
+```
+ExpoCli web: ok;   
+Andriod & iPhone: failed
+
+---
 ### console
 > console.clear()
 
@@ -1162,23 +1229,6 @@ to change word to next in vim, select the sentence first, then
 ~/cs50m/src7/ $ diff -qs ./after/Row.js ./before/Row.js                                                 
 Files ./after/Row.js and ./before/Row.js are identical
 ```
-[:top: Top](#top)
-
----
-#### Git branch 08_Data
-```
-    Ts-MacBook-Pro:cs50m twng$ cat .gitignore
-    .DS_Store
-    /Jun18
-    .gitignore
-    Ts-MacBook-Pro:cs50m twng$ git branch -v
-    Ts-MacBook-Pro:cs50m twng$ git add .    
-    Ts-MacBook-Pro:cs50m twng$ git status
-    Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push -u origin 08_Data
-```
-checked on github, https://github.com/alvinng222/cs50m/tree/08_Data
-
 [:top: Top](#top)
 
 --- 
