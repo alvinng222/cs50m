@@ -2514,7 +2514,7 @@ const styles = StyleSheet.create({
 [:top: Top](#top)
 
 #### package.json
-from ExpoCli
+ExpoCli, last updated Jul 16,'20
 ``` jsx
 {
   "main": "node_modules/expo/AppEntry.js",
@@ -2527,25 +2527,25 @@ from ExpoCli
   },
   "dependencies": {
     "expo": "~37.0.3",
+    "expo-av": "~8.1.0",
+    "expo-camera": "~8.2.0",
+    "expo-contacts": "~8.1.0",
+    "expo-font": "~8.1.0",
+    "expo-image-manipulator": "~8.1.0",
+    "expo-image-picker": "~8.1.0",
+    "expo-location": "~8.1.0",
+    "expo-permissions": "~8.1.0",
+    "expo-sensors": "~8.1.0",
     "react": "~16.9.0",
     "react-dom": "~16.9.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-37.0.1.tar.gz",
-    "react-native-web": "~0.11.7",
-    "react-navigation": "^2.0.0",
     "react-native-maps": "0.26.1",
-    "expo-permissions": "~8.1.0",
-    "expo-location": "~8.1.0",
-    "expo-sensors": "~8.1.0",
-    "expo-contacts": "~8.1.0",
-    "expo-av": "~8.1.0",
-    "expo-image-manipulator": "~8.1.0",
-    "expo-font": "~8.1.0",
-    "expo-image-picker": "~8.1.0",
-    "expo-camera": "~8.2.0"
+    "react-native-web": "~0.11.7",
+    "react-navigation": "^2.0.0"
   },
   "devDependencies": {
-    "babel-preset-expo": "~8.1.0",
-    "@babel/core": "^7.8.6"
+    "@babel/core": "^7.10.5",
+    "babel-preset-expo": "~8.1.0"
   },
   "private": true
 }
@@ -2556,6 +2556,50 @@ from ExpoCli
 ---
 myNote
 ---
+### App running
+Shown few Apps on Map, Access Contacts, Compass, Device Motion, Multimedia, & Camera.   
+Last workable, Jul16,'20.   
+Web: Not for browser. iPhone: ok.    
+
+Code used from [Source Code](#my-source-code).    
+update to [package.json](packagejson) .    
+ExpoCli
+``` console
+     $ npm update
+     $ npm start
+```
+
+##### 09_ExpoMap
+Andriod: not accurate, but work well.   
+iPhone: work well, but not accurate. and yellow warning issue
+``` console
+Warning: Failed prop type: The prop `coordinate` is marked as required in `MapMarker`, but its value is `undefined`.
+```
+##### 09_ExpoContacts
+Andriod: working, sometime no result.   
+iPhone: no result.    
+ExpoCli terminal
+``` console
+1602
+undefined
+1434
+undefined
+```
+##### 09_ExpoCompass
+Andriod: not working.
+iPhone: work v well
+##### 09_ExpoDeviceMotion
+Andriod: ballon not swing. 
+iPhone: work v well. air ballon swinging
+##### ./09_ExpoMultimedia
+Andriod: work v well.
+iPhone: work v well. cats sound very noisy
+##### ./09_ExpoPhotoEdit
+Andriod: work well.
+iPhone: work v well. live camera on self, and Camera Roll
+
+---
+[:top: Top](#top)
 ### Expo components installation
 ```
 ctrl-C at the Expo Cli terminal to exit 
@@ -2599,21 +2643,6 @@ GitHub Flavored Markdown Spec https://github.github.com/gfm/
 ```
 [:top: Top](#top)
 
-#### Git branch 09_ExpoComponents
-```
-    Ts-MacBook-Pro:cs50m twng$ cat .gitignore
-    .DS_Store
-    /Jun18
-    /before
-    /after
-    .gitignore
-    Ts-MacBook-Pro:cs50m twng$ git branch -v
-    Ts-MacBook-Pro:cs50m twng$ git add .    
-    Ts-MacBook-Pro:cs50m twng$ git status
-    Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push -u origin 09_ExpoComponents
-```
-checked on github, https://github.com/alvinng222/cs50m/tree/09_ExpoComponents
 
 --- 
 to master branch: [CS50M](https://github.com/alvinng222/cs50m/tree/master)   
@@ -2621,4 +2650,3 @@ back to previous: [08_Data](https://github.com/alvinng222/cs50m/tree/08_Data)
 continue to next: [10_Redux](https://github.com/alvinng222/cs50m/tree/10_Redux).
 
 ---
-[:top: Top](#top)
