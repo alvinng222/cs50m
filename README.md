@@ -1345,7 +1345,7 @@ export default class App extends React.Component {
 [:top: Top](#top)
 
 #### after/package.json
-last updated Jun25,'20, Snack
+Snack, last updated Jun25,'20
 ``` jsx
 {
   "dependencies": {
@@ -1358,6 +1358,40 @@ last updated Jun25,'20, Snack
   }
 }
 ```
+
+ExpoCli, last updated Jul 17, '20
+``` yaml
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject"
+  },
+  "dependencies": {
+    "expo": "~38.0.8",
+    "expo-status-bar": "^1.0.2",
+    "prop-types": "^15.7.2",
+    "react": "~16.11.0",
+    "react-dom": "~16.11.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
+    "react-native-vector-icons": "^7.0.0",
+    "react-native-web": "~0.11.7",
+    "react-navigation": "^2.0.0",
+    "react-redux": "^5.0.7",
+    "redux": "^4.0.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "babel-preset-expo": "~8.1.0"
+  },
+  "private": true
+}
+
+```
+
 [:top: Top](#top)
     
 after/...
@@ -1726,68 +1760,29 @@ const styles = StyleSheet.create({
 ---
 myNote
 ---
+### App running
+Code used from [after/...](/after), start from   
+**ExpoCli**, base on 08_Data/package.json,   
+install of component:
+
+    $ npm install redux react-redux@5.0.7
+Last workable,Jul17,'20, see [package.json](#afterpackagejson).       
+ExpoCli web: start ok; devices: not working 
+
+Issue: bugs after the `go to random contact`. 
+
+---
 #### my expo.io/ snacks: https://expo.io/snacks/@awesome2/. 
 
-:joy: https://www.markdownguide.org/basic-syntax/     
-:sunny: https://www.markdownguide.org/extended-syntax/
-
-### console
-> console.clear()
-
-##### console.log
-``` js
-        console.log(JSON.stringify(o))  // ***** 
-```
-
-### vim
-https://vimhelp.org/pattern.txt.html#%2F%5C%25V.    
-An example of how to search for matches with a pattern and change the match
-with another word: 
-```
-        /foo<CR>        find "foo"
-        c//e<CR>        change until end of match
-        bar<Esc>        type replacement
-        //<CR>          go to start of next match
-        c//e<CR>        change until end of match
-        beep<Esc>       type another replacement
-                        etc.
-```
-
-to replace number with phone: `:'<,'>s/number/phone`.   
-Note that the "'<,'>" will appear automatically when you press ":" in Visual
-mode.
-
-Vim CheatSheet https://github.com/hackjutsu/vim-cheatsheet
-
-### Terminal
-Use node, compare difference files, and Git diff
-``` console
-        simpleRedux twng$ node reducer.js
-        { foo: 'baz', bar: 'bar' }
-        
-        $ diff --help
-        $ diff -qs ./after/Row.js ./before/Row.js
-        Files ./after/Row.js and ./before/Row.js are identical
-
-        $ git diff App.js
-```
-Mac Terminal Cheat Sheet https://gist.github.com/poopsplat/7195274
-
-Mac OS X :: VI Keyboard Shortcut Cheat Sheet https://trevorsullivan.net/wp-content/uploads/2015/11/Trevor-Sullivan-VI-Shortcuts.pdf
-
-Mac keyboard shortcuts https://support.apple.com/en-us/HT201236  
-Option–Left Arrow: Move the insertion point to the beginning of the previous word.   
-Option–Right Arrow: Move the insertion point to the end of the next word.
-
-
+---
 #### debug on node
 .14 store.js on CS50 IDE, working
 ``` jsx
 //import {createStore} from 'redux' // not support on node //.14
 const {createStore} = require('redux') //this for node //.14 
 ```
-
-#### Expo Cli, Contacts
+---
+#### installing flash Expo Cli, Contacts
 ``` console
         $ cd ..
         $ expo init
@@ -1814,20 +1809,6 @@ To run lecture *Contacts* add from ./before:
         __tests__		ios
         android			metro.config.js
 ```
-
-#### Git branch 10_Redux
-```
-    Ts-MacBook-Pro:cs50m twng$ cat .gitignore
-    .DS_Store
-    /Jun24
-    .gitignore
-    Ts-MacBook-Pro:cs50m twng$ git branch -v
-    Ts-MacBook-Pro:cs50m twng$ git add .    
-    Ts-MacBook-Pro:cs50m twng$ git status
-    Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push -u origin 10_Redux
-```
-checked on github, https://github.com/alvinng222/cs50m/tree/10_Redux
 
 [:top: Top](#top)
 
