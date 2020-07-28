@@ -30,7 +30,7 @@ files: src10.zip
   [package.json](#beforepackagejson)   
 before/authServer/...
       README.md
-      [index.js](#beforeauthserverindexjs)
+      index.js
       package.json  
 [before/redux/...](#beforeredux)
       [actions.js](#beforereduxactionsjs)
@@ -58,7 +58,7 @@ before/authServer/...
 after/authServer/...
       README.md
       [index.js](#afterauthserverindexjs)
-      package.json  
+      [package.json](#afterauthserverpackagejson)  
 [after/redux/...](#afterredux)
       [actions.js](#afterreduxactionsjs)
       [reducer.js](#afterreduxreducerjs)
@@ -381,7 +381,7 @@ copied files from **src10/before/*.* to Snack**, update JSON
 from 10_Redux
 
 .11 package.json
-``` jsx
+``` yaml
 {
   "dependencies": {
     "redux": "4.0.5",
@@ -458,7 +458,8 @@ const store = createStore(reducer, applyMiddleware(thunk)); //.13
 ```
 [45:12] re-add login screen to application, that removed last time.
 
-.14 App.js, Login bug: **Failed to fetch**  :disappointed: . :tired_face: . :exclamation: 
+Install authServer, see [myNote](#mynote)   
+.14 App.js, Login successfully. :+1:
 ``` jsx
 ...
   render() {
@@ -680,7 +681,7 @@ export default connect(mapStateToProps, {logInUser})(LoginScreen)//.15d [53:45] 
 Lecture: if wrong username to alert 'Missing username or password'
 and update the error message correctly. And if we refresh with the correct username and password combo, nothing actually happens.
 
-.22c LoginScreen.js > Failed to fetch. > fail to go to main screen.
+.22c LoginScreen.js, always show *Missing username or password*.
 ``` jsx
 ... // .22c
   render() {
@@ -693,7 +694,7 @@ add some sort of listener
 that says, hey, if we get a new token, then maybe we
 **should navigate to our main screen.**
 
-.23 loginScreen.js > Failed to fetch
+.23 loginScreen.js, able to login :+1:
 ``` jsx
   componentWillReceiveProps(nextProps) {
     if (nextProps.token) {
@@ -749,7 +750,7 @@ export const store = createStore(persistedReducer, applyMiddleware(thunk)); //.1
 export const persistor = persistStore(store) //.24
 
 ```
-.25 App.js > no error
+.25 App.js, added PersistGate
 ``` jsx
 import { PersistGate } from 'redux-persist/integration/react' //.25
 ...
@@ -765,7 +766,9 @@ import {store, persistor} from './redux/store' //.25
     )
   } //.14 was <MainTabs /> which work without Login //.25
 ```
-:disappointed: .> still unable to login.   
+:ok_hand: , sometime unable to login.   
+:+1: , **add in contact, able to remember, even reload browser**
+
 [:top: Top](#top)
 
 ---
@@ -1161,8 +1164,9 @@ export const login = async (username, password) => {
 ```
 
 #### before/package.json
-updated from [10_Redux](https://github.com/alvinng222/cs50m/tree/10_Redux#afterpackagejson)
-``` js
+updated from https://github.com/alvinng222/cs50m/blob/10_Redux/README.md#afterpackagejson   
+Snack, last updated Jun25,'20
+``` yaml
 {
   "dependencies": {
     "react-navigation": "2.0.0",
@@ -1173,71 +1177,47 @@ updated from [10_Redux](https://github.com/alvinng222/cs50m/tree/10_Redux#afterp
     "react-redux": "5.0.7"
   }
 }
-```  
+```
+ExpoCli, last updated Jul 17, '20
+``` yaml
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject"
+  },
+  "dependencies": {
+    "expo": "~38.0.8",
+    "expo-status-bar": "^1.0.2",
+    "prop-types": "^15.7.2",
+    "react": "~16.11.0",
+    "react-dom": "~16.11.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
+    "react-native-vector-icons": "^7.0.0",
+    "react-native-web": "~0.11.7",
+    "react-navigation": "^2.0.0",
+    "react-redux": "^5.0.7",
+    "redux": "^4.0.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "babel-preset-expo": "~8.1.0"
+  },
+  "private": true
+} 
+```
 [:top: Top](#top)
 
 ### before/authServer/...
 #### before/authServer/index.js
-Last update Jun 30, 2020.  .19 was before lecture.
-``` jsx
-const express = require('express')
-const bodyParser = require('body-parser')
-
-const PORT = process.env.PORT || 8000
-
-// usernames are keys and passwords are values
-const users = {
-  username: 'password',
-}
-
-const app = express()
-app.use(bodyParser.json())
-
-app.post('*', (req, res) => {
-  const {username, password} = req.body
-
-  if (!username || !password) return res.status(400).send('Missing username or password')
-  // in practice, this is potentially revealing too much information.
-  // an attacker can probe the server to find all of the usernames.
-  if (!users[username]) return res.status(403).send('User does not exist')
-  if (users[username] !== password) return res.status(403).send('Incorrect password')
-  return res.status(200).send() // .19
-  // return res.json({token: 'thisIsAToken'})
-})
-
-// catch 404
-app.use((req, res, next) => {
-  const err = new Error('Not Found')
-  err.status = 404
-  next(err)
-})
-
-app.use((err, req, res, next) => res.status(err.status || 500).send(err.message || 'There was a problem'))
-
-const server = app.listen(PORT)
-console.log(`Listening at http://localhost:${PORT}`)
-
-```
+use after/authServer/index.js
 
 #### before/authServer/package.json  
-``` js
-{
-  "name": "authserver",
-  "version": "1.0.0",
-  "description": "Simple auth server for a demo",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index"
-  },
-  "author": "Jordan Hayashi",
-  "license": "ISC",
-  "dependencies": {
-    "body-parser": "^1.18.2",
-    "express": "^4.16.3"
-  }
-}
+use after/authServer/package.json
 
-```
 [:top: Top](#top)
 
 ### before/redux/...
@@ -1689,8 +1669,42 @@ export const poorlyFormatted = usedVar => usedVar
 [:top: Top](#top)
 
 #### after/package.json
+Before ESLint of ExpoCli, latest update on Jul 23, '20
+``` yaml
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject"
+  },
+  "dependencies": {
+    "expo": "~38.0.8",
+    "expo-status-bar": "^1.0.2",
+    "prop-types": "^15.7.2",
+    "react": "~16.11.0",
+    "react-dom": "~16.11.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
+    "react-native-vector-icons": "^7.0.0",
+    "react-native-web": "~0.11.7",
+    "react-navigation": "^2.0.0",
+    "react-redux": "^5.0.7",
+    "redux": "^4.0.5",
+    "redux-persist": "^6.0.0",
+    "redux-thunk": "^2.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "babel-preset-expo": "~8.1.0"
+  },
+  "private": true
+}
+```
+
 Expo Cli, last updated Jun 30, 2020
-``` jsx
+``` yaml
 {
   "main": "index.js",
   "scripts": {
@@ -1741,14 +1755,18 @@ Expo Cli, last updated Jun 30, 2020
 }
 
 ```
+
+
 [:top: Top](#top)
 ### after/authServer/...
 
 #### after/authServer/index.js
+from https://github.com/alvinng222/cs50m/tree/08_Data#afterauthserverindexjs   
+Last update on Expo-Cli, Jul14,'20
 ``` jsx
 const express = require('express')
 const bodyParser = require('body-parser')
-
+const cors = require('cors')
 const PORT = process.env.PORT || 8000
 
 // usernames are keys and passwords are values
@@ -1758,7 +1776,7 @@ const users = {
 
 const app = express()
 app.use(bodyParser.json())
-
+app.use(cors());
 app.post('*', (req, res) => {
   const {username, password} = req.body
 
@@ -1767,7 +1785,7 @@ app.post('*', (req, res) => {
   // an attacker can probe the server to find all of the usernames.
   if (!users[username]) return res.status(403).send('User does not exist')
   if (users[username] !== password) return res.status(403).send('Incorrect password')
-  return res.json({token: 'thisIsARealToken'})
+  return res.status(200).send()
 })
 
 // catch 404
@@ -1781,12 +1799,30 @@ app.use((err, req, res, next) => res.status(err.status || 500).send(err.message 
 
 const server = app.listen(PORT)
 console.log(`Listening at http://localhost:${PORT}`)
-
 ```
 [:top: Top](#top)
 
 #### after/authServer/package.json 
-Files ./after/authServer/package.json and ./before/authServer/package.json are identical
+from https://github.com/alvinng222/cs50m/tree/08_Data#afterauthserverpackagejson    
+Last update on Expo-Cli, Jul14,'20
+``` yaml
+{
+  "name": "authserver",
+  "version": "1.0.0",
+  "description": "Simple auth server for a demo",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index"
+  },
+  "author": "Jordan Hayashi",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1"
+  }
+}
+```
 
 ### after/redux/...
 #### after/redux/actions.js
@@ -2123,9 +2159,39 @@ console.log(store.getState())
 ---
 myNote
 ---
+### App running
+Login ok, and added contacts stay even after reload.
+
+Last workable,Jul23,'20,   
+installed from [after/package.json](#afterpackagejson), 
+before EsLint of Expo-Cli.   
+Authanticate Server  use 
+[after/authServer/index.js](#afterauthserverindexjs) 
+& 
+[after/authServer/package.json](#afterauthserverpackagejson)    
+Web: ok;   
+iphone & android: unable to try, due to error in phone apps
 
 #### my expo.io/ snacks: https://expo.io/snacks/@awesome2/. 
-#### Expo Cli, Contacts
+[:top: Top](#top)
+
+#### Top-down practice  
+use [before/package.json](#beforepackagejson), 
+from https://github.com/alvinng222/cs50m/blob/10_Redux/README.md#afterpackagejson
+
+     $ npm install
+     $ npm install redux-thunk redux-persist
+     $ npm run web
+
+To run Authanticate Server  use 
+[after/authServer/index.js](#afterauthserverindexjs) 
+& 
+[after/authServer/package.json](#afterauthserverpackagejson)
+
+     authServer $ npm install
+     authServer $ npm start
+
+running Expo Cli
 ``` console
         $ cd ..
         $ expo init
@@ -2161,25 +2227,6 @@ Terminal - Right
             { user: {}, contacts: [] }
             received an action: LOG_IN_SUCCESS
 ```
-[:top: Top](#top)
-
-#### markdown.md
-:joy: markdownGuide https://www.markdownguide.org/basic-syntax/     
-:sunny: https://www.markdownguide.org/extended-syntax/
-
-:+1: emoji short code: https://gist.github.com/rxaviers/7360908
-``` markdown
-        table
-        |---|
-```
-
-#### terminal, compare files
-``` terminal
-    ~/cs50m/src10/ $  diff -qsr ./after/ ./before/
-      -q, --brief                   report only when files differ
-      -s, --report-identical-files  report when two files are the same
-      -r, --recursive               recursively compare any subdirectories found
-```
 
 #### eslint prettier
 ```
@@ -2190,21 +2237,6 @@ Terminal - Right
             ...
             $ npx eslint file.js --fix
 ```
-
----
-#### Git branch 11_AsyncRedux_Tools
-```
-    Ts-MacBook-Pro:cs50m twng$ cat .gitignore
-    .DS_Store
-    /Jun24
-    .gitignore
-    Ts-MacBook-Pro:cs50m twng$ git branch -v
-    Ts-MacBook-Pro:cs50m twng$ git add .    
-    Ts-MacBook-Pro:cs50m twng$ git status
-    Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push -u origin 11_AsyncRedux_Tools
-```
-checked on github, https://github.com/alvinng222/cs50m/tree/11_AsyncRedux_Tools
 
 [:top: Top](#top)
 
