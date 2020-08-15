@@ -1262,8 +1262,37 @@ package.json for Snack, last updated, Jul 03, 2020
   }
 }
 ```
+package.json Expo-Cli init from *bare* template, Aug 15, 2020
+``` yml
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject"
+  },
+  "dependencies": {
+    "expo": "~38.0.8",
+    "expo-status-bar": "^1.0.2",
+    "prop-types": "^15.7.2",
+    "react": "~16.11.0",
+    "react-dom": "~16.11.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
+    "react-native-web": "~0.11.7"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "babel-preset-expo": "~8.1.0"
+  },
+  "private": true
+}
+
+```
 
 #### before/pomodoro-timer/components/Countdown.js
+**revised** Aug 15, 2020. `style: PropTypes.object,` was `style: PropTypes.number,`
 ``` jsx
 import React from 'react'
 import {StyleSheet, Text} from 'react-native'
@@ -1285,7 +1314,7 @@ Countdown.propTypes = {
   onToggleTimer: PropTypes.func.isRequired,
   // in ms
   timeRemaining: PropTypes.number.isRequired,
-  style: PropTypes.number,
+  style: PropTypes.object,
 }
 
 export default Countdown
@@ -2033,19 +2062,32 @@ myNote
 ---
 [:top: Top](#top)
  
-#### Git branch 12_Performance
+#### revised before/pomodoro-timer
+work on andriod device
 ``` console
-    Ts-MacBook-Pro:cs50m twng$ cat .gitignore
-        /Jun24                                                                                     
-        .DS_Store
-        .gitignore
-    Ts-MacBook-Pro:cs50m twng$ git branch -v
-    Ts-MacBook-Pro:cs50m twng$ git add .    
-    Ts-MacBook-Pro:cs50m twng$ git status
-    Ts-MacBook-Pro:cs50m twng$ git commit
-    Ts-MacBook-Pro:cs50m twng$ git push -u origin 12_Performance
+        $ expo init
+        ? Choose a template: expo-template-blank
+        ? What would you like to name your app? my-app
+
+        $ cd my-app
+        my-app $ ls
+        App.js			assets			node_modules		package.json
+        app.json		babel.config.js		package-lock.json
+
+        my-app $ cd ..
+        $ npm install -g expo-cli
+        my-app $ cd ..
+        $ expo --version
+        3.24.0
+        $ cd my-app
+        my-app $ npm install prop-types
+        + prop-types@15.7.2
+        my-app $ expo start
+        
+        Run on Andriod device
 ```
-checked on github, https://github.com/alvinng222/cs50m/tree/12_Performance
+see [before/pomodoro-timer/package.json](#beforepomodoro-timerpackagejson)   
+and use revised [before/pomodoro-timer/components/Countdown.js](#beforepomodoro-timercomponentscountdownjs) 
 
 [:top: Top](#top)
 
