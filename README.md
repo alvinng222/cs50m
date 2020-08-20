@@ -1413,7 +1413,111 @@ open all files
 ``` console
 Ts-MacBook-Pro:redux twng$ vim -o actions.*
 ```
+### publishing https://expo.io/@awesome2/pomodoro-timer
+use: https://github.com/alvinng222/cs50m/tree/12_Performance#beforepomodoro-timer   
+ref: https://docs.expo.io/workflow/publishing/.   
+use `rm -rf .expo`, and `expo publish`
+``` console
+        Ts-MacBook-Pro:my-app twng$ rm -rf .expo
+        Ts-MacBook-Pro:my-app twng$ expo publish
+        Publishing to channel 'default'...
+        Starting Metro Bundler.
+        Building iOS bundle
+        Building Android bundle
+        Building source maps
+        Finished building JavaScript bundle in 8725ms.
+        Building asset maps
+        Finished building JavaScript bundle in 5022ms.
+        Finished building JavaScript bundle in 0ms.
+        Finished building JavaScript bundle in 0ms.
+        Finished building JavaScript bundle in 343ms.
+        Finished building JavaScript bundle in 1063ms.
+        Analyzing assets
+        Uploading assets
+        Uploading /assets/icon.png
+        Processing asset bundle patterns:
+        - /Users/twng/cs50m/my-app/**/*
+        Uploading JavaScript bundles
+        Publish complete
 
+        The manifest URL is: https://exp.host/@awesome2/pomodoro-timer (​https://exp.host/@awesome2/pomodoro-timer/index.exp?sdkVersion=38.0.0​). Learn more. (​https://expo.fyi/manifest-url​)
+        The project page is: https://expo.io/@awesome2/pomodoro-timer (​https://expo.io/@awesome2/pomodoro-timer​). Learn more. (​https://expo.fyi/project-page​)
+        Ts-MacBook-Pro:my-app twng$ 
+```
+#### before/pomodoro-timer/app.json
+last updated Aug 17, 2020.   
+ref: https://github.com/alvinng222/cs50m/tree/12_Performance#beforepomodoro-timerappjson
+``` yaml
+{
+  "expo": {
+    "name": "pomodoro-timer",
+    "description": "Timer that tracks time working and break time.",
+    "slug": "pomodoro-timer",
+    "privacy": "public",
+    "sdkVersion": "38.0.0",
+    "platforms": ["android"],
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "bundleIdentifier": "com.atronee.pomodoro",
+      "supportsTablet": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "android": {
+      "package": "com.atronee.pomodoro"
+    }
+  }
+}
+```
+#### before/pomodoro-timer/package.json
+last updated Aug 17, 2020.   
+``` yaml
+{
+  "name": "myApp-pomodoro-timer",
+  "version": "1.0.0",
+  "main": "./node_modules/expo/AppEntry.js",
+  "author": "T W <twng@atrone.com>",
+  "scripts": {
+    "prebuild": "rm -rf lib || true",
+    "build": "mkdir lib && babel --copy-files --out-dir lib/ --ignore node_modules,package.json,app.json,package-lock.json .",
+    "prepublish": "npm run build",
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject"
+  },
+  "dependencies": {
+    "expo": "~38.0.8",
+    "expo-status-bar": "^1.0.2",
+    "prop-types": "^15.7.2",
+    "react": "~16.11.0",
+    "react-dom": "~16.11.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
+    "react-native-web": "~0.11.7"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "babel-preset-expo": "~8.1.0"
+  },
+  "private": true
+}
+
+```
 
 [:top: Top](#top)
 
