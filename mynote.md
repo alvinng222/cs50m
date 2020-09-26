@@ -2,8 +2,7 @@ myNote
 ---
 CS50's MobileApp Development with React Native
 ===
-[top]: topOfThePage
-
+* Installed App on mobile phone
 * [to be revise at](#to-be-revise-at)
 * [Good to remember](#good-to-remember)
 * [**myQuickRef**](#myquickref)
@@ -15,7 +14,107 @@ CS50's MobileApp Development with React Native
   * [Terminal](#terminal)
   * [markdown.md](#markdownmd)
   * [myBookMarks](#mybookmarks)
-  
+* [learning](#learning)
+  * [SimpleRedux](#simpleredux)
+     * [reducer.js](#reducerjs)
+     * [store.js](#storejs)
+     * [store2.js](#store2js)
+     * [store3.js](#store3js)
+
+---
+[top]: topOfThePage
+
+## Installed App on mobile phone
+* Unable to install stand alone App on mobile phone
+* Only to install(publised) running apps via Expo Client on mobile phone.
+### Some reference that tried:
+#### Installed App on Andriod device 
+- https://developer.android.com/training/basics/firstapp/creating-project
+   - installed Andriod Studio  >> very slow for my Mac
+- https://developer.android.com/training/basics/firstapp/running-app
+   - set the device at Developer Option, with USb debugging.
+   - after changed usb cable, it able to detect the device.
+   - installed the project, 'My First App' in the device. :+1:
+
+### published
+https://github.com/alvinng222/cs50m/tree/12_Performance#mynote   
+clicked on Expo>publish. 
+https://expo.io/@awesome2/pomodoro-timer
+
+```
+INFO
+17:01
+Building JavaScript bundle: finished in 300ms.
+ERROR
+17:05
+Could not get status from Metro bundler. connect ECONNREFUSED 127.0.0.1:19001
+ERROR
+17:05
+Connecting to Metro bundler failed.
+```
+expo build:android -t apk
+
+expo build:android -t app-bundle
+```
+Ts-MacBook-Pro:my-app twng$ expo build:android -t apk
+
+Now we need to know your Android package (​https://expo.fyi/android-package​). You can change this in the future if you need to.
+
+? What would you like your Android package to be named? com.atronee.pomodoro
+
+Your Android package is now: com.atronee.pomodoro
+
+Checking if there is a build in progress...
+
+Accessing credentials for awesome2 in project pomodoro-timer
+✔ Would you like to upload a Keystore or have us generate one for you?
+If you don't know what this means, let us generate it! :) › Generate new keystore
+Failed to generate Android Keystore, it will be generated on Expo servers during the build
+keytool exited with non-zero code: 1
+Error: keytool exited with non-zero code: 1
+```
+```
+To use the “keytool” command-line tool you need to install a JDK.
+Click “More Info…” to visit the Java Developer Kit download website.
+```
+
+### Some url links
+https://github.com/alvinng222/cs50m/tree/12_Performance/before/pomodoro-timer
+
+https://docs.expo.io/get-started/create-a-new-app/
+
+https://developer.android.com/studio/command-line/adb
+
+https://docs.expo.io/workflow/expo-cli/
+
+https://docs.expo.io/distribution/building-standalone-apps/
+
+```
+Ts-MacBook-Pro:my-app twng$ exp build:android
+We've built a brand new CLI for Expo!
+Expo CLI is a drop in replacement for exp.
+Install: npm install -g expo-cli
+Use: expo --help
+Read more: https://blog.expo.io/expo-cli-2-0-released-a7a9c250e99c
+[17:53:23] Checking if current build exists...
+
+[17:53:25] No currently active or previous builds for this project.
+
+? Would you like to upload a keystore or have us generate one for you?
+If you don't know what this means, let us handle it! :)
+ false
+[17:53:32] Publishing to channel 'default'...
+[17:53:39] Building iOS bundle
+[17:53:39] Error: connect ECONNREFUSED 127.0.0.1:19001
+[17:53:39] Set EXPO_DEBUG=true in your env to view the stack trace.
+Ts-MacBook-Pro:my-app twng$ 
+
+```
+
+### publish on web
+https://github.com/alvinng222/cs50m/blob/13_Deploying_Testing/README.md#publishing-httpsexpoioawesome2pomodoro-timer
+
+
 ---
 ## to be revise at
 #### SectionListContacts.js
@@ -46,18 +145,71 @@ i tries by adding key, but `Warning: Encountered two children with the same key`
 ```
 ref:https://github.com/alvinng222/cs50m/tree/05_ListsUserInput#contactsjs
 
-#### Lecture 7: Data
-HTTP Methods.  
+#### 06UserInputDebuggingAfter - done
+
+        $ npm install prop-types
+
+App.js, & AddContactForm.js
+If using **Snack**
+```jsx
+import Constants from 'expo-constants'; //import {Constants} from 'expo'
+```
+If use **ExpoCli** @ 38.0.8, for code [after/...](/after)   
+``` jsx
+import Constants from 'expo-constants'; //import {Constants} from 'expo' 
+```
+
+#### 07_Navigation - done
+was.  
+HTTP Methods.   
 Unable to login. Access to fetch at 'http://localhost:8000/' has been block
 
-#### Lecture 10: Async Redux, Tools
-Server error, unable to fetch
+### App running
+Shown list of random contacts, shown `Icons`. 
+Able to `Toggle Contacts`, `Add` contact.    
+Clicked on the list, lead to next page of name and phone, and `Go To Random Contact`.
 
-[:top: Top](#top)
+Code used from [after/...](/after), start from   
+**ExpoCli** init to *bare* template,   
+install of components:
+``` jsx
+$ npm install react-navigation@2.0.0 --save
+$ npm install react-native-vector-icons --save
+$ npm run web
+```
+Last workable,Jul10,'20, see [package.json](#afterpackagejson).       
+Web: ok; 
+iPhone: ok;
+
+update after/package.json
+remove git
+
+        $ npm install prop-types
+
+#### Lecture 10: Async Redux, Tools
+was.  
+Server error, unable to fetch
+##### error running on device
+``` console
+00:38
+Error: Duplicated files or mocks. Please check the console for more info
+    at setModule (/Users/twng/cs50m/JUl06/node_modules/jest-haste-map/build/index.js:620:17)
+    at workerReply (/Users/twng/cs50m/JUl06/node_modules/jest-haste-map/build/index.js:691:9)
+    at processTicksAndRejections (internal/process/task_queues.js:97:5)
+    at async Promise.all (index 57)
+```
+
+### Pomodoro Timer
+from [package.json bare](#packagejson-bare)
+
+    Ts-MacBook-Pro:Jul09 twng$ npm install prop-types
+    + prop-types@15.7.2
+
+
+| [:top: Top](#top)  | [Good to remember](#good-to-remember) |  [myQuickRef](#myquickref) | [learning](#learning) |
 
 see https://github.com/alvinng222/cs50-mobile/blob/master/vimtutor.md
 
-[:top: Top](#top)
 
 ---
 Good to remember
@@ -95,11 +247,56 @@ https://github.com/alvinng222/cs50-mobile/blob/master/00_CS50m.md#arrow-notation
             <Text>{contact.name}</Text>
           ))}
 ```
-[:top: Top](#top)
+
+| [:top: Top](#top) | [Good to remember](#good-to-remember) |  [myQuickRef](#myquickref) | [learning](#learning) |
 
 ---
 myQuickRef
 ---
+Jul 16,'20, initial expo start, bare   
+#### package.json bare
+``` yaml
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject"
+  },
+  "dependencies": {
+    "expo": "~38.0.8",
+    "expo-status-bar": "^1.0.2",
+    "react": "~16.11.0",
+    "react-dom": "~16.11.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
+    "react-native-web": "~0.11.7"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.10.5",
+    "babel-preset-expo": "~8.1.0"
+  },
+  "private": true
+}
+```
+``` console
+Ts-MacBook-Pro:Jul09 twng$ ls -a
+.			.gitignore		node_modules
+..			App.js			package-lock.json
+.expo			app.json		package.json
+.expo-shared		assets			web-build
+.git			babel.config.js
+Ts-MacBook-Pro:Jul09 twng$ 
+```
+To divert App to another folder
+``` jsx                     
+import myApp from './05ListsUserInputAfter/App';
+//import myApp from './AppMin';
+export default myApp;
+
+```
+
 #### Node JS, on Windows
 installed node, https://nodejs.org/en/
 ``` console
@@ -187,7 +384,8 @@ checked on github,
     +node_modules/
     +package-lock.json 
 ```
-[:top: Top](#top)
+
+| [:top: Top](#top)  | [Good to remember](#good-to-remember) |  [myQuickRef](#myquickref) | [learning](#learning) |
 
 ---
 #### snacks
@@ -195,7 +393,15 @@ my expo.io/ snacks: https://expo.io/snacks/@awesome2/.
 
 ---
 ### Expo Cli
-expo terminal commands
+#### to run on iPhone or Andriod   
+Ensure the following:
+- Node Server is running and available on the same network.
+- Node server URL is correctly set in AppDelegate.
+- Wifi is enabled and connected to the same netowrk as the Node Server.
+
+https://reactnative.dev/docs/running-on-device
+
+#### expo terminal commands
 ```
  › Press a to run on Android device/emulator, or i to run on iOS simulator, or w to run on web.
  › Press c to show info on connecting new devices.
@@ -289,7 +495,8 @@ package.json as on Jun 2020
   "private": true
 }
 ```
-[:top: Top](#top)
+
+| [:top: Top](#top) | [Good to remember](#good-to-remember) |  [myQuickRef](#myquickref) | [learning](#learning) |
 
 ---
 #### eslint prettier
@@ -360,6 +567,10 @@ with another word:
         /foo<CR>        find "foo"
         c//e<CR>        change until end of match
         bar<Esc>        type replacement
+        //<CR>          go to start of next match
+        c//e<CR>        change until end of match
+        beep<Esc>       type another replacement
+                        etc.
 ```
 
 to replace number with phone: `:'<,'>s/number/phone`.   
@@ -370,10 +581,33 @@ Vim CheatSheet https://github.com/hackjutsu/vim-cheatsheet
 
 **CTRL-N** - It looks up words in the file you are editing.   
 
-[:top: Top](#top)
+
+| [:top: Top](#top) | [Good to remember](#good-to-remember) |  [myQuickRef](#myquickref) | [learning](#learning) |
 
 ---
+
 ### debug
+.20 random,
+
+    let {total} = contacts;
+    let n = Math.floor(Math.random() * total); // .20
+    console.log(n) // .20
+.22b c = data[n]
+
+    let {data} = randomContacts;
+    let c = data[n]; // .22b
+    console.log(c);
+.26
+
+      <Text>{JSON.stringify(this.state.v)}</Text>
+      
+### console
+      > console.clear()
+
+##### console.log
+
+        console.log(JSON.stringify(o))  // ***** 
+
 ref: 07_Navigation#mynote
 #### blank view to skip
 :+1: to temporary blank view
@@ -448,12 +682,25 @@ export default myApp
 #### How to start a new line in Chrome console window?
 `shift`+`enter`
 
-[:top: Top](#top)
+| [:top: Top](#top) | [Good to remember](#good-to-remember) |  [myQuickRef](#myquickref) | [learning](#learning) |
 
----
 
 ### Terminal
-Use node, compare difference files, and Git diff
+#### node help
+try `console` dot, then Tab Tab
+``` console
+Ts-MacBook-Pro:Jul02 twng$ node
+Welcome to Node.js v12.18.0.
+Type ".help" for more information.
+> console.
+console.__defineGetter__      console.__defineSetter__      console.__lookupGetter__
+console.__lookupSetter__      console.__proto__             console.constructor
+ ...
+console.debug                 console.dir                   console.dirxml
+console.error                 console.group                 console.groupCollapsed
+ ...
+```
+#### Use node, compare difference files, and Git diff
 ``` console
         simpleRedux twng$ node reducer.js
         { foo: 'baz', bar: 'bar' }
@@ -479,6 +726,8 @@ Option–Right Arrow: Move the insertion point to the end of the next word.
 
 :+1: emoji short code: https://gist.github.com/rxaviers/7360908
 
+GitHub Flavored Markdown Spec https://github.github.com/gfm/
+
 #### go to top of the page
 ```markdown
 [top]: topOfThePage
@@ -498,11 +747,273 @@ Option–Right Arrow: Move the insertion point to the end of the next word.
 - https://codesandbox.io/s/quiet-moon-zq0dt - my sandbox
 - https://ngteckwee.blogspot.com/ - my  blog
 
-[:top: Top](#top)
 
 ---
-to master branch: [CS50M](https://github.com/alvinng222/cs50m/tree/master)   
-back to previous: [01_Javascript_src](https://github.com/alvinng222/cs50m/tree/01_Javascript_src)  
-continue to next: [03_ReactPropsState](https://github.com/alvinng222/cs50m/tree/03_ReactPropsState).
+| [:top: Top](#top) | [Good to remember](#good-to-remember) |  [myQuickRef](#myquickref) | [learning](#learning) |
+
+## learning
+### SimpleRedux
+#### reducer.js
+``` jsx
+{
+  user: {
+    foo: 'baz',
+    bar: 'bar',
+    prevContact: { name: 'david m', number: '5050505050' }
+  },
+  contacts: [
+    { name: 'jordan h', number: '1234567890' },
+    { name: 'jordan h', number: '1234567890' },
+    { name: 'david m', number: '5050505050' }
+  ]
+}
+Ts-MacBook-Pro:simpleRedux twng$ vim store2.js
+Ts-MacBook-Pro:simpleRedux twng$ ls
+reducer.js	store.js	store2.js
+Ts-MacBook-Pro:simpleRedux twng$ cat reducer.js
+const merge = (prev, next) => Object.assign({}, prev, next)
+
+const reducer = (state, update) => merge(state, update)
+
+let state = {}
+state = reducer(state, {foo: 'foo'})
+state = reducer(state, {bar: 'bar'})
+state = reducer(state, {foo: 'baz'})
+
+console.log(state)
+
+// Ts-MacBook-Pro:simpleRedux twng$ node reducer.js
+// { foo: 'baz', bar: 'bar' }
+```
+
+| [:top: Top](#top)  | [Good to remember](#good-to-remember) |  [myQuickRef](#myquickref) | [learning](#learning) |
+#### store.js
+``` jsx
+class Store {
+  constructor(reducer, initialState) {
+    this.reducer = reducer
+    this.state = initialState
+  }
+
+  getState() {
+    return this.state
+  }
+
+  dispatch(update) {
+    this.state = this.reducer(this.state, update)
+  }
+}
+
+const merge = (prev, next) => Object.assign({}, prev, next)
+
+const reducer = (state, update) => merge(state, update)
+
+const store = new Store(reducer)
+store.dispatch({foo: 'foo'})
+store.dispatch({bar: 'bar'})
+store.dispatch({foo: 'baz'})
+
+console.log(store.getState())
+
+// Ts-MacBook-Pro:simpleRedux twng$ node store.js
+// { foo: 'baz', bar: 'bar' }
+```
+| [:top: Top](#top) | [Good to remember](#good-to-remember) |  [myQuickRef](#myquickref) | [learning](#learning) |
+#### store2.js
+``` jsx
+// action types
+const UPDATE_USER = 'UPDATE_USER'
+const UPDATE_CONTACT = 'UPDATE_CONTACT'
+
+class Store {
+  constructor(reducer, initialState) {
+    this.reducer = reducer
+    this.state = initialState
+  }
+
+  getState() {
+    return this.state
+  }
+
+  dispatch(update) {
+    this.state = this.reducer(this.state, update)
+  }
+}
+
+const DEFAULT_STATE = {user: {}, contacts: []}
+
+const merge = (prev, next) => Object.assign({}, prev, next)
+
+const contactReducer = (state, action) => {
+  if (action.type === UPDATE_CONTACT) return [...state, action.payload]
+  return state
+}
+
+const userReducer = (state, action) => {
+  if (action.type === UPDATE_USER) return merge(state, action.payload)
+  if (action.type === UPDATE_CONTACT) return merge(state, {prevContact: action.payload})
+  return state
+}
+
+const reducer = (state, action) => ({
+  user: userReducer(state.user, action),
+  contacts: contactReducer(state.contacts, action),
+})
+
+// action creators
+const updateUser = update => ({
+  type: UPDATE_USER,
+  payload: update,
+})
+
+const addContact = newContact => ({
+  type: UPDATE_CONTACT,
+  payload: newContact,
+})
+
+const store = new Store(reducer, DEFAULT_STATE)
+store.dispatch(updateUser({foo: 'foo'}))
+store.dispatch(updateUser({bar: 'bar'}))
+store.dispatch(updateUser({foo: 'baz'}))
+
+store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
+store.dispatch(addContact({name: 'jordan h', number: '1234567890'}))
+store.dispatch(addContact({name: 'david m', number: '5050505050'}))
+
+console.log(store.getState())
+
+/* console
+Ts-MacBook-Pro:simpleRedux twng$ node store2.js
+{
+  user: {
+    foo: 'baz',
+    bar: 'bar',
+    prevContact: { name: 'david m', number: '5050505050' }
+  },
+  contacts: [
+    { name: 'jordan h', number: '1234567890' },
+    { name: 'jordan h', number: '1234567890' },
+    { name: 'david m', number: '5050505050' }
+  ]
+}
+Ts-MacBook-Pro:simpleRedux twng$
+*/
+```
+
+| [:top: Top](#top) | [Good to remember](#good-to-remember) |  [myQuickRef](#myquickref) | [learning](#learning) |
+#### store3.js
+``` jsx
+const fetch = require('isomorphic-fetch')
+
+const login = async (username, password) => {
+  const response = await fetch('http://localhost:8000', {
+    method: 'POST',
+    headers: {'content-type': 'application/json'},
+    body: JSON.stringify({username, password}),
+  })
+
+  if (response.ok) {
+    return true
+  }
+
+  const errMessage = await response.text()
+  throw new Error(errMessage)
+}
+
+// action types
+const UPDATE_USER = 'UPDATE_USER'
+const UPDATE_CONTACT = 'UPDATE_CONTACT'
+
+class Store {
+  constructor(reducer, initialState) {
+    this.reducer = reducer
+    this.state = initialState
+  }
+
+  getState() {
+    return this.state
+  }
+
+  dispatch(action) {
+    if (typeof action === 'function') {
+      action(this.dispatch.bind(this))
+    } else {
+      console.log('received an action:', action.type)
+      this.state = this.reducer(this.state, action)
+    }
+  }
+}
+
+const DEFAULT_STATE = {user: {}, contacts: []}
+
+const merge = (prev, next) => Object.assign({}, prev, next)
+
+const contactReducer = (state, action) => {
+  if (action.type === UPDATE_CONTACT) return [...state, action.payload]
+  return state
+}
+
+const userReducer = (state, action) => {
+  switch (action.type) {
+    case UPDATE_USER:
+      return merge(state, action.payload)
+    case UPDATE_CONTACT:
+      return merge(state, {prevContact: action.payload})
+    case 'LOG_IN_SUCCESS':
+      return merge(state, {token: 'fakeToken'})
+    default:
+      return state
+  }
+}
+
+const reducer = (state, action) => ({
+  user: userReducer(state.user, action),
+  contacts: contactReducer(state.contacts, action),
+})
+
+// action creators
+const updateUser = update => ({
+  type: UPDATE_USER,
+  payload: update,
+})
+
+const addContact = newContact => ({
+  type: UPDATE_CONTACT,
+  payload: newContact,
+})
+
+// async action creator
+const logInUser = (username, password) => dispatch => {
+  dispatch({type: 'LOG_IN_SENT'})
+  login(username, password)
+    .then(() => {
+      dispatch({type: 'LOG_IN_SUCCESS'})
+    })
+    .catch(err => {
+      dispatch({type: 'LOG_IN_REJECTED'})
+    })
+}
+
+
+const store = new Store(reducer, DEFAULT_STATE)
+
+store.dispatch(logInUser('username', 'password'))
+
+console.log(store.getState())
+
+/* console
+Ts-MacBook-Pro:simpleRedux twng$ node store3.js
+received an action: LOG_IN_SENT
+{ user: {}, contacts: [] }
+received an action: LOG_IN_SUCCESS
+*/
+```
+
+
+
+| [:top: Top](#top) | [Good to remember](#good-to-remember) |  [myQuickRef](#myquickref) | [learning](#learning) |
+
+---
+This master branch: [CS50M](https://github.com/alvinng222/cs50m/tree/master)   
 
 ---
