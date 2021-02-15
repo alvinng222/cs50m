@@ -387,8 +387,11 @@ checked on github,
 
 #### collaborate -- to be edit
 ``` console
+create depository in GitHub, private.
+Copy Code: git https://github.com/xxxxx/xxxxx.git
+
 C:\Users\Iris\Desktop\GithubTutorial>git init
-C:\Users\Iris\Desktop\GithubTutorial>git remote add origin https://github.com/NgHuiLingIris/PapaTest.git
+C:\Users\Iris\Desktop\GithubTutorial>git remote add origin https://github.com/xxxxx/xxxxx.git
 
 C:\Users\Iris\Desktop\GithubTutorial>git add .
 C:\Users\Iris\Desktop\GithubTutorial>git commit -m "First commit hi"
@@ -399,8 +402,8 @@ C:\Users\Iris\Desktop\GithubTutorial>git add .
 C:\Users\Iris\Desktop\GithubTutorial>git commit -m "In new branch, command prompts
 C:\Users\Iris\Desktop\GithubTutorial>git push origin branch2
 
-antw@Mac-mini learnGit % git clone https://github.com/NgHuiLingIris/PapaTest.git
-Cloning into 'PapaTest'...
+antw@Mac-mini learnGit % git clone https://github.com/xxxxx/xxxxx.git
+Cloning into 'xxxxx'...
 
 ```
 
