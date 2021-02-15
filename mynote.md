@@ -385,7 +385,7 @@ checked on github,
     +package-lock.json 
 ```
 
-#### Colloration -- to be edit
+#### collaborate -- to be edit
 ``` console
 C:\Users\Iris\Desktop\GithubTutorial>git init
 C:\Users\Iris\Desktop\GithubTutorial>git remote add origin https://github.com/NgHuiLingIris/PapaTest.git
