@@ -385,6 +385,27 @@ checked on github,
     +package-lock.json 
 ```
 
+#### Colloration -- to be edit
+``` console
+C:\Users\Iris\Desktop\GithubTutorial>git init
+C:\Users\Iris\Desktop\GithubTutorial>git remote add origin https://github.com/NgHuiLingIris/PapaTest.git
+
+C:\Users\Iris\Desktop\GithubTutorial>git add .
+C:\Users\Iris\Desktop\GithubTutorial>git commit -m "First commit hi"
+C:\Users\Iris\Desktop\GithubTutorial>git push -u origin master
+
+C:\Users\Iris\Desktop\GithubTutorial>git checkout -b branch2
+C:\Users\Iris\Desktop\GithubTutorial>git add .
+C:\Users\Iris\Desktop\GithubTutorial>git commit -m "In new branch, command prompts
+C:\Users\Iris\Desktop\GithubTutorial>git push origin branch2
+
+antw@Mac-mini learnGit % git clone https://github.com/NgHuiLingIris/PapaTest.git
+Cloning into 'PapaTest'...
+
+```
+
+
+
 | [:top: Top](#top)  | [Good to remember](#good-to-remember) |  [myQuickRef](#myquickref) | [learning](#learning) |
 
 ---
