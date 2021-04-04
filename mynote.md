@@ -401,12 +401,18 @@ C:\Users\Iris\Desktop\GithubTutorial>git checkout -b branch2
 C:\Users\Iris\Desktop\GithubTutorial>git add .
 C:\Users\Iris\Desktop\GithubTutorial>git commit -m "In new branch, command prompts
 C:\Users\Iris\Desktop\GithubTutorial>git push origin branch2
-
+```
+#### git stash
+to revived back to the last commited
+``` console
+antw@Mac-mini SumProj % git stash
+Saved working directory and index state WIP on branch3: 60ffa6b toDoList replace about.html
+```
+#### git clone
+``` console
 antw@Mac-mini learnGit % git clone https://github.com/xxxxx/xxxxx.git
 Cloning into 'xxxxx'...
-
 ```
-
 
 
 | [:top: Top](#top)  | [Good to remember](#good-to-remember) |  [myQuickRef](#myquickref) | [learning](#learning) |
