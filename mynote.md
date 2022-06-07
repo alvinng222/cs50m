@@ -370,6 +370,13 @@ checked on github,
     $ git remote show origin
         02_JS_ES6             pushes to 02_JS_ES6             (up to date)    
 ```
+``` console
+    antw@Mac-mini ntucLH % git remote add origin git@github.com:axxxx/nxxxxx.git
+    error: remote origin already exists.
+    antw@Mac-mini ntucLH % git remote set-url origin git@github.com:axxxx/nxxxxx.git https://github.com/alxxxxx/nxxxxx.git
+    antw@Mac-mini ntucLH % git config --global user.name
+    axxxx
+```
 #### view changes not yet stage
 ``` console
     $ git diff
@@ -414,6 +421,23 @@ antw@Mac-mini learnGit % git clone https://github.com/xxxxx/xxxxx.git
 Cloning into 'xxxxx'...
 ```
 
+#### git SSH key
+``` console
+antw@Mac-mini temp % ssh-keygen -t ed25519 -C "alxxxxx@gmail.com"
+Generating public/private ed25519 key pair.
+...
+antw@Mac-mini temp % ssh -vT git@github.com
+debug1: Reading configuration data /Users/antw/.ssh/config
+...
+antw@Mac-mini temp  % ls -al ~/.ssh
+antw@Mac-mini temp  % cat ~/.ssh/axxxx
+>>>> pasted into github.com/a-ntw setting > Access > SSH key
+antw@Mac-mini temp % ssh-add -K ~/.ssh/axxxx
+Enter passphrase for ... 
+antw@Mac-mini temp % open ~/.ssh/config       
+>>> a-ntw not found inside                     
+antw@Mac-mini temp % mv ~/.ssh/config ~/.ssh/config.bak
+```
 
 | [:top: Top](#top)  | [Good to remember](#good-to-remember) |  [myQuickRef](#myquickref) | [learning](#learning) |
 
